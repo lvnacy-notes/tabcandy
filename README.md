@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/tab-candy-emblem.png" width="128px" alt="Tab Candy emblem">
+<img src="./.github/assets/tab-candy-emblem.png" width="128px" alt="Tab Candy emblem">
 
 # 🍬 Tab Candy 🍬
 
@@ -9,7 +9,7 @@
 [![CI](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml/badge.svg)](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![A screenshot showing the Tab Candy screen](./assets/tab-candy-sample.png)
+![A screenshot showing the Tab Candy screen](./.github/assets/tab-candy-sample.png)
 
 </div>
 
@@ -30,7 +30,7 @@ By default, opening a new empty tab in Obsidian shows Tab Candy automatically. I
 
 <div align="center">
   <img
-    src="./assets/settings-new-tab.png"
+    src="./.github/assets/settings-new-tab.png"
     width="600"
     alt="A screenshot showing the Tab Candy new tab setting"
   >
@@ -46,7 +46,7 @@ A background image fills the screen behind everything else. It stays the same fo
 
 <div align="center">
   <img
-    src="./assets/settings-background.png"
+    src="./.github/assets/settings-background.png"
     width="600"
     alt="A screenshot showing the Tab Candy background settings"
   >
@@ -61,7 +61,7 @@ Two independent search entry points — a small icon in the top-left corner, and
 
 <div align="center">
   <img
-    src="./assets/settings-search.png"
+    src="./.github/assets/settings-search.png"
     width="600"
     alt="A screenshot showing the Tab Candy search settings"
   >
@@ -73,7 +73,7 @@ The current time (12-hour or 24-hour) and a customizable greeting, shown front a
 
 <div align="center">
   <img
-    src="./assets/settings-time-greeting.png"
+    src="./.github/assets/settings-time-greeting.png"
     width="600"
     alt="A screenshot showing the Tab Candy time settings"
   >
@@ -85,7 +85,7 @@ Your 5 most recently edited files, one click away.
 
 <div align="center">
   <img
-    src="./assets/settings-recent-files.png"
+    src="./.github/assets/settings-recent-files.png"
     width="600"
     alt="A screenshot showing the Tab Candy search settings"
   >
@@ -97,7 +97,7 @@ Your 5 most recently edited files, one click away.
 
 <div align="center">
   <img
-    src="./assets/settings-bookmarks.png"
+    src="./.github/assets/settings-bookmarks.png"
     width="600"
     alt="A screenshot showing the Tab Candy bookmarks settings"
   >
@@ -109,7 +109,7 @@ A quote at the bottom of the screen, picked at random from your own list of cust
 
 <div align="center">
   <img
-    src="./assets/settings-quotes.png"
+    src="./.github/assets/settings-quotes.png"
     width="600"
     alt="A screenshot showing the Tab Candy search settings"
   >
@@ -137,20 +137,20 @@ BRAT will also keep you on the latest release, betas included, if you opt into p
 
 <table>
   <tr>
-    <td><img src="./assets/tab-candy-screenshot-plain.png" alt="Tab Candy screenshot plain" /></td>
-    <td><img src="./assets/tab-candy-screenshot-search-corner.png" alt="Tab Candy screenshot corner search" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-plain.png" alt="Tab Candy screenshot plain" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-search-corner.png" alt="Tab Candy screenshot corner search" /></td>
   </tr>
   <tr>
-    <td><img src="./assets/tab-candy-screenshot-search-inline.png" alt="Tab Candy screenshot inline search" /></td>
-    <td><img src="./assets/tab-candy-screenshot-time.png" alt="Tab Candy screenshot time" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-search-inline.png" alt="Tab Candy screenshot inline search" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-time.png" alt="Tab Candy screenshot time" /></td>
   </tr>
   <tr>
-    <td><img src="./assets/tab-candy-screenshot-greeting.png" alt="Tab Candy screenshot greeting" /></td>
-    <td><img src="./assets/tab-candy-screenshot-recents.png" alt="Tab Candy screenshot recent files" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-greeting.png" alt="Tab Candy screenshot greeting" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-recents.png" alt="Tab Candy screenshot recent files" /></td>
   </tr>
   <tr>
-    <td><img src="./assets/tab-candy-screenshot-bookmarks.png" alt="Tab Candy screenshot bookmarks" /></td>
-    <td><img src="./assets/tab-candy-screenshot-quotes.png" alt="Tab Candy screenshot quote" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-bookmarks.png" alt="Tab Candy screenshot bookmarks" /></td>
+    <td><img src="./.github/assets/tab-candy-screenshot-quotes.png" alt="Tab Candy screenshot quote" /></td>
   </tr>
 </table>
 
