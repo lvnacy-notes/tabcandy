@@ -1,149 +1,116 @@
-import { Notice, Plugin, requestUrl } from "obsidian";
-import { ReactView, BEAUTITAB_REACT_VIEW } from "./Views/ReactView";
-import Observable from "src/Utils/Observable";
+import { Plugin } from 'obsidian';
 import {
-	BeautitabPluginSettingTab,
-	BeautitabPluginSettings,
-	DEFAULT_SETTINGS,
-} from "src/Settings/Settings";
+	TabCandyView,
+	TAB_CANDY_VIEW_TYPE
+} from './src/TabCandyView';
+import SettingsStore from './src/settings/SettingsStore';
+import TabCandySettingTab from './src/settings/SettingsTab';
+import { TabCandySettings } from './src/types';
+import { normalizeSettings } from './src/settings/normalizeSettings';
+import {
+	pruneMissingManualBackgroundFiles,
+	registerBackgroundVaultWatchers,
+	syncBackgroundsFolder,
+} from './src/services/backgrounds';
+import { checkForPluginUpdates } from './src/services/versionCheck';
+import { activateView, registerNewTabHijack } from './src/services/newTabHijack';
 
 /**
  * This allows a "live-reload" of Obsidian when developing the plugin.
  * Any changes to the code will force reload Obsidian.
  */
-if (process.env.NODE_ENV === "development") {
-	new EventSource("http://127.0.0.1:8000/esbuild").addEventListener(
-		"change",
+if (process.env.NODE_ENV === 'development') {
+	new EventSource('http://127.0.0.1:8000/esbuild').addEventListener(
+		'change',
 		() => location.reload()
 	);
 }
 
-export default class BeautitabPlugin extends Plugin {
-	settings: BeautitabPluginSettings;
-	settingsObservable: Observable;
+export default class TabCandyPlugin extends Plugin {
+	// Populated in onload(), which Obsidian guarantees resolves before any
+	// other plugin lifecycle method (registerView, addSettingTab, etc.) runs -
+	// safe to assert definite assignment rather than union with `undefined`
+	// and push null-checks into every consumer.
+	settingsStore!: SettingsStore;
+
+	// Obsidian's own Plugin base class declares `settings?: unknown` as a
+	// plain field (see obsidian.d.ts), so it can't be overridden with a
+	// getter here (TS2611: property/accessor kind mismatch). Instead this
+	// stays a plain field, kept in sync by subscribing to settingsStore in
+	// onload() below - purely a read convenience so the many pre-existing
+	// `this.plugin.settings.X` reads throughout the settings tab and
+	// elsewhere didn't all need rewriting to `this.plugin.settingsStore.
+	// get().X`. Writes must go through settingsStore.update(), never by
+	// assigning to this field directly.
+	settings!: TabCandySettings;
 
 	async onload() {
 		await this.loadSettings();
 
-		this.versionCheck();
+		this.settings = this.settingsStore.get();
+		this.settingsStore.subscribe((settings) => {
+			this.settings = settings;
+		});
 
-		this.settingsObservable = new Observable(this.settings);
+		void checkForPluginUpdates();
+
+		// Refreshes the list of synced files on every load/reload/restart so
+		// background images are available immediately, without requiring an
+		// explicit "Sync now" click first.
+		await syncBackgroundsFolder(this.app, this.settingsStore);
+
+		// Catches deletions/renames of individually-added images that
+		// happened while the plugin wasn't loaded to see the vault event
+		// (closing Obsidian, editing the vault elsewhere, reopening it -
+		// an ordinary flow, not an edge case). Deletions/renames that
+		// happen while the plugin is running are instead caught live by
+		// the event listeners registered below.
+		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
+
+		registerBackgroundVaultWatchers(
+			this.app,
+			this.settingsStore,
+			(eventRef) => this.registerEvent(eventRef)
+		);
 
 		this.registerView(
-			BEAUTITAB_REACT_VIEW,
-			(leaf) =>
-				new ReactView(this.app, this.settingsObservable, leaf, this)
+			TAB_CANDY_VIEW_TYPE,
+			(leaf) => new TabCandyView(this.settingsStore, leaf)
 		);
 
-		this.addSettingTab(new BeautitabPluginSettingTab(this.app, this));
+		this.addSettingTab(new TabCandySettingTab(this.app, this));
 
-		this.registerEvent(
-			this.app.workspace.on(
-				"layout-change",
-				this.onLayoutChange.bind(this)
-			)
+		this.addCommand({
+			id: 'open-tab-candy',
+			name: 'Open new tab',
+			callback: () => {
+				void activateView(this.app);
+			},
+		});
+
+		registerNewTabHijack(
+			this.app,
+			this.settingsStore,
+			(eventRef) => this.registerEvent(eventRef)
 		);
-
-		if (process.env.NODE_ENV === "development") {
-			// @ts-ignore
-			if (process.env.EMULATE_MOBILE && !this.app.isMobile) {
-				// @ts-ignore
-				this.app.emulateMobile(true);
-			}
-
-			// @ts-ignore
-			if (!process.env.EMULATE_MOBILE && this.app.isMobile) {
-				// @ts-ignore
-				this.app.emulateMobile(false);
-			}
-		}
 	}
 
-	onunload() {}
-
 	/**
-	 * Load data from disk, stored in data.json in plugin folder
+	 * Load data from disk (data.json in the plugin folder), normalize it
+	 * against defaults and validation rules (normalizeSettings.ts), and
+	 * construct the typed settings store around the result. normalizeSettings()
+	 * enforces enum checking and schema validation on every field.
 	 */
 	async loadSettings() {
-		const data = (await this.loadData()) || {};
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
-	}
-
-	/**
-	 * Save data to disk, stored in data.json in plugin folder
-	 */
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
-
-	/**
-	 * Check the local plugin version against github. If there is a new version, notify the user.
-	 */
-	async versionCheck() {
-		const localVersion = process.env.PLUGIN_VERSION;
-		const stableVersion = await requestUrl(
-			"https://raw.githubusercontent.com/andrewmcgivery/obsidian-beautitab/main/package.json"
-		).then(async (res) => {
-			if (res.status === 200) {
-				const response = await res.json;
-				return response.version;
-			}
-		});
-		const betaVersion = await requestUrl(
-			"https://raw.githubusercontent.com/andrewmcgivery/obsidian-beautitab/beta/package.json"
-		).then(async (res) => {
-			if (res.status === 200) {
-				const response = await res.json;
-				return response.version;
-			}
-		});
-
-		if (localVersion?.indexOf("beta") !== -1) {
-			if (localVersion !== betaVersion) {
-				new Notice(
-					"There is a beta update available for the Beautitab plugin. Please update to to the latest version to get the latest features!",
-					0
-				);
-			}
-		} else if (localVersion !== stableVersion) {
-			new Notice(
-				"There is an update available for the Beautitab plugin. Please update to to the latest version to get the latest features!",
-				0
-			);
-		}
-	}
-
-	/**
-	 * Hijack new tabs and show Beauitab
-	 */
-	private onLayoutChange(): void {
-		const leaf = this.app.workspace.getMostRecentLeaf();
-		if (leaf?.getViewState().type === "empty") {
-			leaf.setViewState({
-				type: BEAUTITAB_REACT_VIEW,
-			});
-		}
-	}
-
-	/**
-	 * Check if the choosen provider is enabled
-	 * If yes: open it by using executeCommandById
-	 * If no: Notice the user and tell them to enable it in the settings
-	 */
-	openSwitcherCommand(command: string): void {
-		const pluginID = command.split(":")[0];
-		//@ts-ignore
-		const plugins = this.app.plugins.plugins;
-		//@ts-ignore
-		const internalPlugins = this.app.internalPlugins.plugins;
-
-		if (plugins[pluginID] || internalPlugins[pluginID]?.enabled) {
-			//@ts-ignore
-			this.app.commands.executeCommandById(command);
-		} else {
-			new Notice(
-				`Plugin ${pluginID} is not enabled. Please enable it in the settings.`
-			);
-		}
+		// loadData() is typed Promise<any> by Obsidian's own typings, since
+		// data.json is arbitrary disk data with no compile-time shape.
+		// Widening to `unknown` here means nothing downstream can touch it
+		// without going through normalizeSettings()'s runtime validation.
+		const data: unknown = (await this.loadData()) ?? {};
+		const normalized = normalizeSettings(data);
+		this.settingsStore = new SettingsStore(
+			normalized,
+			(settings) => this.saveData(settings)
+		);
 	}
 }
