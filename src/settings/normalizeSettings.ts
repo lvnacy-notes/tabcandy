@@ -2,7 +2,6 @@ import {
 	BOOKMARK_SOURCE,
 	BackgroundTheme,
 	CustomQuote,
-	QUOTE_SOURCE,
 	SearchProvider,
 	TIME_FORMAT,
 	TabCandySettings,
@@ -122,12 +121,6 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 		isEnumValue(BOOKMARK_SOURCE, data.bookmarkSource)
 	) {
 		normalized.bookmarkSource = data.bookmarkSource;
-	}
-	if (
-		typeof data.quoteSource === 'string' &&
-		isEnumValue(QUOTE_SOURCE, data.quoteSource)
-	) {
-		normalized.quoteSource = data.quoteSource;
 	}
 
 	// Arrays: only trust them if every entry is actually shaped right.

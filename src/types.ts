@@ -15,12 +15,6 @@ export enum BOOKMARK_SOURCE {
 	GROUP = 'group',
 }
 
-export enum QUOTE_SOURCE {
-	QUOTEABLE = 'Quoteable',
-	MY_QUOTES = 'My quotes',
-	BOTH = 'Both',
-}
-
 export interface SearchProvider {
 	command: string;
 	display: string;
@@ -32,8 +26,7 @@ export interface CustomQuote {
 }
 
 /**
- * A quote fetched from the Quoteable API or selected from the user's
- * custom quotes list.
+ * A quote selected from the user's custom quotes list.
  */
 export interface Quote {
 	content: string;
@@ -83,6 +76,5 @@ export interface TabCandySettings {
 	bookmarkSource: BOOKMARK_SOURCE;
 	bookmarkGroup: string;
 	showQuote: boolean;
-	quoteSource: QUOTE_SOURCE;
 	customQuotes: CustomQuote[];
 }

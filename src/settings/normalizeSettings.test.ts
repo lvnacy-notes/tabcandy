@@ -6,7 +6,6 @@ import {
 import {
 	BOOKMARK_SOURCE,
 	BackgroundTheme,
-	QUOTE_SOURCE,
 	TIME_FORMAT,
 } from '../types';
 import { DEFAULT_SETTINGS } from './defaultSettings';
@@ -221,32 +220,6 @@ describe('normalizeSettings', () => {
 		});
 	});
 
-	describe('quoteSource enum', () => {
-		it('passes through a valid enum value', () => {
-			const raw = { quoteSource: QUOTE_SOURCE.MY_QUOTES };
-
-			const result = normalizeSettings(raw);
-
-			expect(result.quoteSource).toBe(QUOTE_SOURCE.MY_QUOTES);
-		});
-
-		it('falls back to the default when given an invalid value', () => {
-			const raw = { quoteSource: 'nonexistent-source' };
-
-			const result = normalizeSettings(raw);
-
-			expect(result.quoteSource).toBe(DEFAULT_SETTINGS.quoteSource);
-		});
-
-		it('falls back to the default when the field is missing', () => {
-			const raw = {};
-
-			const result = normalizeSettings(raw);
-
-			expect(result.quoteSource).toBe(DEFAULT_SETTINGS.quoteSource);
-		});
-	});
-
 	describe('backgroundFiles / manualBackgroundFiles string arrays', () => {
 		const arrayFields = ['backgroundFiles', 'manualBackgroundFiles'] as const;
 
@@ -418,7 +391,7 @@ describe('normalizeSettings', () => {
 			customQuotes: 'not even an array',
 			topLeftSearchProvider: { command: 'switcher:open' },
 			showQuote: false,
-			quoteSource: QUOTE_SOURCE.BOTH,
+			quoteSource: 'Quoteable',
 			aRemovedField: 'from three versions ago',
 		};
 
@@ -427,7 +400,6 @@ describe('normalizeSettings', () => {
 		expect(result).toEqual({
 			...DEFAULT_SETTINGS,
 			showQuote: false,
-			quoteSource: QUOTE_SOURCE.BOTH,
 			settingsVersion: CURRENT_SETTINGS_VERSION,
 		});
 	});

@@ -4,5 +4,10 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"npm.packageManager": "pnpm",
+		"npm.scriptRunner": "pnpm",
+		"workbench.preferredDarkColorTheme": "Huacat Pink Dark",
+		"workbench.preferredLightColorTheme": "Huacat Pink Theme"
+	}
 }

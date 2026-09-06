@@ -13,7 +13,6 @@ import {
 	BOOKMARK_SOURCE,
 	BackgroundTheme,
 	CustomQuote,
-	QUOTE_SOURCE,
 	TIME_FORMAT,
 	TabCandySettings,
 } from '../types';
@@ -483,24 +482,10 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				items: [
 					{
 						name: 'Show quote',
-						desc: `Should the quote at the bottom of the new tab screen be displayed?`,
+						desc: `Should a random quote from your custom quotes list, below, be displayed at the bottom of the new tab screen?`,
 						control: {
 							type: 'toggle',
 							key: 'showQuote',
-						},
-					},
-					{
-						name: 'Quote source',
-						desc: `Where should quotes be pulled from? You can use either built in quotes, your own quotes, or a combination of both.`,
-						control: {
-							type: 'dropdown',
-							key: 'quoteSource',
-							options: Object.fromEntries(
-								Object.values(QUOTE_SOURCE).map((source) => [
-									source,
-									source,
-								])
-							),
 						},
 					},
 					{

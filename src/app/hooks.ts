@@ -48,34 +48,11 @@ export const useClock = (timeFormat: TabCandySettings['timeFormat']): string => 
 };
 
 /**
- * Fetches a random quote whenever the quote source or the custom-quotes
- * list changes. `null` covers both "still loading" and "nothing to show" -
- * `getQuote()` never throws, so there's no separate error state to track.
- * A stale, slower-resolving fetch is prevented from overwriting a newer
- * one if the source/list changes again before it resolves.
+ * Recomputes the displayed quote whenever the custom-quotes list changes.
  */
 export const useQuote = (
-	quoteSource: TabCandySettings['quoteSource'],
 	customQuotes: TabCandySettings['customQuotes']
-): Quote | null => {
-	const [quote, setQuote] = useState<Quote | null>(null);
-
-	useEffect(() => {
-		let cancelled = false;
-
-		void getQuote(quoteSource, customQuotes).then((newQuote) => {
-			if (!cancelled) {
-				setQuote(newQuote);
-			}
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [quoteSource, customQuotes]);
-
-	return quote;
-};
+): Quote | null => useMemo(() => getQuote(customQuotes), [customQuotes]);
 
 /**
  * Resolves the active background URL for the current theme, merging

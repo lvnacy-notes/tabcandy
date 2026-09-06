@@ -104,6 +104,10 @@ Worked examples from the real components:
 - `Icon` has no JSX branching at all, but a real DOM side effect (clears children, appends via `getIcon()`, keyed on the `name` prop). Its meaningful states are: icon resolves to a real element; icon name doesn't resolve (no throw, no stale DOM left behind); the `name` prop changing swaps the icon rather than appending alongside the old one.
 - `BackgroundSurface`: each theme flag's class toggle tested independently, background-present vs. background-absent for the inline style, and that `onKeyDown` fires through.
 
+### Cleanup between renders: `afterEach(cleanup)` is not optional
+
+Any file using `@testing-library/react`'s `render()` must explicitly call `afterEach(cleanup)` (imported from `@testing-library/react`) itself. Testing-library normally auto-registers its own cleanup against a global `afterEach`, but this project doesn't enable Vitest's `globals` option — tests import `describe`/`it`/`expect`/`afterEach` explicitly from `'vitest'` (see "Build tool," above) — so that auto-registration silently never fires. Without an explicit `afterEach(cleanup)`, every `render()` in a file keeps piling onto the same jsdom `document.body` across tests, and later tests in the file start seeing (and matching against) DOM left over from earlier ones — confirmed empirically the first time this project actually used `render()`: three otherwise-correct assertions failed with "multiple elements found" until the explicit cleanup call was added. Every new component test file needs this from the start, not just the ones that happen to trip over it.
+
 ### Settings test-data builder
 
 `TabCandySettings` is roughly two dozen fields and growing. `buildSettings(overrides: Partial<TabCandySettings> = {})` lives in `src/test/fakes.ts`, spread over `DEFAULT_SETTINGS`, so a new settings field requires updating one factory, not every test file that constructs settings.

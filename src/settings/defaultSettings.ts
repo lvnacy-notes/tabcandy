@@ -1,7 +1,6 @@
 import {
 	BOOKMARK_SOURCE,
 	BackgroundTheme,
-	QUOTE_SOURCE,
 	SearchProvider,
 	TIME_FORMAT,
 	TabCandySettings,
@@ -44,6 +43,5 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	bookmarkSource: BOOKMARK_SOURCE.ALL,
 	bookmarkGroup: '',
 	showQuote: true,
-	quoteSource: QUOTE_SOURCE.QUOTEABLE,
 	customQuotes: [],
 };

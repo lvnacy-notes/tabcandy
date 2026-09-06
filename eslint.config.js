@@ -2,32 +2,35 @@ import { defineConfig } from 'eslint/config';
 import stylistic from '@stylistic/eslint-plugin';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
-import obs from "eslint-plugin-obsidianmd";
+import obs from 'eslint-plugin-obsidianmd';
 
 export default defineConfig([
 	...obs.configs.recommended,
 	{
 		ignores: [
+			'.coverage/report/**',
 			'.obsidian/**',
 			'dist/**',
 			'node_modules/**',
 			'test/**',
 			'*.map',
-			'esbuild.config.js',
-			'eslint.config.js',
-			'main.js',
-			'version-bump.js',
-			'vitest.config.js'
+			// Generated build output, not hand-written source - see
+			// .gitignore.
+			'main.js'
 		]
 	},
 	{
+		// Shared parser and rules for every hand-written file, JS and TS
+		// alike - a plain Node.js tooling script gets the same stylistic
+		// and JS-quality rules as application source. Type-aware rules
+		// that need `parserOptions.project` live in their own block below,
+		// scoped to only the files tsconfig.json actually covers.
 		files: ['**/*.ts', '**/*.tsx', '**/*.js'],
 		languageOptions: {
 			parser: tsparser,
 			parserOptions: {
 				ecmaVersion: 2020,
-				sourceType: 'module',
-				project: './tsconfig.json'
+				sourceType: 'module'
 			},
 			globals: {
 				console: 'readonly',
@@ -105,9 +108,6 @@ export default defineConfig([
 			],
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-non-null-assertion': 'warn',
-			'@typescript-eslint/prefer-nullish-coalescing': 'error',
-			'@typescript-eslint/prefer-optional-chain': 'error',
-			'@typescript-eslint/no-unnecessary-type-assertion': 'error',
 			'@typescript-eslint/no-shadow': 'error',
 			'@typescript-eslint/no-use-before-define': [
 				'error',
@@ -140,6 +140,63 @@ export default defineConfig([
 			// recommended config hard-blocks for every obsidianmd/* rule
 			// (see eslint-comments/no-restricted-disable above).
 			'obsidianmd/ui/sentence-case': ['warn', { brands: ['Tab Candy'] }]
+		}
+	},
+	{
+		// Type-aware rules need `parserOptions.project`, which needs the
+		// file to actually be inside tsconfig.json's `include`
+		// (**/*.ts, **/*.tsx only - no .js files, ever). Scoping this to
+		// the same two extensions keeps that in sync by construction
+		// rather than by remembering to update two places - and this is
+		// the block that would throw typescript-eslint's
+		// "none-of-those-tsconfigs-include-this-file" parsing error if a
+		// plain .js file ever ended up in it.
+		files: ['**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			parserOptions: {
+				project: './tsconfig.json'
+			}
+		},
+		rules: {
+			'@typescript-eslint/prefer-nullish-coalescing': 'error',
+			'@typescript-eslint/prefer-optional-chain': 'error',
+			'@typescript-eslint/no-unnecessary-type-assertion': 'error'
+		}
+	},
+	{
+		// Plain Node.js tooling: build scripts and CI scripts that only
+		// ever run in Node itself (a contributor's machine, GitHub
+		// Actions) - never inside Obsidian's sandboxed plugin process.
+		// The obsidianmd/* rules exist to protect plugin runtime code
+		// specifically (no direct Node.js module access, no console
+		// output where Obsidian's Notice API is expected) and don't mean
+		// anything for code whose entire job is Node.js I/O and console
+		// output. Figured out by actually running the linter against
+		// these files rather than guessed at in advance - see each
+		// rule's comment below for what it's standing in for.
+		files: [
+			'esbuild.config.js',
+			'version-bump.js',
+			'vitest.config.js',
+			'eslint.config.js',
+			'.coverage/check-coverage-ratchet.js'
+		],
+		rules: {
+			'obsidianmd/no-nodejs-modules': 'off',
+			'obsidianmd/rule-custom-message': 'off',
+			// Only false-positives on this file specifically (eslint.config.js
+			// itself, via the '.obsidian/**' string in the ignores list above)
+			// - that's a glob pattern for what the linter should skip, not a
+			// runtime path used to reach into a vault. Harmless to leave on
+			// for the others in this list; it just never fires there.
+			'obsidianmd/hardcoded-config-path': 'off',
+			// A separate rule from obsidianmd/rule-custom-message above -
+			// this project's own general no-console rule (see the shared
+			// rules block) restricts plugin runtime code to warn/error/
+			// group-style output. A CLI script's entire job is printing
+			// informational status - check-coverage-ratchet.js's own
+			// passing-case output is exactly that, not an error.
+			'no-console': 'off'
 		}
 	}
 ]);
