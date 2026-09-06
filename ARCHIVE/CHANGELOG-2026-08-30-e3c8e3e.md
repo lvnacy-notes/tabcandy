@@ -13,7 +13,7 @@ tags:
   - tab-candy
 ---
 
-# Tab Candy Refactor, Part 8b — 2026-08-30
+# Tab Candy Refactor, Part 8b: Consolidate the File Structure Continued — 2026-08-30
 
 ## Overview
 
@@ -28,24 +28,26 @@ tags:
 ## Changes
 
 ### Files Modified
-- `src/Settings/SettingsTab.ts`: [description]
-- `ARCHIVE/CHANGELOG-2026-08-30-0276349.md` *(renamed from `ARCHIVE/CHANGELOG-2026-08-30.md`)*: [description]
+- `src/Settings/SettingsTab.ts`: restored after `git am --abort` reverted §8's file split, deleting it and resurrecting the old pre-split `Settings.ts`.
+- `ARCHIVE/CHANGELOG-2026-08-30-0276349.md` *(renamed from `ARCHIVE/CHANGELOG-2026-08-30.md`)*: disambiguated filename, same-day rename pattern.
 
 ### New Files Created
 - No new files
 
 ### Files Removed / Archived
-- `src/Settings/Settings.ts`: [description]
-- `src/modals/ChooseSearchProvider.ts`: [description]
+- `src/Settings/Settings.ts`: the pre-§8 combined class/values file, which a failed `git am` + `git am --abort` had accidentally resurrected alongside the §8 split's new `SettingsTab.ts`/`defaultSettings.ts` — re-deleted to restore the intended post-§8 state.
+- `src/modals/ChooseSearchProvider.ts`: same story — the pre-move file at its old `src/modals/` path had come back from the aborted patch alongside the already-relocated `src/ui/modals/ChooseSearchProvider.ts`; re-deleted.
 
 
 <!-- archivist:auto-end -->
 ## Notes
 
-Aborting a failed git patch via `git am --abort` caused a series of removed files to return and folder name changes to regress. This commit serves as a patch to return the codebase to its state of completion at the end the refactor implementation plan's section 8. Refactor implementation may proceed as planned.
-
 **Commit Message**
 chore: refactor, part 8b, repair damage from old failed git patch
+
+Aborting a failed git patch via `git am --abort` caused a series of removed files to return and folder name changes to regress. This commit serves as a patch to return the codebase to its state of completion at the end the refactor implementation plan's section 8. Refactor implementation may proceed as planned.
+
+**Follow-up, no separate changelog entry**: the very next commit, `6ab7ffb` ("fix: correct case-only directory rename for settings/ and utils/"), finishes this same repair. The aborted patch had also left `src/Settings/` and `src/Utils/` as their original capitalized directory names instead of §8's intended lowercase `src/settings/`/`src/utils/` — a case-only rename that git (and the underlying filesystem) hadn't tracked cleanly. `6ab7ffb` moves `Settings.scss`, `SettingsStore.ts`, `SettingsTab.ts`, `defaultSettings.ts`, `normalizeSettings.ts` into `src/settings/`, and `debounce.ts`, `imageExtensions.ts`, `isEnumValue.ts`, `withTimeout.ts` into `src/utils/`, with no content changes — purely finishing the casing correction §8 intended. It's recorded here since it has no Archivist changelog file of its own.
 
 ---
 

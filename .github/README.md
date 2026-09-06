@@ -1,13 +1,15 @@
 <div align="center">
 
-# 🍬 Tab Candy
+<img src="./assets/tab-candy-emblem.png" width="128px" alt="Tab Candy emblem">
+
+# 🍬 Tab Candy 🍬
 
 **A customizable new tab screen for [Obsidian](https://obsidian.md) — backgrounds, quotes, search, and more.**
 
 [![CI](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml/badge.svg)](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![A screenshot showing the Tab Candy screen](screenshots/mountains.png)
+![A screenshot showing the Tab Candy screen](./assets/tab-candy-sample.png)
 
 </div>
 
@@ -22,6 +24,18 @@ It's an **evolution** of [Beautitab](https://github.com/andrewmcgivery/obsidian-
 
 ## Features
 
+### Open automatically on new tabs
+
+By default, opening a new empty tab in Obsidian shows Tab Candy automatically. If you'd rather trigger it manually instead, that's a setting too — either way, the **Open new tab** command in the command palette always works.
+
+<div align="center">
+  <img
+    src="./assets/settings-new-tab.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy new tab setting"
+  >
+</div>
+
 ### Background
 
 A background image fills the screen behind everything else. It stays the same for the rest of the day (or until Obsidian restarts), and you can choose where it comes from:
@@ -30,9 +44,13 @@ A background image fills the screen behind everything else. It stays the same fo
 - **Custom** — a single image URL you provide yourself.
 - **Transparent** / **Transparent with shadows** — let your current Obsidian theme's own background show through instead.
 
-### Time & greeting
-
-The current time (12-hour or 24-hour) and a customizable greeting, shown front and center. Either can be hidden independently.
+<div align="center">
+  <img
+    src="./assets/settings-background.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy background settings"
+  >
+</div>
 
 ### Search
 
@@ -41,21 +59,61 @@ Two independent search entry points — a small icon in the top-left corner, and
 > [!TIP]
 > Want a specific plugin supported as a search provider that isn't showing up? [Open an issue](../../issues) or [start a discussion](../../discussions).
 
+<div align="center">
+  <img
+    src="./assets/settings-search.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy search settings"
+  >
+</div>
+
+### Time & greeting
+
+The current time (12-hour or 24-hour) and a customizable greeting, shown front and center. Either can be hidden independently.
+
+<div align="center">
+  <img
+    src="./assets/settings-time-greeting.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy time settings"
+  >
+</div>
+
 ### Recent files
 
 Your 5 most recently edited files, one click away.
+
+<div align="center">
+  <img
+    src="./assets/settings-recent-files.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy search settings"
+  >
+</div>
 
 ### Bookmarks
 
 5 bookmarks, pulled either from your entire Bookmarks list or from one specific bookmark group you choose.
 
+<div align="center">
+  <img
+    src="./assets/settings-bookmarks.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy bookmarks settings"
+  >
+</div>
+
 ### Quote
 
 A quote at the bottom of the screen, picked at random from your own list of custom quotes.
 
-### Open automatically on new tabs
-
-By default, opening a new empty tab in Obsidian shows Tab Candy automatically. If you'd rather trigger it manually instead, that's a setting too — either way, the **Open new tab** command in the command palette always works.
+<div align="center">
+  <img
+    src="./assets/settings-quotes.png"
+    width="600"
+    alt="A screenshot showing the Tab Candy search settings"
+  >
+</div>
 
 ## Installation
 
@@ -75,30 +133,24 @@ BRAT will also keep you on the latest release, betas included, if you opt into p
 2. Create a folder named `tabcandy` inside your vault's `.obsidian/plugins/` directory, and place the three files there.
 3. Reload Obsidian, then enable Tab Candy under **Settings → Community plugins**.
 
-## Settings
-
-Every customization above lives in one place: **Settings → Tab Candy**.
-
-![Settings screen within Obsidian](screenshots/settings.png)
-
 ## Screenshots
 
 <table>
   <tr>
-    <td><img src="screenshots/screenshot1.png" alt="Tab Candy screenshot" /></td>
-    <td><img src="screenshots/screenshot2.png" alt="Tab Candy screenshot" /></td>
+    <td><img src="./assets/tab-candy-screenshot-plain.png" alt="Tab Candy screenshot plain" /></td>
+    <td><img src="./assets/tab-candy-screenshot-search-corner.png" alt="Tab Candy screenshot corner search" /></td>
   </tr>
   <tr>
-    <td><img src="screenshots/screenshot3.png" alt="Tab Candy screenshot" /></td>
-    <td><img src="screenshots/screenshot4.png" alt="Tab Candy screenshot" /></td>
+    <td><img src="./assets/tab-candy-screenshot-search-inline.png" alt="Tab Candy screenshot inline search" /></td>
+    <td><img src="./assets/tab-candy-screenshot-time.png" alt="Tab Candy screenshot time" /></td>
   </tr>
   <tr>
-    <td><img src="screenshots/screenshot5.png" alt="Tab Candy screenshot" /></td>
-    <td><img src="screenshots/screenshot6.png" alt="Tab Candy screenshot" /></td>
+    <td><img src="./assets/tab-candy-screenshot-greeting.png" alt="Tab Candy screenshot greeting" /></td>
+    <td><img src="./assets/tab-candy-screenshot-recents.png" alt="Tab Candy screenshot recent files" /></td>
   </tr>
   <tr>
-    <td><img src="screenshots/screenshot8.png" alt="Tab Candy screenshot" /></td>
-    <td><img src="screenshots/screenshot9.png" alt="Tab Candy screenshot" /></td>
+    <td><img src="./assets/tab-candy-screenshot-bookmarks.png" alt="Tab Candy screenshot bookmarks" /></td>
+    <td><img src="./assets/tab-candy-screenshot-quotes.png" alt="Tab Candy screenshot quote" /></td>
   </tr>
 </table>
 

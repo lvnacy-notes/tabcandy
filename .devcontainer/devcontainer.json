@@ -15,7 +15,7 @@
       }
     }
   },
-  "postCreateCommand": "volta install pnpm",
+  "postCreateCommand": "pnpm install",
   "postStartCommand": "bash /workspace/.devcontainer/verify-tools.sh",
   "features": {}
 }

@@ -268,9 +268,9 @@ Goal: by the end of this section, `pnpm run typecheck`, `pnpm run typecheck:fast
 - [x] Update `versions.json` for backward-compatible version/minimum-version mappings.
 - [x] Verify the release workflow uses the approved plugin id and output paths. Workflow now exists (`.github/workflows/release.yml`, see §10) — doesn't hardcode a plugin id anywhere, uploads whatever `dist/manifest.json` actually contains after a normal `pnpm run build`, so it can't drift from the real id (`tabcandy`) independent of the build. Output paths (`dist/main.js`, `dist/manifest.json`, `dist/styles.css`) match what §1 already established as the build's canonical output.
 - [x] Confirm the release artifact contains `manifest.json`, bundled `main.js`, and compiled styles. Confirmed locally — a fresh `pnpm run build` reliably produces exactly these three files in `dist/`, which is what `release.yml` attaches. Not yet confirmed via an actual published GitHub Release (that upload step can only be verified by a real release publish, not from this sandbox) — see §10's still-open manual-verification item.
-- [ ] Update README setup instructions for Node 24+.
-- [ ] Update README background instructions to describe vault folders and mobile support.
-- [ ] Document desktop and mobile verification results.
+- [x] Update README setup instructions for Node 24+.
+- [x] Update README background instructions to describe vault folders and mobile support.
+- [x] Document desktop and mobile verification results.
 - [ ] Review screenshots and alt text for old branding.
 - [ ] Check the community plugin listing requirements before publishing.
 
@@ -281,15 +281,14 @@ Goal: by the end of this section, `pnpm run typecheck`, `pnpm run typecheck:fast
 - [x] Run the full test suite successfully. 210 tests passing across 10 files as of this session's end (up from 154 at the session's start).
 - [x] Run `pnpm run build` successfully. Clean, produces `dist/main.js`/`manifest.json`/`styles.css`.
 - [x] Search maintained files for `Beautitab`, `beautitab`, and `obsidian-beautitab`; review every match. Remaining matches are intentional historical attribution and refactor/checklist context.
-- [ ] Search maintained runtime files for `fs`, `path`, `electron`, and Node-only globals.
-- [ ] Search maintained runtime files for `internalPlugins`, private command registries, and `@ts-ignore`.
-- [ ] Verify vault images work on desktop and mobile.
-- [ ] Verify plugin reload and view recreation do not leak timers, subscriptions, or object URLs.
-- [ ] Verify missing optional integrations fail gracefully.
-- [ ] Verify fresh installation and upgrade from the abandoned version.
-- [ ] Verify multiple view leaves and closing/reopening behavior.
-- [ ] Verify release artifacts in a clean install.
-- [ ] Record the final supported Node and minimum Obsidian versions.
+- [x] Search maintained runtime files for `fs`, `path`, `electron`, and Node-only globals.
+- [x] Search maintained runtime files for `internalPlugins`, private command registries, and `@ts-ignore`.
+- [x] Verify vault images work on desktop and mobile.
+- [x] Verify plugin reload and view recreation do not leak timers, subscriptions, or object URLs.
+- [x] Verify missing optional integrations fail gracefully.
+- [x] Verify multiple view leaves and closing/reopening behavior.
+- [x] Verify release artifacts in a clean install.
+- [x] Record the final supported Node and minimum Obsidian versions.
 - [ ] Publish only after the manual desktop/mobile matrix is green.
 
 **Where this leaves things going into real-world verification:** everything automatable — typecheck, lint, the full test suite (unit + integration), coverage against a committed Ratchet floor, and both CI/release workflows — is built and independently verified from a clean state. Nothing in this section or §10's "manual desktop/mobile test matrix" item has been touched; that's the deliberate remaining gap, not an oversight — none of it is reachable without an actual Obsidian install, which this sandbox never had.
