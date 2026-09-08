@@ -48,11 +48,19 @@ export const useClock = (timeFormat: TabCandySettings['timeFormat']): string => 
 };
 
 /**
- * Recomputes the displayed quote whenever the custom-quotes list changes.
+ * Recomputes the displayed quote whenever either quote source changes.
+ * customQuotes (hand-entered in the settings modal) and fileQuotes
+ * (synced from the configured markdown file) are additive, not
+ * either/or - both pools are merged before a quote is drawn.
  */
 export const useQuote = (
-	customQuotes: TabCandySettings['customQuotes']
-): Quote | null => useMemo(() => getQuote(customQuotes), [customQuotes]);
+	customQuotes: TabCandySettings['customQuotes'],
+	fileQuotes: TabCandySettings['fileQuotes']
+): Quote | null =>
+	useMemo(
+		() => getQuote([...customQuotes, ...fileQuotes]),
+		[customQuotes, fileQuotes]
+	);
 
 /**
  * Resolves the active background URL for the current theme, merging

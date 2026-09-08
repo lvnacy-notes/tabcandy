@@ -4,9 +4,9 @@ import withTimeout from '../utils/withTimeout';
 const REQUEST_TIMEOUT_MS = 8000;
 
 const STABLE_MANIFEST_URL =
-	'https://raw.githubusercontent.com/lvnacy-notes/tab-candy/main/package.json';
+	'https://raw.githubusercontent.com/lvnacy-notes/tabcandy/main/package.json';
 const BETA_MANIFEST_URL =
-	'https://raw.githubusercontent.com/lvnacy-notes/tab-candy/beta/package.json';
+	'https://raw.githubusercontent.com/lvnacy-notes/tabcandy/beta/package.json';
 
 /**
  * Reads the `version` field out of a fetched `package.json`, without

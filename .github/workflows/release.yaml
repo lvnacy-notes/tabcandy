@@ -10,7 +10,9 @@ on:
     types: [published]
 
 permissions:
-  contents: write # required to upload assets onto the release
+  contents: write      # required to upload assets onto the release
+  id-token: write      # required to mint the OIDC token used for attestation
+  attestations: write  # required to publish the attestation
 
 jobs:
   publish-release-assets:
@@ -65,6 +67,19 @@ jobs:
         # precondition - that's inherent to the existing build script,
         # not a re-added verification step.)
         run: pnpm run build
+
+      - name: Generate artifact attestation
+        # Signs build provenance for the three files we're about to
+        # publish - which repo, which workflow, which commit built them.
+        # Runs after Build (so the files exist) and before the upload
+        # step, so the attestation is in place before anything public
+        # points at these assets.
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: |
+            dist/main.js
+            dist/manifest.json
+            dist/styles.css
 
       - name: Attach plugin files to the release
         env:

@@ -13,6 +13,7 @@ import {
 	syncBackgroundsFolder,
 } from './src/services/backgrounds';
 import { checkForPluginUpdates } from './src/services/versionCheck';
+import { registerQuotesVaultWatcher, syncQuotesFile } from './src/services/quotes';
 import { activateView, registerNewTabHijack } from './src/services/newTabHijack';
 
 /**
@@ -68,6 +69,18 @@ export default class TabCandyPlugin extends Plugin {
 		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
 
 		registerBackgroundVaultWatchers(
+			this.app,
+			this.settingsStore,
+			(eventRef) => this.registerEvent(eventRef)
+		);
+
+		// Refreshes fileQuotes on every load/reload/restart, same
+		// rationale as syncBackgroundsFolder above - quotes are
+		// available immediately rather than only after the first vault
+		// event or a manual "Sync now" click.
+		await syncQuotesFile(this.app, this.settingsStore);
+
+		registerQuotesVaultWatcher(
 			this.app,
 			this.settingsStore,
 			(eventRef) => this.registerEvent(eventRef)

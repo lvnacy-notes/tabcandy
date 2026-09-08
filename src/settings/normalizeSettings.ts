@@ -32,7 +32,7 @@ function isValidSearchProvider(value: unknown): value is SearchProvider {
 	);
 }
 
-function isValidCustomQuote(value: unknown): value is CustomQuote {
+export function isValidCustomQuote(value: unknown): value is CustomQuote {
 	return (
 		isPlainObject(value) &&
 		typeof value.text === 'string' &&
@@ -100,6 +100,9 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	if (typeof data.showQuote === 'boolean') {
 		normalized.showQuote = data.showQuote;
 	}
+	if (typeof data.quotesFilePath === 'string') {
+		normalized.quotesFilePath = data.quotesFilePath;
+	}
 
 	// Enum-backed fields: validate against the enum instead of trusting
 	// whatever string happens to be on disk (a hand-edited data.json, an
@@ -134,6 +137,9 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	}
 	if (Array.isArray(data.customQuotes) && data.customQuotes.every(isValidCustomQuote)) {
 		normalized.customQuotes = data.customQuotes;
+	}
+	if (Array.isArray(data.fileQuotes) && data.fileQuotes.every(isValidCustomQuote)) {
+		normalized.fileQuotes = data.fileQuotes;
 	}
 
 	// Search providers: fall back to the built-in provider wholesale
