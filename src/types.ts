@@ -77,4 +77,14 @@ export interface TabCandySettings {
 	bookmarkGroup: string;
 	showQuote: boolean;
 	customQuotes: CustomQuote[];
+	// Vault-relative path to a single markdown file of blockquote-formatted
+	// quotes (see src/services/quotes.ts), synced the same way
+	// backgroundsFolder is: on load and on vault create/modify/delete/rename
+	// events targeting this specific path. Additive alongside customQuotes,
+	// not a replacement for it - the two lists are merged at draw time.
+	quotesFilePath: string;
+	// Quotes parsed out of quotesFilePath by the last sync. Overwritten
+	// wholesale on every sync, same as backgroundFiles - never partially
+	// merged with a prior result.
+	fileQuotes: CustomQuote[];
 }

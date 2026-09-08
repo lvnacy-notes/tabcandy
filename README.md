@@ -117,9 +117,13 @@ A quote at the bottom of the screen, picked at random from your own list of cust
 
 ## Installation
 
-Tab Candy isn't in Obsidian's community plugin browser yet. Until it is, install it one of these ways:
+### Via Community Plugins (recommended)
 
-### Via BRAT (recommended)
+In the Community Plugins tab under Obsidian settings, search for "Tab Candy". Install and enable, et voila!
+
+### Via BRAT
+
+Pre-releases will occasionally arise. If you want to be on the bleeding edge of new features and desire to contribute feedback to help improve Tab Candy, you can install Tab Candy through BRAT:
 
 1. Install the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin from Obsidian's community plugin browser, if you don't already have it.
 2. In BRAT's settings, choose **Add beta plugin** and enter this repository's URL.

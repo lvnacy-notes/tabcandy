@@ -107,6 +107,7 @@ describe('normalizeSettings', () => {
 			'backgroundsFolder',
 			'greetingText',
 			'bookmarkGroup',
+			'quotesFilePath',
 		] as const;
 
 		it.each(stringFields)('passes through a valid string for %s', (field) => {
@@ -323,6 +324,68 @@ describe('normalizeSettings', () => {
 			const result = normalizeSettings(raw);
 
 			expect(result.customQuotes).toEqual(DEFAULT_SETTINGS.customQuotes);
+		});
+	});
+
+	describe('fileQuotes', () => {
+		it('passes through a valid array of quotes parsed from the quotes file', () => {
+			const raw = {
+				fileQuotes: [
+					{ text: 'Be excellent to each other.', author: 'Bill' },
+					{ text: 'Party on, dudes.', author: 'Ted' },
+				],
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual(raw.fileQuotes);
+		});
+
+		it('passes through an empty array', () => {
+			const raw = { fileQuotes: [] };
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual([]);
+		});
+
+		it('drops the whole array when one entry is missing its author field', () => {
+			const raw = {
+				fileQuotes: [
+					{ text: 'Be excellent to each other.', author: 'Bill' },
+					{ text: 'Missing an author' },
+				],
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual(DEFAULT_SETTINGS.fileQuotes);
+		});
+
+		it('drops the whole array when one entry has a non-string text field', () => {
+			const raw = {
+				fileQuotes: [{ text: 123, author: 'Bill' }],
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual(DEFAULT_SETTINGS.fileQuotes);
+		});
+
+		it('falls back to the default when given a non-array', () => {
+			const raw = { fileQuotes: 'not an array' };
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual(DEFAULT_SETTINGS.fileQuotes);
+		});
+
+		it('falls back to the default when the field is missing', () => {
+			const raw = {};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.fileQuotes).toEqual(DEFAULT_SETTINGS.fileQuotes);
 		});
 	});
 

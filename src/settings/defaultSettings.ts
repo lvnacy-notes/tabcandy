@@ -44,4 +44,6 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	bookmarkGroup: '',
 	showQuote: true,
 	customQuotes: [],
+	quotesFilePath: '',
+	fileQuotes: [],
 };

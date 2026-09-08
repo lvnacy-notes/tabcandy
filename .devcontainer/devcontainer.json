@@ -4,6 +4,10 @@
   "remoteUser": "vscode",
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "mounts": [
+    "type=volume,source=tabcandy-node-modules,target=/workspace/node_modules",
+    "type=volume,source=tabcandy-pnpm-store,target=/home/vscode/.local/share/pnpm/store"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -15,7 +19,6 @@
       }
     }
   },
-  "postCreateCommand": "pnpm install",
-  "postStartCommand": "bash /workspace/.devcontainer/verify-tools.sh",
-  "features": {}
+  "postCreateCommand": "pnpm install --package-import-method=copy --store-dir=/home/vscode/.local/share/pnpm/store --virtual-store-dir=/home/vscode/.local/share/pnpm/virtual-store",
+  "postStartCommand": "bash /workspace/.devcontainer/verify-tools.sh"
 }

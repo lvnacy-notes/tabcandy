@@ -22,6 +22,7 @@ import {
 	getBackgroundResourcePath,
 	syncBackgroundsFolder,
 } from '../services/backgrounds';
+import { syncQuotesFile } from '../services/quotes';
 import debounce from '../utils/debounce';
 
 /**
@@ -501,6 +502,29 @@ export default class TabCandySettingTab extends PluginSettingTab {
 									);
 								}
 							).open();
+						},
+					},
+					{
+						name: 'Quotes file',
+						desc: `A markdown file of blockquote-formatted quotes to draw from, in addition to the custom quotes above (not a replacement for them). Format: "> Quote text" followed by "> — Author" on its own line; author is optional. Currently: ${this.plugin.settings.fileQuotes.length} quotes loaded.`,
+						control: {
+							type: 'file',
+							key: 'quotesFilePath',
+							placeholder: 'E.g. Quotes/quotes.md',
+							filter: (file) => file.extension === 'md',
+						},
+					},
+					{
+						name: 'Sync now',
+						desc: 'Re-read the quotes file above and refresh the loaded quotes list',
+						action: () => {
+							void (async () => {
+								await syncQuotesFile(
+									this.app,
+									this.plugin.settingsStore
+								);
+								this.update();
+							})();
 						},
 					},
 				],
