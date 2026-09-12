@@ -2,6 +2,8 @@
 # everything except registry/auth (which stays in .npmrc) lives here instead.
 # See: https://pnpm.io/settings
 
+packageImportMethod: copy
+
 # esbuild and @parcel/watcher (a transitive dependency of sass-embedded) both
 # ship a build/postinstall script. pnpm blocks all lifecycle scripts from
 # dependencies by default; without this, every install prints an
@@ -15,6 +17,6 @@ allowBuilds:
 
 overrides:
   'eslint-plugin-obsidianmd>obsidian': '1.13.1'
-  '@microsoft/eslint-plugin-sdl>eslint': '10.9.1'
-  'eslint-plugin-react>eslint': '10.9.1'
-  'eslint-plugin-import>eslint': '10.9.1'
+  '@microsoft/eslint-plugin-sdl>eslint': '10.10.0'
+  'eslint-plugin-react>eslint': '10.10.0'
+  'eslint-plugin-import>eslint': '10.10.0'

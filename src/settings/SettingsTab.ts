@@ -6,6 +6,7 @@ import {
 	PluginSettingTab,
 	Setting,
 	SettingDefinitionItem,
+	SettingGroup,
 } from 'obsidian';
 import ChooseSearchProvider from '../ui/modals/ChooseSearchProvider';
 import CustomQuotesModal from '../ui/modals/CustomQuotesModal';
@@ -236,7 +237,15 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				visible: () => existingBackgroundFiles.length > 0,
 				items: existingBackgroundFiles.map((filePath) => ({
 					name: '',
-					render: (setting: Setting) => {
+					render: (setting: Setting, group: SettingGroup) => {
+						// Every item in this group shares one `group.listEl`, so
+						// tagging it here (repeated harmlessly per item, since
+						// addClass is idempotent) turns the stack of one-image-
+						// per-row settings into a responsive CSS grid, without
+						// touching how each row itself is defined or rendered.
+						group.listEl.addClass(
+							'tabcandy-settings-localbackgrounds-grid'
+						);
 						setting.settingEl.addClass(
 							'tabcandy-settings-localbackgrounds-background'
 						);
@@ -303,7 +312,15 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				},
 				items: existingManualBackgroundFiles.map((filePath) => ({
 					name: '',
-					render: (setting: Setting) => {
+					render: (setting: Setting, group: SettingGroup) => {
+						// Same shared-container trick as the synced-folder
+						// group above: tag the list's `listEl` with the grid
+						// class so these rows wrap into a grid too, while
+						// leaving addItem/onDelete/keyboard-delete (which are
+						// wired to each row by index) completely untouched.
+						group.listEl.addClass(
+							'tabcandy-settings-localbackgrounds-grid'
+						);
 						setting.settingEl.addClass(
 							'tabcandy-settings-localbackgrounds-background'
 						);

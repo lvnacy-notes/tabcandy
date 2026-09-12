@@ -1,5 +1,5 @@
 [
-  "automatic-table-of-contents",
   "tabcandy",
-  "git-graph"
+  "git-graph",
+  "automatic-table-of-contents"
 ]

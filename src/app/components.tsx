@@ -77,6 +77,12 @@ export const BackgroundSurface = ({
  * rather than serializing it to a string and reinjecting it via
  * `dangerouslySetInnerHTML` - no icon markup passes through an HTML
  * string at all.
+ *
+ * Every current call site pairs this icon with an adjacent text label
+ * (a filename, or a `SearchButton` label) that already carries the
+ * accessible name, so the icon itself is purely decorative. `aria-hidden`
+ * keeps screen readers from announcing the raw SVG (or its absence, on
+ * an unrecognized `name`) as a second, redundant, unlabeled element.
  */
 export const Icon = ({ name }: { name: string }) => {
 	const spanRef = useRef<HTMLSpanElement>(null);
@@ -95,17 +101,30 @@ export const Icon = ({ name }: { name: string }) => {
 		}
 	}, [name]);
 
-	return <span className = 'tabcandy-icon' ref = { spanRef } />;
+	return (
+		<span
+			className = 'tabcandy-icon'
+			ref = { spanRef }
+			aria-hidden = 'true'
+		/>
+	);
 };
 
 /**
  * Bookmarked files (all, or scoped to one group per settings), each
  * opening in the most recently used leaf when clicked.
+ *
+ * Rendered as `<button type="button">` rather than an `<a>` with no
+ * `href` - see `SearchButton` below for why a hrefless anchor is a
+ * click-only dead end for keyboard and AT users. The filename text
+ * inside is left as ordinary (non-hidden) content, so it doubles as
+ * the button's accessible name with no extra `aria-label` needed.
  */
 export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
 	<div className = 'tabcandy-recentlyedited'>
 		{ files.map((file) => (
-			<a
+			<button
+				type = 'button'
 				key = { file.path }
 				className = 'tabcandy-recentlyedited-file'
 				data-path = { file.path }
@@ -115,7 +134,7 @@ export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
 				<span className = 'tabcandy-recentlyedited-file-name'>
 					{ file.basename }
 				</span>
-			</a>
+			</button>
 		))}
 	</div>
 );
@@ -140,11 +159,18 @@ export const QuoteDisplay = ({ quote, show }: QuoteDisplayProps) => (
 /**
  * The most recently modified markdown files, each opening in the most
  * recently used leaf when clicked.
+ *
+ * Rendered as `<button type="button">` rather than an `<a>` with no
+ * `href` - see `SearchButton` below for why a hrefless anchor is a
+ * click-only dead end for keyboard and AT users. The filename text
+ * inside is left as ordinary (non-hidden) content, so it doubles as
+ * the button's accessible name with no extra `aria-label` needed.
  */
 export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
 	<div className = 'tabcandy-recentlyedited'>
 		{ files.map((file) => (
-			<a
+			<button
+				type = 'button'
 				key = { file.path }
 				className = 'tabcandy-recentlyedited-file'
 				data-path = { file.path }
@@ -154,7 +180,7 @@ export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
 				<span className = 'tabcandy-recentlyedited-file-name'>
 					{ file.basename }
 				</span>
-			</a>
+			</button>
 		))}
 	</div>
 );
@@ -162,6 +188,19 @@ export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
 /**
  * A clickable search trigger: an icon and a label, in either order,
  * wired to run a search-provider command on click.
+ *
+ * Rendered as a real `<button>` rather than an `<a>` with no `href`:
+ * a hrefless anchor isn't a hyperlink at all, so browsers don't give it
+ * a place in the tab order or wire up Enter/Space activation for free -
+ * it was a click target only, completely unreachable from the keyboard.
+ * `<button type="button">` gets focusability, `role="button"`, and
+ * Enter/Space activation from the browser for free, with no hand-rolled
+ * `tabIndex`/`onKeyDown`/`role` needed. `aria-label` is set explicitly
+ * (rather than relying on the visible/visually-hidden label text alone)
+ * so the accessible name is guaranteed correct even where `textClassName`
+ * visually hides the label off-screen - it doesn't depend on that CSS
+ * technique never regressing into a real `display: none`, which would
+ * silently strip the accessible name too.
  */
 export const SearchButton = ({
 	label,
@@ -171,9 +210,14 @@ export const SearchButton = ({
 	textClassName,
 	onClick,
 }: SearchButtonProps) => (
-	<a className = { className } onClick={ onClick }>
+	<button
+		type = 'button'
+		className = { className }
+		aria-label = { label }
+		onClick = { onClick }
+	>
 		{ iconFirst && <Icon name = { iconName } /> }
 		<span className = { textClassName }>{ label }</span>
 		{ !iconFirst && <Icon name = { iconName } />}
-	</a>
+	</button>
 );

@@ -1,7 +1,36 @@
-.tabcandy-settings-localbackgrounds-background {
+// Applied to the shared list/group container (`group.listEl`) that holds
+// one `.setting-item` row per background image. Turns what would otherwise
+// render as a long stack of one-image-per-row settings into a responsive
+// grid; each row still exists individually underneath (so add/delete/
+// keyboard-delete on the manual list keep working per-row, untouched), only
+// how the rows are laid out visually changes here.
+.tabcandy-settings-localbackgrounds-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 8px;
+
+	// Reset each row from a full-width setting item down to a plain grid
+	// cell: no name/desc column (every row's `name` is ''), no row chrome.
+	.tabcandy-settings-localbackgrounds-background {
+		display: block;
+		border: none;
+		padding: 0;
+
+		.setting-item-info {
+			display: none;
+		}
+
+		.setting-item-control {
+			width: 100%;
+			margin-left: 0;
+		}
+	}
+
 	.tabcandy-settings-localbackgrounds-background-image {
-		width: 100px;
+		width: 100%;
 		height: 100px;
 		object-fit: cover;
+		border-radius: 4px;
+		display: block;
 	}
 }

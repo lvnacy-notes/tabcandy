@@ -90,6 +90,18 @@
 				padding: 10px;
 
 				.tabcandy-iconbutton {
+					// Reset native <button> chrome (background, border,
+					// UA padding/font) now that SearchButton renders a
+					// real <button> instead of a hrefless <a>, so it's
+					// keyboard-focusable/activatable without changing
+					// how it looks.
+					background: none;
+					border: none;
+					padding: 0;
+					font: inherit;
+					cursor: pointer;
+					display: inline-flex;
+					align-items: center;
 					opacity: 0.8;
 
 					&:hover {
@@ -147,6 +159,13 @@
 					}
 
 					.tabcandy-search-wrapper {
+						// Reset native <button> chrome now that this is a
+						// real <button> instead of a hrefless <a> - see
+						// .tabcandy-iconbutton above for why.
+						border: none;
+						font: inherit;
+						cursor: pointer;
+						text-align: inherit;
 						height: 60px;
 						border-radius: 60px;
 						display: flex;
@@ -182,6 +201,15 @@
 					width: 100%;
 
 					.tabcandy-recentlyedited-file {
+						// Reset native <button> chrome (background, border,
+						// UA padding/font) now that RecentFiles/Bookmarks
+						// render real <button>s instead of hrefless <a>s -
+						// see .tabcandy-iconbutton further up for why.
+						background: none;
+						border: none;
+						font: inherit;
+						cursor: pointer;
+						display: block;
 						color: inherit;
 						text-decoration: none;
 						text-align: center;

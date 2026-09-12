@@ -19,6 +19,6 @@
       }
     }
   },
-  "postCreateCommand": "pnpm install --package-import-method=copy --store-dir=/home/vscode/.local/share/pnpm/store --virtual-store-dir=/home/vscode/.local/share/pnpm/virtual-store",
+  "postCreateCommand": "pnpm install",
   "postStartCommand": "bash /workspace/.devcontainer/verify-tools.sh"
 }
