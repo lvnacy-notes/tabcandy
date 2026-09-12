@@ -3,8 +3,6 @@
 # See: https://pnpm.io/settings
 
 packageImportMethod: copy
-storeDir: /home/vscode/.local/share/pnpm/store
-virtualStoreDir: /home/vscode/.local/share/pnpm/virtual-store
 
 # esbuild and @parcel/watcher (a transitive dependency of sass-embedded) both
 # ship a build/postinstall script. pnpm blocks all lifecycle scripts from

@@ -20,7 +20,9 @@ tags:
 | Field | Value |
 |-------|-------|
 | Date | 2026-09-11 |
-| Commit SHA | 8aa1e3c913479e53932b962373064cf82fb6c3ce |
+| Commit SHA 1 | 8aa1e3c913479e53932b962373064cf82fb6c3ce |
+| Commit SHA 2 | 1ad38c7ef179cfded4689d8890145128d3af7029 |
+| Commit SHA 3 |  |
 | Files Added | 2 |
 | Files Modified | 13 |
 | Files Archived | 0 |
@@ -36,7 +38,7 @@ tags:
 - `ARCHIVE/CHANGELOG-2026-09-08-39e8b92.md`: backfilled changelog with commit hash
 - `package.json`: updated pinned pnpm version
 - `pnpm-lock.yaml`: [description]
-- `pnpm-workspace.yaml`: added flags for docker devcontainer pnpm use
+- `pnpm-workspace.yaml`: added flags for docker devcontainer pnpm use, and then removed them
 - `src/app/App.scss`: accessibility update
 - `src/app/components.tsx`: accessibility update
 - `src/app/components.test.tsx`: updated tests to track `button` instead of link `a` for accessibility update
