@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ARCHIVE/2026/CHANGELOG-2026-08-24-32506a4.md",
+                "file": "docs/Roadmap.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CHANGELOG-2026-08-24-32506a4"
+              "title": "Roadmap"
             }
           }
         ],
@@ -197,19 +197,22 @@
       "git-graph:Open Git graph": false
     }
   },
-  "active": "649e8ce3c65275e3",
+  "active": "1f5c39a70938291a",
   "lastOpenFiles": [
-    "ARCHIVE/CHANGELOG-2026-09-08.md",
-    "ARCHIVE/2026",
+    "ARCHIVE/CHANGELOG-2026-09-11.md",
+    "node_modules/@typescript-eslint",
     "node_modules/@testing-library",
+    "node_modules/@eslint",
+    "node_modules/@typescript",
     "node_modules/@stylistic",
     "node_modules/@vitest",
-    "node_modules/@typescript",
-    "node_modules/@typescript-eslint",
     "node_modules/@types",
-    "node_modules/@eslint",
-    "src/ui/modals/ChooseMarkdownFileModal.ts",
-    "src/ui/modals/ChooseFolderModal.ts",
+    "pnpm-lock.yaml",
+    "node_modules",
+    "updates.ts",
+    "docs/temp.md",
+    "ARCHIVE/2026/CHANGELOG-2026-08-24-32506a4.md",
+    "ARCHIVE/CHANGELOG-2026-09-08.md",
     "docs/Search Providers.md",
     "docs/Roadmap.md",
     "quotes.md",
@@ -237,9 +240,6 @@
     "ARCHIVE/2026/CHANGELOG-2026-08-29-0477de2.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-29-bb9159a.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-28-fc07338.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-27-041ea78.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-26-1738ab6.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-24-c9be53a.md",
     "tab-candy-images/neon_by_blurr3383_dmqpzxl-pre.jpg",
     "tab-candy-images/_wr_2809__by_aaron888_ai_dmqlfje-pre.png",
     "tab-candy-images/jinx_by_crishark_dmdcwjc-fullview.jpg"
