@@ -5,7 +5,7 @@ category:
 log-scope: general
 modified: 2026-09-11
 UUID: 1a35f0cb-119a-48bc-9bf0-5d9891e6d728
-commit-sha: 
+commit-sha: "8aa1e3c"
 files-modified: 13
 files-created: 2
 files-archived: 0
@@ -20,7 +20,7 @@ tags:
 | Field | Value |
 |-------|-------|
 | Date | 2026-09-11 |
-| Commit SHA | [fill in after commit] |
+| Commit SHA | 8aa1e3c913479e53932b962373064cf82fb6c3ce |
 | Files Added | 2 |
 | Files Modified | 13 |
 | Files Archived | 0 |
@@ -39,6 +39,7 @@ tags:
 - `pnpm-workspace.yaml`: added flags for docker devcontainer pnpm use
 - `src/app/App.scss`: accessibility update
 - `src/app/components.tsx`: accessibility update
+- `src/app/components.test.tsx`: updated tests to track `button` instead of link `a` for accessibility update
 - `src/settings/Settings.scss`: background display grid update
 - `src/settings/SettingsTab.ts`: background display grid update
 

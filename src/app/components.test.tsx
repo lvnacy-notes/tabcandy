@@ -53,11 +53,11 @@ describe('SearchButton', () => {
 			/>
 		);
 
-		const link = screen.getByText('Search').closest('a');
-		if (!link) {
-			throw new Error('Expected the search button to render as a link');
+		const button = screen.getByText('Search').closest('button');
+		if (!button) {
+			throw new Error('Expected the search button to render as a button');
 		}
-		const children = Array.from(link.children);
+		const children = Array.from(button.children);
 		expect(children[0].className).toBe('tabcandy-icon');
 		expect(children[1].textContent).toBe('Search');
 	});
@@ -74,11 +74,11 @@ describe('SearchButton', () => {
 			/>
 		);
 
-		const link = screen.getByText('Search').closest('a');
-		if (!link) {
-			throw new Error('Expected the search button to render as a link');
+		const button = screen.getByText('Search').closest('button');
+		if (!button) {
+			throw new Error('Expected the search button to render as a button');
 		}
-		const children = Array.from(link.children);
+		const children = Array.from(button.children);
 		expect(children[0].textContent).toBe('Search');
 		expect(children[1].className).toBe('tabcandy-icon');
 	});
