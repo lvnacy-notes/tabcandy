@@ -1,0 +1,48 @@
+/*! @settings
+name: Tab Candy
+id: tabcandy
+settings:
+    -
+        id: tabcandy-tab-label-color
+        title: Tab label color
+        description: Text color for tab labels in the tab bar.
+        type: variable-color
+        format: hex
+        default: '#dadada'
+    -
+        id: tabcandy-tab-active-color
+        title: Active tab label color
+        description: Text color for the active tab's label in the tab bar.
+        type: variable-color
+        format: hex
+        default: '#dadada'
+*/
+
+@import "src/app/App.css";
+@import "src/ui/modals/CustomQuotesModal.css";
+@import "src/settings/Settings.css";
+
+.setting-item.search-provider .setting-item-control input {
+	width: 100%;
+	border: none;
+	background: none;
+	outline: none;
+	box-shadow: none;
+	text-align: right;
+}
+
+/* Real Obsidian tab-bar chrome, not anything Tab Candy owns or scopes to its
+own view - these apply globally to every tab header in the workspace.
+Untouched (no Style Settings, or the setting never edited), both fall
+through to Obsidian's own live theme variables and render identically to
+stock Obsidian. */
+.workspace-tab-header-inner-title {
+	color: var(--tabcandy-tab-label-color, var(--tab-text-color));
+}
+
+.workspace-tab-header.mod-active .workspace-tab-header-inner-title {
+	color: var(
+		--tabcandy-tab-active-color,
+		var(--tab-text-color-focused-active)
+	);
+}

@@ -8,7 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "1f5c39a70938291a",
+            "id": "2f120a5e3c15bcca",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -19,6 +19,15 @@
               },
               "icon": "lucide-file",
               "title": "Roadmap"
+            }
+          },
+          {
+            "id": "e99d6f18b3d06be9",
+            "type": "leaf",
+            "state": {
+              "type": "tabcandy-react-view",
+              "state": {},
+              "title": "New tab"
             }
           }
         ],
@@ -183,7 +192,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -197,24 +207,27 @@
       "git-graph:Open Git graph": false
     }
   },
-  "active": "1f5c39a70938291a",
+  "active": "2f120a5e3c15bcca",
   "lastOpenFiles": [
-    "ARCHIVE/CHANGELOG-2026-09-11.md",
-    "node_modules/@typescript-eslint",
-    "node_modules/@testing-library",
-    "node_modules/@eslint",
-    "node_modules/@typescript",
-    "node_modules/@stylistic",
-    "node_modules/@vitest",
-    "node_modules/@types",
-    "pnpm-lock.yaml",
+    "docs/Roadmap.md",
+    "dist/manifest.json",
+    "dist/main.js",
+    "dist/styles.css",
     "node_modules",
-    "updates.ts",
+    "src/ui/modals/CustomQuotesModal.css",
+    "src/settings/Settings.css",
+    "src/app/App.css",
+    "styles.css",
+    "docs/temp.css",
     "docs/temp.md",
+    "updates.ts",
+    "docs/Tab Candy Testing Specification.md",
+    "docs/Tab Candy v1.2 Implementation Spec.md",
+    "ARCHIVE/CHANGELOG-2026-09-12.md",
+    "ARCHIVE/CHANGELOG-2026-09-11.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-24-32506a4.md",
     "ARCHIVE/CHANGELOG-2026-09-08.md",
     "docs/Search Providers.md",
-    "docs/Roadmap.md",
     "quotes.md",
     "ARCHIVE/REFACTOR docs/REFACTOR-IMPLEMENTATION-CHECKLIST.md",
     "tab-candy-images/dmptnnl-e0c0fbe7-e4fb-4ca6-9807-8f403d563114.jpg",
@@ -236,10 +249,6 @@
     "ARCHIVE/REFACTOR docs/REFACTOR-BASELINE.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-30-e3c8e3e.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-30-0276349.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-30-8b01b76.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-29-0477de2.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-29-bb9159a.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-28-fc07338.md",
     "tab-candy-images/neon_by_blurr3383_dmqpzxl-pre.jpg",
     "tab-candy-images/_wr_2809__by_aaron888_ai_dmqlfje-pre.png",
     "tab-candy-images/jinx_by_crishark_dmdcwjc-fullview.jpg"

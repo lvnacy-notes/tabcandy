@@ -7,7 +7,7 @@ import { BackgroundTheme } from '../../types';
  */
 const getBackground = (
 	backgroundTheme: BackgroundTheme,
-	customBackground: string,
+	customBackground: string | null,
 	localBackgrounds: string[]
 ): string | null => {
 	switch (backgroundTheme) {

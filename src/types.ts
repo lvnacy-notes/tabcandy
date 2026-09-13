@@ -45,6 +45,10 @@ export interface TabCandySettings {
 	// matches the plugin's out-of-the-box behavior.
 	replaceEmptyTabsWithTabCandy: boolean;
 	backgroundTheme: BackgroundTheme;
+	// A vault-relative path to a single image, picked via the `file`
+	// control's vault suggester (SettingsTab.ts) - not a literal URL.
+	// Resolved to a displayable resource URL by useBackground(), the same
+	// way manualBackgroundFiles/backgroundFiles entries are.
 	customBackground: string;
 	// Vault-relative folder path (e.g. "Assets/Tab Candy") synced via
 	// src/services/backgrounds.ts using the public vault adapter.

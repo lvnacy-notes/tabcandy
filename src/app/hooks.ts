@@ -6,7 +6,7 @@ import {
 import { App, TFile } from 'obsidian';
 import SettingsStore from '../settings/SettingsStore';
 import { Quote, TabCandySettings } from '../types';
-import { getBackgroundResourcePath } from '../services/backgrounds';
+import { filterExistingFiles, getBackgroundResourcePath } from '../services/backgrounds';
 import { getBookmarks } from '../services/bookmarks';
 import getBackground from './utils/getBackground';
 import getQuote from './utils/getQuote';
@@ -78,16 +78,28 @@ export const useBackground = (app: App, settings: TabCandySettings) => {
 		[app, settings.backgroundFiles, settings.manualBackgroundFiles]
 	);
 
+	const resolvedCustomBackground = useMemo(() => {
+		if (!settings.customBackground) {
+			return null;
+		}
+		const [existingCustomBackground] = filterExistingFiles(app, [
+			settings.customBackground,
+		]);
+		return existingCustomBackground
+			? getBackgroundResourcePath(app, existingCustomBackground)
+			: null;
+	}, [app, settings.customBackground]);
+
 	return useMemo(
 		() =>
 			getBackground(
 				settings.backgroundTheme,
-				settings.customBackground,
+				resolvedCustomBackground,
 				combinedLocalBackgrounds
 			),
 		[
 			settings.backgroundTheme,
-			settings.customBackground,
+			resolvedCustomBackground,
 			combinedLocalBackgrounds,
 		]
 	);

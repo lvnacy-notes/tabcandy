@@ -36,21 +36,28 @@ Uses [Style Settings](https://github.com/community-archive/obsidian-style-settin
 - [ ] **Consume `var(--tabcandy-*, <fallback>)` throughout `App.scss`** instead of the hardcoded values, so Tab Candy looks exactly as it does today for anyone without Style Settings installed, and picks up live edits the moment someone who *does* have it changes a value — no reload, no Tab Candy code in the loop once the variable's wired up.
 - [ ] **Call `app.workspace.trigger('parse-style-settings')` on load**, per Style Settings' documented plugin-support contract, so it notices Tab Candy's settings block (and re-notices it after a Tab Candy update changes what's in it).
 
-## v1.3 — Navigation, Tab Identity & Grouping
+## v1.3 — Navigation Sugar
 ---
 
 **Navigation sugar Obsidian doesn't ship**
 - `iterateAllLeaves()`/`iterateRootLeaves()` as the primitive behind "close all except this one," "close tabs matching a folder," or a fuzzy search scoped to *currently open* tabs (distinct from the quick switcher, which searches every file whether it's open or not).
 - A "recently closed tabs" stack — no browser-style Ctrl+Shift+T exists in core Obsidian. `'layout-change'` plus a small in-memory ring buffer of closed leaf states gets most of the way there. Small and self-contained enough to not need to wait on v2.0 - could slot into the current fixed layout the same way Recent Files does today.
 
-**Tab identity & grouping**
-Group-based tab coloring (`setGroup`'s color dot) could become a themeable variable exposed by v1.2's color system, instead of Obsidian's fixed palette.
+## v2.0 Tab identity & Grouping
+
+Group-based tab coloring could become a themeable variable.
 
 - Programmatic pin/unpin (`leaf.setPinned()`/`togglePinned()`) — an automation like "always pin the daily note" or "pin these N project notes," rather than requiring the user to right-click each one by hand.
-- Obsidian's linked-pane groups (`leaf.setGroup()`/`setGroupMember()`, `workspace.getGroupLeaves()`) — the colored-dot mechanism behind "these panes follow the same file." Mostly unused for anything beyond that one built-in case; a real primitive for "these tabs move together" if a use case shows up.
-- React to `'pinned-change'`/`'group-change'` events directly instead of polling leaf state.
 
-## v2.0 — Composable dashboard
+Obsidian's linked-pane groups (`leaf.setGroup()`/`setGroupMember()`, `workspace.getGroupLeaves()`) — the mechanism behind "these panes follow the same file." Mostly unused for anything beyond that one built-in case; a real primitive for "these tabs move together" if a use case shows up.
+
+- [ ] Scope what "colorable" actually means against Obsidian's real API surface — `setGroup()`/`setGroupMember()`/`getGroupLeaves()` identify which panes follow the same file today; there's no color concept in the public API yet. Confirm what's actually available before committing to a design.
+- [ ] Color the tab header itself for a grouped tab — the header element directly, not a separate dot or status indicator.
+- [ ] Decide whether this leans on v1.2's `variable-color` Style Settings mechanism (as originally floated) or needs its own UI, given v1.2's tab-bar work no longer needs a group-color slot itself.
+- [ ] Programmatic pin/unpin (`leaf.setPinned()`/`togglePinned()`) — an automation like "always pin the daily note" or "pin these N project notes," rather than requiring the user to right-click each one by hand.
+- [ ] React to `'pinned-change'`/`'group-change'` events directly instead of polling leaf state.
+
+## v3.0 — Composable dashboard
 ---
 
 Everything the new tab view shows today — the top-left search button, time, greeting, inline search, recent files, bookmarks, quote — is a fixed set of elements in a fixed layout, each independently toggled on or off. This turns that into an ordered list of sections the user can add, remove, and reorder, where today's elements become the first batch of built-in section types alongside a new custom type.

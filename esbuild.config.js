@@ -1,7 +1,6 @@
 import esbuild from 'esbuild';
 import process from 'process';
 import { builtinModules } from 'node:module';
-import { sassPlugin } from 'esbuild-sass-plugin';
 import copyStaticFiles from 'esbuild-copy-static-files';
 import path from 'path';
 import packageJson from './package.json' with { type: 'json' };
@@ -29,7 +28,7 @@ const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	entryPoints: ['main.ts', 'styles.scss'],
+	entryPoints: ['main.ts', 'styles.css'],
 	bundle: true,
 	external: [
 		'obsidian',
@@ -70,7 +69,6 @@ const context = await esbuild.context({
 	treeShaking: true,
 	minifySyntax: true,
 	plugins: [
-		sassPlugin(),
 		copyStaticFiles({
 			src: './manifest.json',
 			dest: path.join(outdir, 'manifest.json'),

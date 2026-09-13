@@ -55,6 +55,12 @@ export default class TabCandyPlugin extends Plugin {
 
 		void checkForPluginUpdates();
 
+		// Style Settings only re-scans plugin CSS for `@settings` blocks
+		// when told to - per its documented plugin-support contract, every
+		// plugin shipping one must trigger this itself on load (and again
+		// any time an update changes what's in the block).
+		this.app.workspace.trigger('parse-style-settings');
+
 		// Refreshes the list of synced files on every load/reload/restart so
 		// background images are available immediately, without requiring an
 		// explicit "Sync now" click first.

@@ -7,10 +7,10 @@ Companion to the v1.2 section of `Roadmap.md`. That doc says *what* and *why* at
 Three tracks, built in order — A before B and C, specifically, not just alphabetically:
 
 - **Track A — Settings tab restructuring.** The flat, ten-group settings list gets split into two navigable pages, "Function" and "Design," using Obsidian's own native `SettingDefinitionPage` mechanism. Built first so Track B and C's new settings land directly in the right place from day one, instead of bolting onto the old flat list and getting reorganized after the fact.
-- **Track B — Tab bar style, via Style Settings.** Recolors Obsidian's own tab-bar chrome (label, active state, linked-group dot). Manual customization through the Style Settings plugin, plus an optional "match my theme" toggle for automatic theming with no configuration.
+- **Track B — Tab bar style, via Style Settings.** Recolors Obsidian's own tab-bar chrome (label text, active state). Manual customization through the Style Settings plugin only — no native Tab Candy toggle, no "linked-group dot" (turned out not to exist in Obsidian at all), no "match my theme" (turned out to have no second behavior to switch to once "match" could only mean "defer to Obsidian's own live variable").
 - **Track C — Overlay text: image-matched, with a legibility guarantee.** A standalone toggle, visible only when a background image is active, that extracts the image's dominant color and uses it (contrast-adjusted) as the overlay text color — the new tab visually matches the photo, not just avoids clashing with it. A plain light/dark fallback sits underneath as the legibility floor for images where no adjustment of the dominant color reaches a readable result.
 
-B and C don't interact with each other, share no code path, and could ship independently of one another. Both depend on A only in the sense of "where their new toggle lives," not in any code-level way — A is a pure reorganization of `getSettingDefinitions()`'s return shape, nothing more.
+B and C don't interact with each other, share no code path, and could ship independently of one another. C depends on A only in the sense of "where its new toggle lives"; A is a pure reorganization of `getSettingDefinitions()`'s return shape.
 
 ## 2. Goals / non-goals
 
@@ -84,7 +84,12 @@ This is purely a reorganization of the array `getSettingDefinitions()` returns �
 - **`status: 'warning'` on the "Design" page.** A real, already-plausible failure mode fits this naturally: `backgroundTheme` set to `CUSTOM`/`LOCAL` but the referenced path no longer resolving to a file (the same condition `pruneMissingManualBackgroundFiles()` already detects). Flagging it on the page entry means the user sees something needs attention without having to open the page to find out. Nice to have, not required for the base split — don't let it block shipping the restructuring itself.
 - **`displayValue` on either page.** Available, but no specific copy is settled here — don't invent UI text nobody's agreed on just because the field exists.
 
-## 4. Track B — Tab bar Style Settings + theme match
+## 4. Track B — Tab bar Style Settings
+
+**Status: shipped.** Scope changed twice during implementation — see the two corrections below before reading the rest of this section as current.
+
+- **The "linked-group color dot" never existed.** `.workspace-tab-header-status-container` is real, but it's Obsidian's pin-icon slot, not a group-color indicator — confirmed both by manual devtools inspection (empty on a single tab and on two tabs in one stack) and by Style Settings/Obsidian community sources (no core "colored tab group" feature ships; it's an open feature request). The third slot below never shipped. Colorable tab groups is now its own major version — see `Roadmap.md` v2.0 — built against `leaf.setGroup()`, not this track.
+- **The "match my theme" toggle was scrapped.** Once "matching the theme" can only mean "point at Obsidian's own already-live tab CSS variables" (there's no JS color computation in this track), the toggle had no second behavior to switch to — "on" and "off" would render identically in every real case. Dropped entirely: no `matchThemeColors` setting, no body class, no settings-store subscription for it. The whole two-variable-per-slot fallback-indirection mechanism in the original §4.2 below existed only to keep this toggle and Style Settings from fighting over precedence; with the toggle gone, that mechanism is gone too.
 
 ### 4.1 Target selectors
 
@@ -94,118 +99,67 @@ Real Obsidian chrome, not anything Tab Candy owns:
 |---|---|
 | Tab label text | `.workspace-tab-header-inner-title` |
 | Active tab state | `.workspace-tab-header.mod-active` |
-| Linked-group color dot | `.workspace-tab-header-status-container` |
 
-**Before writing the `@settings` block**, confirm all three against a current Obsidian build via devtools. These are standard and well-documented in the community CSS-snippet ecosystem, but that ecosystem isn't a stability guarantee — Obsidian could rename or restructure this markup between versions in a way `.tabcandy-root` never could, since that one's ours.
+Confirmed against a current Obsidian build via devtools (both present exactly as expected, `is-active`/`mod-active` co-occur on the same element rather than being competing conventions).
 
-### 4.2 Variable naming & the fallback-indirection mechanism
+### 4.2 Variable naming
 
-Every color slot gets **two** custom properties, not one:
-
-- `--tabcandy-tab-<slot>` — the real, user-facing variable. Only ever written by Style Settings, and only when the user has actually touched that specific setting.
-- `--tabcandy-tab-<slot>-fallback` — written by Tab Candy itself, switched by the "match my theme" toggle. Never touched by Style Settings.
-
-Every consumption site reads `var(--tabcandy-tab-<slot>, var(--tabcandy-tab-<slot>-fallback))`.
-
-This is the whole mechanism. Because Style Settings and the toggle write to two different variable names, they are structurally incapable of fighting over which one wins — there is no precedence logic to write, and no need to detect whether Style Settings is installed or enabled.
-
-Initial slot list (extend as needed, keep the naming pattern):
+One custom property per color slot, not two — Style Settings is the only writer, so there's nothing to arbitrate:
 
 - `--tabcandy-tab-label-color`
 - `--tabcandy-tab-active-color`
-- `--tabcandy-tab-group-dot-color`
 
-### 4.3 `/* @settings */` block (draft)
+Every consumption site reads `var(--tabcandy-tab-<slot>, var(<obsidian's own live variable>))`. Untouched (no Style Settings installed, or the setting never edited), this falls straight through to Obsidian's own real theme variable and renders identically to stock Obsidian — no Tab Candy-authored intermediate value, no flat hex floor, nothing to diverge from "what currently exists."
 
-Lives at the top of Tab Candy's own compiled `styles.css` (built from `styles.scss` — see §6). Style Settings scans plugin-shipped CSS automatically; no separate opt-in file needed.
+### 4.3 `/* @settings */` block (shipped)
+
+Lives in Tab Candy's own compiled `styles.css`. Style Settings scans plugin-shipped CSS automatically; no separate opt-in file needed.
+
+**Must use `/*!`, not `/*`.** Confirmed empirically against this project's actual esbuild production build: a plain `/* @settings` comment is silently stripped by esbuild's CSS minification and Style Settings never sees it. `/*!` survives (relocated to end-of-file, which doesn't matter — Style Settings scans the whole file, not just the top). This matches Style Settings' own project history (commit `7035a31`, "Include `/*! @settings` when looking for settings") — a bug they hit and fixed themselves.
 
 ```css
-/* @settings
-
+/*! @settings
 name: Tab Candy
 id: tabcandy
 settings:
     -
         id: tabcandy-tab-label-color
         title: Tab label color
+        description: Text color for tab labels in the tab bar.
         type: variable-color
         format: hex
         default: '#dadada'
     -
         id: tabcandy-tab-active-color
-        title: Active tab color
+        title: Active tab label color
+        description: Text color for the active tab's label in the tab bar.
         type: variable-color
         format: hex
         default: '#dadada'
-    -
-        id: tabcandy-tab-group-dot-color
-        title: Linked-group dot color
-        type: variable-color
-        format: hex
-        default: '#dadada'
-
 */
 ```
 
-Defaults here are placeholders — pull the real current visual values from a running Obsidian instance with a default theme before finalizing, don't guess.
+The `default:` values are cosmetic only — confirmed (via a real Style Settings bug report, #187, about this exact behavior on a sibling setting type) that an untouched `variable-color` setting is never written to `:root` at all, so this value only ever appears as the color picker's starting point once a user opens it, not as something imposed on anyone who hasn't touched the setting.
 
-### 4.4 SCSS consumption
+### 4.4 CSS consumption (shipped)
 
-```scss
+Lives in the project's root `styles.css` (plain CSS — see the Sass removal note in the Testing Specification's Toolchain section, now moot since there's no Sass left in this project to migrate off of). Applies globally to every tab header in the workspace, not scoped to Tab Candy's own view:
+
+```css
 .workspace-tab-header-inner-title {
-  color: var(--tabcandy-tab-label-color, var(--tabcandy-tab-label-color-fallback));
+  color: var(--tabcandy-tab-label-color, var(--tab-text-color));
 }
 
-.workspace-tab-header.mod-active {
-  color: var(--tabcandy-tab-active-color, var(--tabcandy-tab-active-color-fallback));
-}
-
-.workspace-tab-header-status-container {
-  color: var(--tabcandy-tab-group-dot-color, var(--tabcandy-tab-group-dot-color-fallback));
+.workspace-tab-header.mod-active .workspace-tab-header-inner-title {
+  color: var(--tabcandy-tab-active-color, var(--tab-text-color-focused-active));
 }
 ```
 
-### 4.5 "Match my theme" toggle
+`--tab-text-color` and `--tab-text-color-focused-active` are Obsidian's own documented tab-color variables (CSS variables reference, Components/Tabs) — not anything Tab Candy defines.
 
-A class on `<body>` (not `.tabcandy-root` — these selectors live in the global tab bar, outside Tab Candy's own view entirely), toggled by a new setting, controlling only the `-fallback` variables:
+### 4.5 `parse-style-settings`
 
-```scss
-body {
-  --tabcandy-tab-label-color-fallback: #dadada;
-  --tabcandy-tab-active-color-fallback: #dadada;
-  --tabcandy-tab-group-dot-color-fallback: #dadada;
-}
-
-body.tabcandy-match-theme {
-  --tabcandy-tab-label-color-fallback: var(--text-normal);
-  --tabcandy-tab-active-color-fallback: var(--text-accent);
-  --tabcandy-tab-group-dot-color-fallback: var(--interactive-accent);
-}
-```
-
-The class is added/removed on `document.body` from the plugin (in `main.ts`, alongside other one-time DOM setup) whenever the setting changes — not from React, since these selectors are outside the Tab Candy view's own DOM tree entirely.
-
-### 4.6 Settings shape
-
-**`types.ts`** — add to `TabCandySettings`:
-```ts
-matchThemeColors: boolean;
-```
-
-**`defaultSettings.ts`**:
-```ts
-matchThemeColors: false,
-```
-
-**`normalizeSettings.ts`**: add a `typeof data.matchThemeColors === 'boolean'` branch, same shape as every existing boolean field. Bump `CURRENT_SETTINGS_VERSION`? No — this is a new field with a safe default, not a restructuring of an existing one. Compare against the `showRecentFiles` precedent, not the "shape changed" case v2.0 will actually need.
-
-**`SettingsTab.ts`**: new toggle control, `key: 'matchThemeColors'`, under a new "Style Customization" group — nested inside Track A's "Design" page `items` (§3.2) from the start, not appended to the old flat array and moved later. No `visible` condition — always available, unlike Track C.
-
-**`main.ts`** `onload()`: apply/remove the `tabcandy-match-theme` body class based on the setting, both on load and whenever `settingsStore` emits a change (there should already be a settings-change subscription pattern to hook into — check how other body/global-level effects, if any, currently react to settings changes; if there are none yet, this is the first one).
-
-### 4.7 `parse-style-settings`
-
-Call `app.workspace.trigger('parse-style-settings')` once in `main.ts`'s `onload()`, after `addSettingTab()`, per Style Settings' documented plugin-support contract.
+Call `app.workspace.trigger('parse-style-settings')` once in `main.ts`'s `onload()`, per Style Settings' documented plugin-support contract. Shipped.
 
 ## 5. Track C — Overlay text: dominant color, with a legibility floor
 
@@ -323,13 +277,13 @@ autoContrastOverlayText: false,
 overlayTextContrastCache: {},
 ```
 
-**`SettingsTab.ts`**: the "Auto-contrast overlay text" toggle, gated by the `visible` condition in §5.1, nested inside the same "Style Customization" group as Track B's toggle (§4.6) — inside Track A's "Design" page from the start.
+**`SettingsTab.ts`**: the "Auto-contrast overlay text" toggle, gated by the `visible` condition in §5.1, nested inside Track A's "Design" page (§3.2) from the start — the only settings-tab toggle either Track B or Track C needs.
 
 ### 5.4 Consumption
 
-The `#dadada` this replaces is currently hardcoded one level up, on `.workspace-tabs .workspace-leaf-content.tabcandy` in `App.scss` — `.tabcandy-root` itself sets no `color` today and just inherits it. Add the override directly on `.tabcandy-root` instead of touching the parent rule; being more specific, it wins over the inherited value without needing to edit or remove the existing declaration:
+The `#dadada` this replaces is currently hardcoded one level up, on `.workspace-tabs .workspace-leaf-content.tabcandy` in `App.css` — `.tabcandy-root` itself sets no `color` today and just inherits it. Add the override directly on `.tabcandy-root` instead of touching the parent rule; being more specific, it wins over the inherited value without needing to edit or remove the existing declaration:
 
-```scss
+```css
 .tabcandy-root {
   color: var(--tabcandy-overlay-text, #dadada);
 }
@@ -360,13 +314,13 @@ Recompute is triggered by whichever background actually changed: the background-
 
 | File | Change |
 |---|---|
-| `src/settings/SettingsTab.ts` | `getSettingDefinitions()` restructured into two `SettingDefinitionPage` entries (§3.2); Track B and C's new toggles nested under "Design" from the start (§4.6, §5.3) |
-| `src/settings/SettingsTab.test.ts` (or wherever `getSettingDefinitions()` is covered today) | Structural assertions on the new page shape — see §7 |
-| `styles.scss` (or wherever the `@settings` block should live in the source tree — confirm entry point feeding compiled `styles.css`) | New `@settings` block (§4.3) |
-| `src/app/App.scss` | Track B selectors' rules (§4.4/4.5); `.tabcandy-root` color swapped to `var(...)` (§5.4) |
-| `src/types.ts` | `matchThemeColors`, `autoContrastOverlayText`, `overlayTextContrastCache` |
-| `src/settings/defaultSettings.ts` | Defaults for the three new fields |
-| `src/settings/normalizeSettings.ts` | Validation branches for the three new fields |
+| `src/settings/SettingsTab.ts` | `getSettingDefinitions()` restructured into two `SettingDefinitionPage` entries (§3.2) — shipped; Track C's new toggle nesting under "Design" still pending (§5.3) |
+| `src/settings/SettingsTab.test.ts` | Structural assertions on the new page shape — see §7. Shipped. |
+| `styles.css` | New `@settings` block (§4.3) — shipped |
+| `src/app/App.css` | Track B selectors' rules (§4.4) — shipped; `.tabcandy-root` color swap to `var(...)` still pending (§5.4, Track C) |
+| `src/types.ts` | `autoContrastOverlayText`, `overlayTextContrastCache` |
+| `src/settings/defaultSettings.ts` | Defaults for the two new fields |
+| `src/settings/normalizeSettings.ts` | Validation branches for the two new fields |
 | `src/settings/normalizeSettings.test.ts` | Per-field malformed/missing/legacy cases — see §7 |
 | `src/services/backgrounds.ts` | Contrast-cache pruning alongside existing `pruneMissingManualBackgroundFiles()` |
 | `src/services/backgrounds.test.ts` | Pruning cases for `overlayTextContrastCache` — see §7 |
@@ -377,8 +331,7 @@ Recompute is triggered by whichever background actually changed: the background-
 | `src/app/App.tsx` | Call `useOverlayContrast()`; pass `overlayTextColor` down as a new prop to `BackgroundSurface` |
 | `src/app/components.tsx` | `BackgroundSurfaceProps` gains `overlayTextColor`; folded into the existing `style` object alongside `backgroundImage` (§5.4) |
 | `src/app/components.test.tsx` | Extends the existing `describe('BackgroundSurface', ...)` block — see §7 |
-| `main.ts` | `tabcandy-match-theme` body class management; `parse-style-settings` trigger |
-| `main.test.ts` (if the body-class logic ends up as a new settings-store subscription — see §9) | Leak/double-fire check, same bar as every other subscription in this codebase |
+| `main.ts` | `parse-style-settings` trigger — shipped |
 
 ## 7. Testing
 
@@ -388,12 +341,11 @@ Per `docs/Tab Candy Testing Specification.md`: coverage goes where a regression 
 
 **`getSettingDefinitions()`'s new shape — supplementary, structural only.** Whether a `SettingDefinitionPage` actually renders a navigable row with working back-navigation is Obsidian's own rendering behavior — Trust Boundaries: not ours to re-verify, and nothing a jsdom-based test could observe regardless. What's ours, and testable, is the data our own function returns:
 - Exactly two top-level entries, both `type: 'page'`, named `'Function'` and `'Design'`.
-- `'Design'`'s `items` contains the Background/Local-images groups plus the Style Customization group once Track B/C's toggles exist.
+- `'Design'`'s `items` contains the Background/Local-images groups plus Track C's toggle once it exists.
 - If the optional `status: 'warning'` callback (§3.4) gets built: test it as the plain function of settings state it is (missing background file → `'warning'`; valid background → `null`) — no different from any other pure function in this spec.
 
-**`normalizeSettings.ts` — load-bearing, not supplementary.** The spec calls this "the single highest-consequence file in the codebase" and "When to Expand the Suite" makes a new setting's malformed/missing/legacy handling mandatory. One case per field, not one bullet for all three:
-- `matchThemeColors`: missing → defaults to `false`; wrong type (string, number) → defaults to `false`.
-- `autoContrastOverlayText`: same two cases.
+**`normalizeSettings.ts` — load-bearing, not supplementary.** The spec calls this "the single highest-consequence file in the codebase" and "When to Expand the Suite" makes a new setting's malformed/missing/legacy handling mandatory. One case per field, not one bullet for all fields:
+- `autoContrastOverlayText`: missing → defaults to `false`; wrong type (string, number) → defaults to `false`.
 - `overlayTextContrastCache`: missing → defaults to `{}`; not an object at all → defaults to `{}`; one malformed entry (non-numeric `mtime`, missing `overlayTextColor`) → that entry is dropped, the rest of the cache survives.
 
 **Cache pruning — inherits the "background resolution degrades gracefully" load-bearing bar**, since it's the same class of problem (a vault that's changed out from under the plugin) as the existing `pruneMissingManualBackgroundFiles()` case it's modeled on, not a new category of risk:
@@ -416,10 +368,8 @@ Per `docs/Tab Candy Testing Specification.md`: coverage goes where a regression 
 
 **`BackgroundSurface` (`components.tsx`) — the one real branch this feature adds to an already-tested component, not a new "visual" test.** There's no visual assertion available here regardless: jsdom has no layout or paint engine, and nothing in `obsidian`/`obsidian-test-mocks` fills that gap either, so "does this look right" was never on the table as something this suite could check. What *is* checkable is the literal string this component's own code puts into its `style` object — the exact same thing the existing `background` → `backgroundImage` tests already check, extended with the new prop rather than inventing a new file or a new kind of test:
 - `overlayTextColor` provided → `root.style.getPropertyValue('--tabcandy-overlay-text')` equals it. Direct sibling of the existing `'sets the background image inline style when a background is provided'` case.
-- `overlayTextColor` absent/`null` → the custom property is unset, falling through to the SCSS default. Direct sibling of `'leaves the inline style unset when there is no background'`.
+- `overlayTextColor` absent/`null` → the custom property is unset, falling through to the CSS default. Direct sibling of `'leaves the inline style unset when there is no background'`.
 - Both `background` and `overlayTextColor` provided together → both land in the same `style` object; setting one doesn't clobber the other.
-
-**`main.ts`'s `tabcandy-match-theme` body-class management — touches the settings-store subscribe/unsubscribe load-bearing behavior, if it ends up needing a new subscription** (the open question already flagged in §9). Whichever way that's resolved: added once, torn down in `onunload()`, doesn't double-fire on a rapid double-toggle — the existing subscribe/unsubscribe tests elsewhere in this codebase are the model to extend, not a one-off case invented for this feature.
 
 No new debounce or interval is introduced anywhere in this feature — the caching design in §5.3 exists specifically so nothing needs to run on a timer. Noted so its absence from this list isn't mistaken for an oversight of the "fake timers everywhere a debounce is under test" rule.
 
@@ -427,30 +377,26 @@ No new debounce or interval is introduced anywhere in this feature — the cachi
 
 Each of these falls outside the automated boundary for a specific, stated reason, not just "hard to automate":
 
-- **The "Function"/"Design" split actually navigates correctly** — clicking each page entry opens the right sub-page, back-navigation returns to the top level, every relocated setting still edits the same underlying value it always did. Obsidian's own settings-page chrome — Trust Boundaries: not ours to re-verify, and this is exactly the kind of thing §3.3 already establishes doesn't change at the data layer, so a manual smoke check is about confirming the reorganization, not the mechanism.
-- **Style Settings actually renders the three color pickers and edits take effect live**, in both a themed and un-themed vault. Another plugin's own UI — Trust Boundaries: not ours to re-verify, and it isn't present in the test environment regardless.
-- **Toggling "match my theme" while a Style Settings value is *also* set for the same slot** — confirm Style Settings wins, exactly as designed in §4.2. Depends on the real CSS cascade with a live third-party plugin, not something either fakes.
+- **The "Function"/"Design" split actually navigates correctly** — clicking each page entry opens the right sub-page, back-navigation returns to the top level, every relocated setting still edits the same underlying value it always did. Obsidian's own settings-page chrome — Trust Boundaries: not ours to re-verify, and this is exactly the kind of thing §3.3 already establishes doesn't change at the data layer, so a manual smoke check is about confirming the reorganization, not the mechanism. Shipped and confirmed.
+- **Style Settings actually renders the two color pickers and edits take effect live**, in both a themed and un-themed vault. Another plugin's own UI — Trust Boundaries: not ours to re-verify, and it isn't present in the test environment regardless.
 - **A handful of real, varied background photos** (high-contrast, low-contrast, near-monochrome, one with an obvious dominant hue) — confirm the extracted color actually looks like "the photo." Deliberately *not* pinned as an automated assertion against a fixed expected output: §9 already flags the quantization/contrast constants as unset starting points expected to be tuned against exactly this kind of real-photo pass, and a hardcoded expected-color test would just be a snapshot test wearing a different hat — banned outright, and for the right reason here specifically, since it would fail on every legitimate tuning pass rather than catching a real regression.
 
 ## 8. Implementation checklist
 
 Ordered by dependency — each item assumes the ones above it are done. Track A goes first, deliberately, so B and C's settings land in the right place instead of being written flat and reorganized later. Test items sit next to the code they cover, not bundled into a separate pass at the end — a bug fix later needs a test that would've caught it, and that's easiest to keep true when the two are written together from the start.
 
-**Track A**
-- [ ] Restructure `getSettingDefinitions()` into two `SettingDefinitionPage` entries, `'Function'` and `'Design'` (§3.2), relocating the existing groups into the appropriate page's `items` — no changes to `types.ts`/`defaultSettings.ts`/`normalizeSettings.ts` needed for this step (§3.3).
-- [ ] Structural tests on the new shape (§7) land with this change.
-- [ ] Manual: confirm navigation and that every relocated setting still edits the value it always did (§7).
-- [ ] Optional: `status: 'warning'` on "Design" for a missing background file (§3.4) — don't block the base restructuring on this.
+**Track A — shipped**
+- [x] Restructure `getSettingDefinitions()` into two `SettingDefinitionPage` entries, `'Function'` and `'Design'` (§3.2), relocating the existing groups into the appropriate page's `items` — no changes to `types.ts`/`defaultSettings.ts`/`normalizeSettings.ts` needed for this step (§3.3).
+- [x] Structural tests on the new shape (§7) land with this change.
+- [x] Manual: confirm navigation and that every relocated setting still edits the value it always did (§7).
+- [x] `status: 'warning'` on "Design" for a missing background file (§3.4) — included.
 
-**Track B**
-- [ ] Confirm the three tab-bar selectors (§4.1) against a current Obsidian build.
-- [ ] Add `matchThemeColors` to `types.ts`, `defaultSettings.ts`, `normalizeSettings.ts`, with its malformed/missing test cases (§7) — mandatory per the testing spec's "new setting" trigger, not optional polish.
-- [ ] Write the `@settings` block (§4.3) into the source feeding `styles.css`.
-- [ ] Add Track B's SCSS rules and fallback-variable defaults (§4.4/4.5).
-- [ ] Add the "match my theme" toggle to `SettingsTab.ts`, nested in the "Design" page's Style Customization group (§4.6); wire body-class management into `main.ts`.
-- [ ] If body-class management needs a new settings-store subscription: add its leak/double-fire test alongside it, same bar as every other subscription in this codebase (§7, §9).
-- [ ] Call `app.workspace.trigger('parse-style-settings')` in `main.ts`.
-- [ ] Manual: Style Settings renders the three pickers; edits apply live; "match my theme" changes the fallback only, never fights a Style Settings value (§7).
+**Track B — shipped.** Scope changed from the original plan below (no group-dot slot, no "match my theme" toggle) — see the correction note at the top of §4.
+- [x] Confirm the two tab-bar selectors (§4.1) against a current Obsidian build.
+- [x] Write the `@settings` block (§4.3), using `/*!` (confirmed required — plain `/*` is stripped by this project's esbuild production build).
+- [x] Add Track B's CSS rules (§4.4).
+- [x] Call `app.workspace.trigger('parse-style-settings')` in `main.ts`.
+- [x] Manual: Style Settings renders the two pickers; edits apply live.
 
 **Track C**
 - [ ] Add `autoContrastOverlayText`, `overlayTextContrastCache` to `types.ts`, `defaultSettings.ts`, `normalizeSettings.ts`, with their malformed/missing test cases (§7).
@@ -460,14 +406,11 @@ Ordered by dependency — each item assumes the ones above it are done. Track A 
 - [ ] Wire the two into `computeOverlayContrast()`, plus cache read/write and path+mtime keying.
 - [ ] Add cache pruning to `backgrounds.ts`, alongside `pruneMissingManualBackgroundFiles()`, with the deleted-file *and* stale-mtime cases (§7) — this one inherits the load-bearing bar, not the supplementary one.
 - [ ] Add `useOverlayContrast()` to `hooks.ts`, with its own co-located test file mirroring `useBackground()`'s (§7).
-- [ ] Add the "Auto-contrast overlay text" toggle to `SettingsTab.ts`, nested in the same Style Customization group as Track B (§5.3), gated by the `visible` condition (§5.1).
+- [ ] Add the "Auto-contrast overlay text" toggle to `SettingsTab.ts`, nested inside Track A's "Design" page (§5.3), gated by the `visible` condition (§5.1).
 - [ ] Add `overlayTextColor` to `BackgroundSurfaceProps`, folded into the existing `style` object (§5.4); wire `App.tsx` to call `useOverlayContrast()` and pass it down. Extend the existing `describe('BackgroundSurface', ...)` block in `components.test.tsx` with the three cases from §7 as part of this same change, not after.
-- [ ] Swap the hardcoded `#dadada` in `App.scss` for `var(--tabcandy-overlay-text, #dadada)`.
+- [ ] Swap the hardcoded `#dadada` in `App.css` for `var(--tabcandy-overlay-text, #dadada)`.
 - [ ] Manual: real-photo pass per §7 — tune the constants flagged in §9 against what actually looks right, don't treat the starting values as final.
 
 ## 9. Open items, non-blocking
 
-- Exact hex defaults in the `@settings` block (§4.3) are placeholders pending a look at a real running instance.
-- Whether `main.ts` already has a general "react to any settings change" hook to attach the body-class logic to, or whether this is the first thing that needs one — check before assuming a new subscription needs to be built from scratch. If it is the first one, its test (§7) is what makes that new subscription trustworthy, not just its own presumed correctness.
 - The quantization bucket size (32), saturation floor (0.15), and contrast-margin/clamp values in `adjustForContrast()` are starting points, not tuned constants — expect to eyeball and adjust these against the real photos in §7's manual test pass, not to get them right from theory alone. The unit tests in §7 are written against clear/extreme synthetic cases specifically so they stay valid across that tuning — nothing there should need to change when these constants do.
-- Whether `status: 'warning'` (§3.4) is worth building now or deferring — it's a nice-to-have on top of the base restructuring, not a requirement of it.

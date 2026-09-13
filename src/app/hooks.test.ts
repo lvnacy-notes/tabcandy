@@ -11,8 +11,9 @@ import {
 	cleanup,
 	renderHook
 } from '@testing-library/react';
-import { useClock } from './hooks';
-import { TIME_FORMAT } from '../types';
+import { useBackground, useClock } from './hooks';
+import { BackgroundTheme, TIME_FORMAT } from '../types';
+import { buildSettings, createConfiguredApp } from '../test/fakes';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -103,5 +104,57 @@ describe('useClock', () => {
 		unmount();
 
 		expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
+	});
+});
+
+// customBackground scope-tightening: it moved from an unvalidated raw
+// string (a literal URL, potentially remote) to a vault-relative path
+// resolved the same defensive way as manualBackgroundFiles/
+// backgroundFiles - filtered against the vault before being turned into
+// a resource URL, so a since-deleted/renamed/never-existed file falls
+// back to "no background" (Testing Specification's "Background
+// resolution degrades gracefully" load-bearing behavior) instead of a
+// broken image with no signal anything's wrong.
+describe('useBackground', () => {
+	afterEach(() => {
+		cleanup();
+	});
+
+	it('resolves customBackground to a resource URL when the file exists in the vault', () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/sunset.png': '' },
+		});
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+		});
+
+		const { result } = renderHook(() => useBackground(app, settings));
+
+		expect(result.current).toBe('app://local/Backgrounds/sunset.png');
+	});
+
+	it('falls back to no background when customBackground points to a file that no longer exists', () => {
+		const app = createConfiguredApp({ files: {} });
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/deleted.png',
+		});
+
+		const { result } = renderHook(() => useBackground(app, settings));
+
+		expect(result.current).toBeNull();
+	});
+
+	it('falls back to no background when customBackground is unset', () => {
+		const app = createConfiguredApp({ files: {} });
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: '',
+		});
+
+		const { result } = renderHook(() => useBackground(app, settings));
+
+		expect(result.current).toBeNull();
 	});
 });

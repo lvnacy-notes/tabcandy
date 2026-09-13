@@ -42,7 +42,6 @@ The bigger reason is architectural: Vitest runs on the same engine as the build 
 Current Vite (8.x) dropped esbuild and Rollup as hard dependencies in favor of Rolldown and Oxc — esbuild is now optional-only in Vite's own tree — so putting Vite under both the build and the test runner is a genuine one-for-one swap, not a second bundler stacked on the one already there.
 
 - Vite library mode (`build.lib`, `formats: ['cjs']`) replaces `esbuild.config.js` for producing `main.js`. Externals (`obsidian`, `electron`, Node builtins) move to `build.rolldownOptions.external` — same list, different config key.
-- `esbuild-sass-plugin` is dropped; Vite has Sass support built in (needs `sass`/`sass-embedded`, already a devDependency — a net dependency removal, not a swap).
 - `esbuild-copy-static-files` is dropped in favor of a small hand-written postbuild script copying `manifest.json`/`styles.css` next to `main.js`.
 - If the migration hits a wall during implementation, the accepted fallback is reverting the build to esbuild while keeping Vitest for tests regardless — the two are separable decisions being made together, not one that stands or falls as a unit.
 - Because `build` already gates on a full-repo `tsc --noEmit` pass, a type-broken test file blocks `pnpm build` exactly like type-broken source does. This is intentional, not a side effect. Test files import `describe`/`it`/`expect` explicitly from `'vitest'` rather than relying on global-injection mode, so nothing needs to change in `tsconfig.json`'s `types` array to support it.
