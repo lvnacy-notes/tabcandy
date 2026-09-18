@@ -46,4 +46,6 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	customQuotes: [],
 	quotesFilePath: '',
 	fileQuotes: [],
+	autoContrastOverlayText: false,
+	overlayTextContrastCache: {},
 };

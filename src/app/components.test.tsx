@@ -227,6 +227,31 @@ describe('BackgroundSurface', () => {
 		expect(root.style.backgroundImage).toBe('');
 	});
 
+	it('sets the inline text color when overlayTextColor is provided', () => {
+		const { container } = renderSurface({ overlayTextColor: '#123456' });
+
+		const root = container.firstElementChild as HTMLElement;
+		expect(root.style.color).toBe('rgb(18, 52, 86)');
+	});
+
+	it('leaves the inline text color unset when overlayTextColor is null', () => {
+		const { container } = renderSurface({ overlayTextColor: null });
+
+		const root = container.firstElementChild as HTMLElement;
+		expect(root.style.color).toBe('');
+	});
+
+	it('sets both the background image and the text color together', () => {
+		const { container } = renderSurface({
+			background: 'app://local/bg.png',
+			overlayTextColor: '#123456',
+		});
+
+		const root = container.firstElementChild as HTMLElement;
+		expect(root.style.backgroundImage).toContain('app://local/bg.png');
+		expect(root.style.color).toBe('rgb(18, 52, 86)');
+	});
+
 	it('fires onKeyDown through to the caller', () => {
 		const onKeyDown = vi.fn();
 		const { container } = renderSurface({ onKeyDown });

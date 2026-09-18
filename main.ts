@@ -9,6 +9,7 @@ import { TabCandySettings } from './src/types';
 import { normalizeSettings } from './src/settings/normalizeSettings';
 import {
 	pruneMissingManualBackgroundFiles,
+	pruneStaleOverlayContrastCache,
 	registerBackgroundVaultWatchers,
 	syncBackgroundsFolder,
 } from './src/services/backgrounds';
@@ -55,6 +56,12 @@ export default class TabCandyPlugin extends Plugin {
 
 		void checkForPluginUpdates();
 
+		// Style Settings only re-scans plugin CSS for `@settings` blocks
+		// when told to - per its documented plugin-support contract, every
+		// plugin shipping one must trigger this itself on load (and again
+		// any time an update changes what's in the block).
+		this.app.workspace.trigger('parse-style-settings');
+
 		// Refreshes the list of synced files on every load/reload/restart so
 		// background images are available immediately, without requiring an
 		// explicit "Sync now" click first.
@@ -67,6 +74,11 @@ export default class TabCandyPlugin extends Plugin {
 		// happen while the plugin is running are instead caught live by
 		// the event listeners registered below.
 		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
+
+		// Same rationale as pruneMissingManualBackgroundFiles above: catches
+		// overlayTextContrastCache entries whose backing file was deleted or
+		// edited while the plugin wasn't loaded to see the vault event.
+		await pruneStaleOverlayContrastCache(this.app, this.settingsStore);
 
 		registerBackgroundVaultWatchers(
 			this.app,

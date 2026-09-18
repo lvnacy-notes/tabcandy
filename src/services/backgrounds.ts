@@ -128,6 +128,44 @@ export async function pruneMissingManualBackgroundFiles(
 }
 
 /**
+ * Drops overlayTextContrastCache entries whose backing file has since
+ * been deleted, or whose mtime has moved past what the entry was
+ * computed for (edited since it was last cached) - the same class of
+ * "vault changed out from under the plugin while it wasn't looking"
+ * problem pruneMissingManualBackgroundFiles() above already handles for
+ * manualBackgroundFiles, not a new category of risk. Called from the
+ * same load path as that function - see main.ts.
+ *
+ * A stale entry left behind isn't a broken-image problem the way a stale
+ * manualBackgroundFiles path is (useOverlayContrast() already checks
+ * mtime itself before trusting a cache hit - see getFreshCacheEntry() in
+ * overlayContrast.ts), but it is a data.json that grows forever with
+ * dead entries for images that no longer exist, and this is the same
+ * cleanup opportunity as manualBackgroundFiles' own prune.
+ */
+export async function pruneStaleOverlayContrastCache(
+	app: App,
+	settingsStore: SettingsStore
+): Promise<void> {
+	const current = settingsStore.get().overlayTextContrastCache;
+	const pruned: typeof current = {};
+	let changed = false;
+
+	for (const [path, entry] of Object.entries(current)) {
+		const file = app.vault.getAbstractFileByPath(normalizePath(path));
+		if (file instanceof TFile && file.stat.mtime === entry.mtime) {
+			pruned[path] = entry;
+		} else {
+			changed = true;
+		}
+	}
+
+	if (changed) {
+		await settingsStore.update({ overlayTextContrastCache: pruned });
+	}
+}
+
+/**
  * Registers vault `create`/`modify`/`delete`/`rename` listeners that keep
  * `backgroundFiles` and `manualBackgroundFiles` current without requiring a
  * reload or an explicit "Sync now" click. `create`/`modify` trigger a

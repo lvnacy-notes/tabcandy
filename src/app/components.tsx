@@ -12,6 +12,10 @@ interface BackgroundSurfaceProps {
 	background: string | null | undefined;
 	transparent: boolean;
 	transparentWithShadows: boolean;
+	// Contrast-adjusted overlay text color from useOverlayContrast()
+	// or null/undefined to use the CSS default 
+	// (var(--tabcandy-overlay-text, #dadada) in App.css) unchanged.
+	overlayTextColor?: string | null;
 	onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
 	containerRef: RefObject<HTMLDivElement>;
 	children: ReactNode;
@@ -50,6 +54,7 @@ export const BackgroundSurface = ({
 	background,
 	transparent,
 	transparentWithShadows,
+	overlayTextColor,
 	onKeyDown,
 	containerRef,
 	children,
@@ -60,9 +65,10 @@ export const BackgroundSurface = ({
 		} ${
 			transparentWithShadows ? 'tabcandy-root--transparentWithShadows' : ''
 		}`}
-		style = {
-			background ? { backgroundImage: `url('${ background }')` } : undefined
-		}
+		style = {{
+			...(background ? { backgroundImage: `url('${ background }')` } : undefined),
+			...(overlayTextColor ? { color: overlayTextColor } : undefined),
+		}}
 		onKeyDown = { onKeyDown }
 		tabIndex = { 0 } // Make the div focusable so we can capture key strokes
 		ref = { containerRef }

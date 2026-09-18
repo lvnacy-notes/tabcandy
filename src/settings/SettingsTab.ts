@@ -23,6 +23,7 @@ import {
 	getBackgroundResourcePath,
 	syncBackgroundsFolder,
 } from '../services/backgrounds';
+import { BACKGROUND_IMAGE_EXTENSIONS } from '../utils/imageExtensions';
 import { syncQuotesFile } from '../services/quotes';
 import debounce from '../utils/debounce';
 
@@ -39,7 +40,6 @@ const capitalizeFirstLetter = (string: string) =>
 // Routed through the debounced writer so typing doesn't fire a disk write
 // per character; everything else writes immediately.
 const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set([
-	'customBackground',
 	'greetingText',
 ]);
 
@@ -141,6 +141,26 @@ export default class TabCandySettingTab extends PluginSettingTab {
 		return this.updateSettings(patch, { redraw: true });
 	}
 
+	private getDesignPageStatus(
+		existingManualBackgroundFiles: string[],
+		existingBackgroundFiles: string[]
+	): 'warning' | null {
+		if (this.plugin.settings.backgroundTheme !== BackgroundTheme.LOCAL) {
+			return null;
+		}
+
+		const hasMissingManualFile =
+			existingManualBackgroundFiles.length <
+			this.plugin.settings.manualBackgroundFiles.length;
+		const hasMissingSyncedFile =
+			existingBackgroundFiles.length <
+			this.plugin.settings.backgroundFiles.length;
+
+		return hasMissingManualFile || hasMissingSyncedFile
+			? 'warning'
+			: null;
+	}
+
 	getSettingDefinitions(): SettingDefinitionItem<
 		keyof TabCandySettings
 	>[] {
@@ -162,7 +182,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			this.plugin.settings.backgroundFiles
 		);
 
-		return [
+		const functionGroups: SettingDefinitionItem<keyof TabCandySettings>[] = [
 			{
 				type: 'group',
 				heading: 'New tab behavior',
@@ -177,6 +197,9 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 				],
 			},
+		];
+
+		const designGroups: SettingDefinitionItem<keyof TabCandySettings>[] = [
 			{
 				type: 'group',
 				heading: 'Background settings',
@@ -196,14 +219,19 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						},
 					},
 					{
-						name: 'Custom background URL',
-						desc: `What URL should be used for the background image?`,
+						name: 'Custom background image',
+						desc: `A single image from your vault to use as the background.`,
 						visible: () =>
 							this.plugin.settings.backgroundTheme ===
 							BackgroundTheme.CUSTOM,
 						control: {
-							type: 'text',
+							type: 'file',
 							key: 'customBackground',
+							placeholder: 'E.g. Assets/background.png',
+							filter: (file) =>
+								BACKGROUND_IMAGE_EXTENSIONS.includes(
+									file.extension.toLowerCase()
+								),
 						},
 					},
 					{
@@ -334,6 +362,26 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 				})),
 			},
+			{
+				type: 'group',
+				heading: 'Style customization',
+				items: [
+					{
+						name: 'Auto-contrast overlay text',
+						desc: 'Extracts the active background image\'s own dominant color and uses a contrast-adjusted version of it for the overlay text, instead of a fixed neutral tone.',
+						visible: () =>
+							this.plugin.settings.backgroundTheme === BackgroundTheme.CUSTOM ||
+							this.plugin.settings.backgroundTheme === BackgroundTheme.LOCAL,
+						control: {
+							type: 'toggle',
+							key: 'autoContrastOverlayText',
+						},
+					},
+				],
+			},
+		];
+
+		functionGroups.push(
 			{
 				type: 'group',
 				heading: 'Search settings',
@@ -545,6 +593,26 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						},
 					},
 				],
+			}
+		);
+
+		return [
+			{
+				type: 'page',
+				name: 'Function',
+				desc: 'New tab behavior, search, time, recent files, bookmarks, and quotes.',
+				items: functionGroups,
+			},
+			{
+				type: 'page',
+				name: 'Design',
+				desc: 'Backgrounds, tab bar colors, and overlay text.',
+				status: () =>
+					this.getDesignPageStatus(
+						existingManualBackgroundFiles,
+						existingBackgroundFiles
+					),
+				items: designGroups,
 			},
 		];
 	}

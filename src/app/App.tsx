@@ -16,6 +16,7 @@ import {
 	useBackground,
 	useBookmarks,
 	useClock,
+	useOverlayContrast,
 	useQuote,
 	useRecentFiles,
 	useSettings,
@@ -41,6 +42,7 @@ const App = ({
 	const time = useClock(settings.timeFormat);
 	const quote = useQuote(settings.customQuotes, settings.fileQuotes);
 	const background = useBackground(app, settings);
+	const overlayTextColor = useOverlayContrast(app, settingsStore, settings, background);
 	const recentFiles = useRecentFiles(app);
 	const bookmarks = useBookmarks(app, settings);
 	const mainDivRef = useRef<HTMLDivElement>(null);
@@ -75,6 +77,7 @@ const App = ({
 	return (
 		<BackgroundSurface
 			background = { background }
+			overlayTextColor = { overlayTextColor }
 			transparent = { settings.backgroundTheme === BackgroundTheme.TRANSPARENT }
 			transparentWithShadows = {
 				settings.backgroundTheme ===
