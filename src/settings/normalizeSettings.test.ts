@@ -74,6 +74,7 @@ describe('normalizeSettings', () => {
 			'showRecentFiles',
 			'showBookmarks',
 			'showQuote',
+			'autoContrastOverlayText',
 		] as const;
 
 		it.each(booleanFields)('passes through a valid boolean for %s', (field) => {
@@ -386,6 +387,93 @@ describe('normalizeSettings', () => {
 			const result = normalizeSettings(raw);
 
 			expect(result.fileQuotes).toEqual(DEFAULT_SETTINGS.fileQuotes);
+		});
+	});
+
+	describe('overlayTextContrastCache', () => {
+		it('passes through a valid cache object unchanged', () => {
+			const raw = {
+				overlayTextContrastCache: {
+					'Backgrounds/sunset.png': {
+						mtime: 123,
+						dominantColor: '#ff8800',
+						overlayTextColor: '#1a1a1a',
+					},
+				},
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual(raw.overlayTextContrastCache);
+		});
+
+		it('falls back to an empty object when the field is missing', () => {
+			const raw = {};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual({});
+		});
+
+		it('falls back to an empty object when given a non-object', () => {
+			const raw = { overlayTextContrastCache: 'not an object' };
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual({});
+		});
+
+		it('falls back to an empty object when given an array', () => {
+			const raw = { overlayTextContrastCache: ['not', 'a', 'cache'] };
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual({});
+		});
+
+		it('drops only the entry with a non-numeric mtime, keeping the rest', () => {
+			const raw = {
+				overlayTextContrastCache: {
+					'Backgrounds/keep.png': {
+						mtime: 123,
+						dominantColor: '#ff8800',
+						overlayTextColor: '#1a1a1a',
+					},
+					'Backgrounds/bad-mtime.png': {
+						mtime: 'not a number',
+						dominantColor: '#ff8800',
+						overlayTextColor: '#1a1a1a',
+					},
+				},
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual({
+				'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'],
+			});
+		});
+
+		it('drops only the entry missing overlayTextColor, keeping the rest', () => {
+			const raw = {
+				overlayTextContrastCache: {
+					'Backgrounds/keep.png': {
+						mtime: 123,
+						dominantColor: '#ff8800',
+						overlayTextColor: '#1a1a1a',
+					},
+					'Backgrounds/incomplete.png': {
+						mtime: 456,
+						dominantColor: '#ff8800',
+					},
+				},
+			};
+
+			const result = normalizeSettings(raw);
+
+			expect(result.overlayTextContrastCache).toEqual({
+				'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'],
+			});
 		});
 	});
 

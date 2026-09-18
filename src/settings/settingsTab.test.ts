@@ -86,7 +86,7 @@ describe('getSettingDefinitions', () => {
 		const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 
 		const items = designPage.items ?? [];
-		expect(items).toHaveLength(3);
+		expect(items).toHaveLength(4);
 		expect((items[0] as SettingDefinitionGroup).heading).toBe(
 			'Background settings'
 		);
@@ -94,6 +94,9 @@ describe('getSettingDefinitions', () => {
 		expect((items[2] as SettingDefinitionList).type).toBe('list');
 		expect((items[2] as SettingDefinitionList).heading).toBe(
 			'Local background images'
+		);
+		expect((items[3] as SettingDefinitionGroup).heading).toBe(
+			'Style customization'
 		);
 	});
 
@@ -165,6 +168,50 @@ describe('getSettingDefinitions', () => {
 			const status = designPage.status as () => 'warning' | null;
 
 			expect(status()).toBe('warning');
+		});
+	});
+
+	describe('Auto-contrast overlay text toggle', () => {
+		function getToggleItem(
+			settings: TabCandySettings
+		): { visible?: () => boolean; control?: { key?: string } } {
+			const tab = buildTab(settings);
+			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const styleGroup = (designPage.items ?? [])[3] as SettingDefinitionGroup<keyof TabCandySettings>;
+			return (styleGroup.items ?? [])[0] as {
+				visible?: () => boolean;
+				control?: { key?: string };
+			};
+		}
+
+		it('is bound to the autoContrastOverlayText setting', () => {
+			const toggleItem = getToggleItem(buildSettings());
+
+			expect(toggleItem.control?.key).toBe('autoContrastOverlayText');
+		});
+
+		it('is visible when the background theme is Custom', () => {
+			const toggleItem = getToggleItem(
+				buildSettings({ backgroundTheme: BackgroundTheme.CUSTOM })
+			);
+
+			expect(toggleItem.visible?.()).toBe(true);
+		});
+
+		it('is visible when the background theme is Local', () => {
+			const toggleItem = getToggleItem(
+				buildSettings({ backgroundTheme: BackgroundTheme.LOCAL })
+			);
+
+			expect(toggleItem.visible?.()).toBe(true);
+		});
+
+		it('is hidden for the transparent themes, where there is no background to contrast against', () => {
+			const toggleItem = getToggleItem(
+				buildSettings({ backgroundTheme: BackgroundTheme.TRANSPARENT })
+			);
+
+			expect(toggleItem.visible?.()).toBe(false);
 		});
 	});
 });

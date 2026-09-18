@@ -4,11 +4,25 @@
     "type": "split",
     "children": [
       {
-        "id": "c07cfe063014a9d9",
+        "id": "398f8a4859a42f72",
         "type": "tabs",
         "children": [
           {
-            "id": "2f120a5e3c15bcca",
+            "id": "6a45c2a00d5bb863",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGELOG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGELOG"
+            }
+          },
+          {
+            "id": "80218d47afa7e763",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -19,15 +33,6 @@
               },
               "icon": "lucide-file",
               "title": "Roadmap"
-            }
-          },
-          {
-            "id": "e99d6f18b3d06be9",
-            "type": "leaf",
-            "state": {
-              "type": "tabcandy-react-view",
-              "state": {},
-              "title": "New tab"
             }
           }
         ],
@@ -207,23 +212,33 @@
       "git-graph:Open Git graph": false
     }
   },
-  "active": "2f120a5e3c15bcca",
+  "active": "6a45c2a00d5bb863",
   "lastOpenFiles": [
     "docs/Roadmap.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "updates.md",
+    "ARCHIVE/refactor-implementation/REFACTOR-BASELINE.md",
+    "ARCHIVE/refactor-implementation/REFACTOR-IMPLEMENTATION-CHECKLIST.md",
+    "ARCHIVE/refactor-implementation/REFACTOR.md",
+    "ARCHIVE/refactor-implementation/REFACTOR-DECISIONS.md",
+    "ARCHIVE/refactor-implementation",
+    "ARCHIVE/prior-feature-development/Tab Candy v1.2 Implementation Spec.md",
+    "ARCHIVE/prior-feature-development",
+    "ARCHIVE/Feature Development/Tab Candy v1.2 Implementation Spec.md",
+    "ARCHIVE/Feature Development",
     "dist/manifest.json",
     "dist/main.js",
     "dist/styles.css",
-    "node_modules",
-    "src/ui/modals/CustomQuotesModal.css",
-    "src/settings/Settings.css",
-    "src/app/App.css",
-    "styles.css",
-    "docs/temp.css",
+    "node_modules/@typescript",
+    "node_modules/@types",
+    "node_modules/@typescript-eslint",
+    "node_modules/@eslint",
+    "ARCHIVE/CHANGELOG-2026-09-12.md",
+    "ARCHIVE/CHANGELOG-2026-09-12-436e2fb.md",
     "docs/temp.md",
-    "updates.ts",
     "docs/Tab Candy Testing Specification.md",
     "docs/Tab Candy v1.2 Implementation Spec.md",
-    "ARCHIVE/CHANGELOG-2026-09-12.md",
     "ARCHIVE/CHANGELOG-2026-09-11.md",
     "ARCHIVE/2026/CHANGELOG-2026-08-24-32506a4.md",
     "ARCHIVE/CHANGELOG-2026-09-08.md",
@@ -240,15 +255,6 @@
     "ARCHIVE/CHANGELOG-2026-09-05-f3322da.md",
     "ARCHIVE/CHANGELOG-2026-09-02-d474b3b.md",
     "ARCHIVE/CHANGELOG-2026-09-01-614b959.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-31-041c35d.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-30-f470e16.md",
-    "docs/REFACTOR docs/REFACTOR-IMPLEMENTATION-CHECKLIST.md",
-    "ARCHIVE/REFACTOR docs/temp.md",
-    "ARCHIVE/REFACTOR docs/REFACTOR.md",
-    "ARCHIVE/REFACTOR docs/REFACTOR-DECISIONS.md",
-    "ARCHIVE/REFACTOR docs/REFACTOR-BASELINE.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-30-e3c8e3e.md",
-    "ARCHIVE/2026/CHANGELOG-2026-08-30-0276349.md",
     "tab-candy-images/neon_by_blurr3383_dmqpzxl-pre.jpg",
     "tab-candy-images/_wr_2809__by_aaron888_ai_dmqlfje-pre.png",
     "tab-candy-images/jinx_by_crishark_dmdcwjc-fullview.jpg"

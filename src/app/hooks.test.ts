@@ -9,9 +9,18 @@ import {
 import { act } from 'react';
 import {
 	cleanup,
-	renderHook
+	renderHook,
+	waitFor
 } from '@testing-library/react';
-import { useBackground, useClock } from './hooks';
+import { TFile } from 'obsidian';
+import SettingsStore from '../settings/SettingsStore';
+import {
+	resolveActiveBackgroundPath,
+	useBackground,
+	useClock,
+	useOverlayContrast,
+} from './hooks';
+import { DEFAULT_OVERLAY_COLOR } from '../services/overlayContrast';
 import { BackgroundTheme, TIME_FORMAT } from '../types';
 import { buildSettings, createConfiguredApp } from '../test/fakes';
 
@@ -156,5 +165,225 @@ describe('useBackground', () => {
 		const { result } = renderHook(() => useBackground(app, settings));
 
 		expect(result.current).toBeNull();
+	});
+});
+
+describe('resolveActiveBackgroundPath', () => {
+	it('returns null when there is no resolved background at all', () => {
+		const app = createConfiguredApp({ files: {} });
+		const settings = buildSettings({ backgroundTheme: BackgroundTheme.CUSTOM });
+
+		expect(resolveActiveBackgroundPath(app, settings, null)).toBeNull();
+	});
+
+	it('returns customBackground for the Custom theme when a background is resolved', () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/sunset.png': '' },
+		});
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+		});
+
+		const result = resolveActiveBackgroundPath(
+			app,
+			settings,
+			'app://local/Backgrounds/sunset.png'
+		);
+
+		expect(result).toBe('Backgrounds/sunset.png');
+	});
+
+	it('returns the Local-theme candidate whose resolved URL matches the active background', () => {
+		const app = createConfiguredApp({
+			files: {
+				'Backgrounds/one.png': '',
+				'Backgrounds/two.png': '',
+			},
+		});
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.LOCAL,
+			backgroundFiles: ['Backgrounds/one.png', 'Backgrounds/two.png'],
+		});
+
+		const result = resolveActiveBackgroundPath(
+			app,
+			settings,
+			'app://local/Backgrounds/two.png'
+		);
+
+		expect(result).toBe('Backgrounds/two.png');
+	});
+
+	it('returns null for the Local theme when no candidate matches the active background', () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/one.png': '' },
+		});
+		const settings = buildSettings({
+			backgroundTheme: BackgroundTheme.LOCAL,
+			backgroundFiles: ['Backgrounds/one.png'],
+		});
+
+		const result = resolveActiveBackgroundPath(
+			app,
+			settings,
+			'app://local/Backgrounds/nonexistent.png'
+		);
+
+		expect(result).toBeNull();
+	});
+
+	it('returns null for the transparent themes regardless of background', () => {
+		const app = createConfiguredApp({ files: {} });
+		const settings = buildSettings({ backgroundTheme: BackgroundTheme.TRANSPARENT });
+
+		const result = resolveActiveBackgroundPath(app, settings, 'app://local/anything.png');
+
+		expect(result).toBeNull();
+	});
+});
+
+describe('useOverlayContrast', () => {
+	afterEach(() => {
+		cleanup();
+	});
+
+	function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
+		return new SettingsStore(buildSettings(overrides), async () => {});
+	}
+
+	function getMtime(app: ReturnType<typeof createConfiguredApp>, path: string): number {
+		const file = app.vault.getAbstractFileByPath(path);
+		if (!(file instanceof TFile)) {
+			throw new Error(`Expected '${path}' to resolve to a TFile in the fake vault`);
+		}
+		return file.stat.mtime;
+	}
+
+	it('returns no override when autoContrastOverlayText is off, even with an active background', () => {
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		const store = buildStore({
+			autoContrastOverlayText: false,
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+		});
+
+		const { result } = renderHook(() =>
+			useOverlayContrast(
+				app,
+				store,
+				store.get(),
+				'app://local/Backgrounds/sunset.png'
+			)
+		);
+
+		expect(result.current).toBeNull();
+	});
+
+	it('returns no override when there is no active background', () => {
+		const app = createConfiguredApp({ files: {} });
+		const store = buildStore({
+			autoContrastOverlayText: true,
+			backgroundTheme: BackgroundTheme.TRANSPARENT,
+		});
+
+		const { result } = renderHook(() =>
+			useOverlayContrast(app, store, store.get(), null)
+		);
+
+		expect(result.current).toBeNull();
+	});
+
+	it('returns a cached value without recomputing when the cache is fresh', async () => {
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const store = buildStore({
+			autoContrastOverlayText: true,
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+			overlayTextContrastCache: {
+				'Backgrounds/sunset.png': {
+					mtime,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#123456',
+				},
+			},
+		});
+		const updateSpy = vi.spyOn(store, 'update');
+
+		const { result } = renderHook(() =>
+			useOverlayContrast(
+				app,
+				store,
+				store.get(),
+				'app://local/Backgrounds/sunset.png'
+			)
+		);
+
+		await waitFor(() => expect(result.current).toBe('#123456'));
+		expect(updateSpy).not.toHaveBeenCalled();
+	});
+
+	it('recomputes and persists a result when there is no cache entry for the active file', async () => {
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const store = buildStore({
+			autoContrastOverlayText: true,
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+		});
+
+		const { result } = renderHook(() =>
+			useOverlayContrast(
+				app,
+				store,
+				store.get(),
+				'app://local/Backgrounds/sunset.png'
+			)
+		);
+
+		// This environment has no real Canvas 2D implementation, so a
+		// genuine recompute always resolves to the default overlay color
+		// (see overlayContrast.test.ts) - which is exactly what makes this
+		// a useful assertion here: it can only be this value if a fresh
+		// computation actually ran, not a cache hit.
+		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
+		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png']).toEqual({
+			mtime,
+			dominantColor: DEFAULT_OVERLAY_COLOR,
+			overlayTextColor: DEFAULT_OVERLAY_COLOR,
+		});
+	});
+
+	it('recomputes when the cached mtime no longer matches the file', async () => {
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const store = buildStore({
+			autoContrastOverlayText: true,
+			backgroundTheme: BackgroundTheme.CUSTOM,
+			customBackground: 'Backgrounds/sunset.png',
+			overlayTextContrastCache: {
+				'Backgrounds/sunset.png': {
+					mtime: mtime - 1000,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#123456',
+				},
+			},
+		});
+
+		const { result } = renderHook(() =>
+			useOverlayContrast(
+				app,
+				store,
+				store.get(),
+				'app://local/Backgrounds/sunset.png'
+			)
+		);
+
+		// A stale cache entry ('#123456') would return synchronously; seeing
+		// the fresh-recompute default confirms the mismatch triggered a
+		// real recompute rather than trusting the stale entry.
+		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
+		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png'].mtime).toBe(mtime);
 	});
 });

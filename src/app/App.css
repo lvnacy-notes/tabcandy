@@ -38,6 +38,15 @@
 	.tabcandy-root {
 		height: 100%;
 		width: 100%;
+		/* More specific than .workspace-leaf-content.tabcandy's own `color:
+		 #dadada` above, so it wins without needing to edit or remove that
+		 declaration. Falls back to the Style Settings-controlled
+		 `--tabcandy-overlay-text` variable (see styles.css), itself
+		 falling back to the #dadada literal - the auto-contrast overlay 
+		 text color (useOverlayContrast(), v1.2 spec §5) is set as an inline 
+		 style directly on this element when active, which wins over both 
+		 regardless of CSS specificity. */
+		color: var(--tabcandy-overlay-text, #dadada);
 		text-shadow: rgba(0, 0, 0, 0.1) 0px 1px 5px;
 		background: var(--background);
 		background-position: center center;

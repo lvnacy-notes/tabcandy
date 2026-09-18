@@ -9,6 +9,7 @@ import { TabCandySettings } from './src/types';
 import { normalizeSettings } from './src/settings/normalizeSettings';
 import {
 	pruneMissingManualBackgroundFiles,
+	pruneStaleOverlayContrastCache,
 	registerBackgroundVaultWatchers,
 	syncBackgroundsFolder,
 } from './src/services/backgrounds';
@@ -73,6 +74,11 @@ export default class TabCandyPlugin extends Plugin {
 		// happen while the plugin is running are instead caught live by
 		// the event listeners registered below.
 		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
+
+		// Same rationale as pruneMissingManualBackgroundFiles above: catches
+		// overlayTextContrastCache entries whose backing file was deleted or
+		// edited while the plugin wasn't loaded to see the vault event.
+		await pruneStaleOverlayContrastCache(this.app, this.settingsStore);
 
 		registerBackgroundVaultWatchers(
 			this.app,

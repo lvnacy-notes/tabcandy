@@ -8,11 +8,13 @@ import {
 } from 'vitest';
 import SettingsStore from '../settings/SettingsStore';
 import { buildSettings, createConfiguredApp } from '../test/fakes';
+import { TFile } from 'obsidian';
 import {
 	filterExistingFiles,
 	getBackgroundResourcePath,
 	listBackgroundFilesInFolder,
 	pruneMissingManualBackgroundFiles,
+	pruneStaleOverlayContrastCache,
 	registerBackgroundVaultWatchers,
 	syncBackgroundsFolder,
 } from './backgrounds';
@@ -244,6 +246,96 @@ describe('pruneMissingManualBackgroundFiles', () => {
 		const updateSpy = vi.spyOn(store, 'update');
 
 		await pruneMissingManualBackgroundFiles(app, store);
+
+		expect(updateSpy).not.toHaveBeenCalled();
+	});
+});
+
+describe('pruneStaleOverlayContrastCache', () => {
+	it('drops an entry whose backing file no longer exists', async () => {
+		const app = createConfiguredApp({ files: {} });
+		const store = buildStore({
+			overlayTextContrastCache: {
+				'Backgrounds/deleted.png': {
+					mtime: 100,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
+				},
+			},
+		});
+
+		await pruneStaleOverlayContrastCache(app, store);
+
+		expect(store.get().overlayTextContrastCache).toEqual({});
+	});
+
+	it('drops an entry whose mtime has moved past what was cached', async () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/sunset.png': '' },
+		});
+		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
+		if (!(file instanceof TFile)) {
+			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
+		}
+		const store = buildStore({
+			overlayTextContrastCache: {
+				'Backgrounds/sunset.png': {
+					mtime: file.stat.mtime - 1000,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
+				},
+			},
+		});
+
+		await pruneStaleOverlayContrastCache(app, store);
+
+		expect(store.get().overlayTextContrastCache).toEqual({});
+	});
+
+	it('keeps an entry whose file still exists with a matching mtime', async () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/sunset.png': '' },
+		});
+		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
+		if (!(file instanceof TFile)) {
+			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
+		}
+		const entry = {
+			mtime: file.stat.mtime,
+			dominantColor: '#ff8800',
+			overlayTextColor: '#1a1a1a',
+		};
+		const store = buildStore({
+			overlayTextContrastCache: { 'Backgrounds/sunset.png': entry },
+		});
+
+		await pruneStaleOverlayContrastCache(app, store);
+
+		expect(store.get().overlayTextContrastCache).toEqual({
+			'Backgrounds/sunset.png': entry,
+		});
+	});
+
+	it('does not write to the store when nothing needed pruning', async () => {
+		const app = createConfiguredApp({
+			files: { 'Backgrounds/sunset.png': '' },
+		});
+		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
+		if (!(file instanceof TFile)) {
+			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
+		}
+		const store = buildStore({
+			overlayTextContrastCache: {
+				'Backgrounds/sunset.png': {
+					mtime: file.stat.mtime,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
+				},
+			},
+		});
+		const updateSpy = vi.spyOn(store, 'update');
+
+		await pruneStaleOverlayContrastCache(app, store);
 
 		expect(updateSpy).not.toHaveBeenCalled();
 	});

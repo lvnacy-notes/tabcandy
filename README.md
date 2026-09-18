@@ -24,6 +24,8 @@ It's an **evolution** of [Beautitab](https://github.com/andrewmcgivery/obsidian-
 
 ## Features
 
+Tab Candy's settings are split across two pages — **Function** (behavior: search, time, greeting, recent files, bookmarks, quotes) and **Design** (background and style) — to keep things easy to find as the settings list grows.
+
 ### Open automatically on new tabs
 
 By default, opening a new empty tab in Obsidian shows Tab Candy automatically. If you'd rather trigger it manually instead, that's a setting too — either way, the **Open new tab** command in the command palette always works.
@@ -115,6 +117,14 @@ A quote at the bottom of the screen, picked at random from your own list of cust
   >
 </div>
 
+### Style customization
+
+Tab Candy's colors can be customized through the [Style Settings](https://github.com/community-archive/obsidian-style-settings) community plugin. Install it, and a Tab Candy section appears in its settings pane with color pickers for the tab bar. If you don't have Style Settings installed, Tab Candy looks exactly as it always has — nothing to configure, nothing missing.
+
+### Auto-contrast overlay text
+
+When you're using a Local or Custom background image, Tab Candy can pick its overlay text color automatically from that image's own dominant color, contrast-adjusted for legibility, instead of a single fixed tone. Turn it on from the **Design** page in Tab Candy's settings.
+
 ## Installation
 
 ### Via Community Plugins (recommended)
@@ -174,6 +184,8 @@ pnpm build     # production build → dist/
 ```
 
 Requires Node 24 or newer, and [pnpm](https://pnpm.io/) (version pinned in `package.json`).
+
+See [CONTRIBUTING.md](./.github/CONTRIBUTING.md) for more.
 
 ## Credits
 

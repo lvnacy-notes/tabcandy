@@ -362,6 +362,23 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 				})),
 			},
+			{
+				type: 'group',
+				heading: 'Style customization',
+				items: [
+					{
+						name: 'Auto-contrast overlay text',
+						desc: 'Extracts the active background image\'s own dominant color and uses a contrast-adjusted version of it for the overlay text, instead of a fixed neutral tone.',
+						visible: () =>
+							this.plugin.settings.backgroundTheme === BackgroundTheme.CUSTOM ||
+							this.plugin.settings.backgroundTheme === BackgroundTheme.LOCAL,
+						control: {
+							type: 'toggle',
+							key: 'autoContrastOverlayText',
+						},
+					},
+				],
+			},
 		];
 
 		functionGroups.push(
