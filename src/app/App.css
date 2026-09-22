@@ -202,14 +202,14 @@
 					}
 				}
 
-				.tabcandy-recentlyedited {
+				.tabcandy-dashboard-centeredrow {
 					display: flex;
 					align-items: center;
 					justify-content: center;
 					overflow-y: auto;
 					width: 100%;
 
-					.tabcandy-recentlyedited-file {
+					.tabcandy-dashboard-fileicon {
 						/* Reset native <button> chrome (background, border,
 						UA padding/font) now that RecentFiles/Bookmarks
 						render real <button>s instead of hrefless <a>s -
@@ -242,7 +242,7 @@
 							}
 						}
 
-						.tabcandy-recentlyedited-file-name {
+						.tabcandy-dashboard-filelabel {
 							display: block;
 							font-size: 12px;
 							text-overflow: ellipsis;
