@@ -105,7 +105,7 @@ describe('RecentFiles', () => {
 	it('renders an empty wrapper when there are no files', () => {
 		const { container } = render(<RecentFiles files = { [] } onOpen = { () => {} } />);
 
-		const wrapper = container.querySelector('.tabcandy-recentlyedited');
+		const wrapper = container.querySelector('.tabcandy-dashboard-centeredrow');
 		expect(wrapper).not.toBeNull();
 		expect(wrapper?.children.length).toBe(0);
 	});
@@ -128,7 +128,7 @@ describe('Bookmarks', () => {
 	it('renders an empty wrapper when there are no bookmarked files', () => {
 		const { container } = render(<Bookmarks files = { [] } onOpen = { () => {} } />);
 
-		const wrapper = container.querySelector('.tabcandy-recentlyedited');
+		const wrapper = container.querySelector('.tabcandy-dashboard-centeredrow');
 		expect(wrapper).not.toBeNull();
 		expect(wrapper?.children.length).toBe(0);
 	});

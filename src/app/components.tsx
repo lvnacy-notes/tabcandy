@@ -127,17 +127,17 @@ export const Icon = ({ name }: { name: string }) => {
  * the button's accessible name with no extra `aria-label` needed.
  */
 export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
-	<div className = 'tabcandy-recentlyedited'>
+	<div className = 'tabcandy-dashboard-centeredrow'>
 		{ files.map((file) => (
 			<button
 				type = 'button'
 				key = { file.path }
-				className = 'tabcandy-recentlyedited-file'
+				className = 'tabcandy-dashboard-fileicon'
 				data-path = { file.path }
 				onClick = { () => onOpen(file) }
 			>
 				<Icon name = 'bookmark' />
-				<span className = 'tabcandy-recentlyedited-file-name'>
+				<span className = 'tabcandy-dashboard-filelabel'>
 					{ file.basename }
 				</span>
 			</button>
@@ -173,17 +173,17 @@ export const QuoteDisplay = ({ quote, show }: QuoteDisplayProps) => (
  * the button's accessible name with no extra `aria-label` needed.
  */
 export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
-	<div className = 'tabcandy-recentlyedited'>
+	<div className = 'tabcandy-dashboard-centeredrow'>
 		{ files.map((file) => (
 			<button
 				type = 'button'
 				key = { file.path }
-				className = 'tabcandy-recentlyedited-file'
+				className = 'tabcandy-dashboard-fileicon'
 				data-path = { file.path }
 				onClick = { () => onOpen(file) }
 			>
 				<Icon name = 'file' />
-				<span className = 'tabcandy-recentlyedited-file-name'>
+				<span className = 'tabcandy-dashboard-filelabel'>
 					{ file.basename }
 				</span>
 			</button>
