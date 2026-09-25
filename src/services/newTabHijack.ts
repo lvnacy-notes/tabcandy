@@ -3,7 +3,7 @@ import {
 	EventRef,
 	WorkspaceLeaf
 } from 'obsidian';
-import { TAB_CANDY_VIEW_TYPE } from '../TabCandyView';
+import { TAB_CANDY_VIEW_TYPE } from '../types';
 import SettingsStore from '../settings/SettingsStore';
 
 /**

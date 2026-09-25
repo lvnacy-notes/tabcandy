@@ -10,7 +10,8 @@ import {
 } from 'obsidian';
 import SettingsStore from '../settings/SettingsStore';
 import { executeEnabledPluginCommand } from '../services/commands';
-import { BackgroundTheme } from '../types';
+import { getClosedTabs, reopenClosedTab } from '../services/tabNavigation';
+import { BackgroundTheme, ClosedTabEntry } from '../types';
 import { getTimeOfDayGreeting } from './utils/time';
 import {
 	useBackground,
@@ -26,6 +27,7 @@ import {
 	Bookmarks,
 	QuoteDisplay,
 	RecentFiles,
+	RecentlyClosedTabs,
 	SearchButton,
 } from './components';
 
@@ -63,6 +65,12 @@ const App = ({
 	// own leaf-resolution might apply.
 	const openFile = (file: TFile) => {
 		void leaf.openFile(file);
+	};
+
+	// Same rationale as openFile() above: always reopens into the leaf
+	// hosting this Tab Candy instance.
+	const reopenTab = (entry: ClosedTabEntry) => {
+		void reopenClosedTab(app, entry, leaf);
 	};
 
 	const runInlineSearch = () =>
@@ -134,6 +142,9 @@ const App = ({
 					)}
 					{ settings.showBookmarks && (
 						<Bookmarks files = { bookmarks } onOpen = { openFile } />
+					)}
+					{ settings.showRecentlyClosedTabs && (
+						<RecentlyClosedTabs entries = { getClosedTabs() } onOpen = { reopenTab } />
 					)}
 				</div>
 				<QuoteDisplay quote = { quote } show = { settings.showQuote } />

@@ -38,6 +38,7 @@ dist/
 .pnpm-store
 
 # Remove test files, directories, and temp shit
+Roadmap/
 tab-candy-images/
 quotes.md
 **/temp.md
@@ -45,3 +46,4 @@ quotes.md
 **/updates.ts
 .obsidian/plugins/tabcandy/
 docs/Search Providers.md
+docs/Tabs Feature Requests.md

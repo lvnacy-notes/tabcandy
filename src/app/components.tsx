@@ -6,7 +6,7 @@ import {
 	useRef
 } from 'react';
 import { TFile, getIcon } from 'obsidian';
-import { Quote } from '../types';
+import { ClosedTabEntry, Quote } from '../types';
 
 interface BackgroundSurfaceProps {
 	background: string | null | undefined;
@@ -34,6 +34,11 @@ interface QuoteDisplayProps {
 interface RecentFilesProps {
 	files: TFile[];
 	onOpen: (file: TFile) => void;
+}
+
+interface RecentlyClosedTabsProps {
+	entries: readonly ClosedTabEntry[];
+	onOpen: (entry: ClosedTabEntry) => void;
 }
 
 interface SearchButtonProps {
@@ -185,6 +190,37 @@ export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
 				<Icon name = 'file' />
 				<span className = 'tabcandy-dashboard-filelabel'>
 					{ file.basename }
+				</span>
+			</button>
+		))}
+	</div>
+);
+
+/**
+ * Recently closed tabs, newest first, each reopening into the dashboard's
+ * hosting leaf when clicked.
+ *
+ * Rendered as `<button type="button">` rather than an `<a>` with no
+ * `href` - see `SearchButton` below for why a hrefless anchor is a
+ * click-only dead end for keyboard and AT users. Unlike `RecentFiles` and
+ * `Bookmarks`, an entry has no file path to key on, so entries are keyed
+ * by their position in the list; and `title` is set explicitly to show
+ * the full title on hover, since a closed tab's title isn't a filename a
+ * person will already recognize when truncated.
+ */
+export const RecentlyClosedTabs = ({ entries, onOpen }: RecentlyClosedTabsProps) => (
+	<div className = 'tabcandy-dashboard-centeredrow'>
+		{ entries.map((entry, index) => (
+			<button
+				type = 'button'
+				key = { `${index}:${entry.title}` }
+				className = 'tabcandy-dashboard-fileicon'
+				title = { entry.title }
+				onClick = { () => onOpen(entry) }
+			>
+				<Icon name = 'history' />
+				<span className = 'tabcandy-dashboard-filelabel'>
+					{ entry.title }
 				</span>
 			</button>
 		))}

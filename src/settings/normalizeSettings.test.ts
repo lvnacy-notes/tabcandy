@@ -75,6 +75,8 @@ describe('normalizeSettings', () => {
 			'showBookmarks',
 			'showQuote',
 			'autoContrastOverlayText',
+			'closeTabsInFolderRecursive',
+			'showRecentlyClosedTabs',
 		] as const;
 
 		it.each(booleanFields)('passes through a valid boolean for %s', (field) => {

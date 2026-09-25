@@ -6,7 +6,7 @@ import {
 } from 'vitest';
 import { createConfiguredApp } from '../test/fakes';
 import { activateView } from './newTabHijack';
-import { TAB_CANDY_VIEW_TYPE } from '../TabCandyView';
+import { TAB_CANDY_VIEW_TYPE } from '../types';
 
 describe('activateView', () => {
 	it('creates a new leaf and points it at the Tab Candy view when none exists yet', async () => {

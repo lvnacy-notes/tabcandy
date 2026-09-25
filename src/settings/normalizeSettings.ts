@@ -140,6 +140,12 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	if (typeof data.autoContrastOverlayText === 'boolean') {
 		normalized.autoContrastOverlayText = data.autoContrastOverlayText;
 	}
+	if (typeof data.closeTabsInFolderRecursive === 'boolean') {
+		normalized.closeTabsInFolderRecursive = data.closeTabsInFolderRecursive;
+	}
+	if (typeof data.showRecentlyClosedTabs === 'boolean') {
+		normalized.showRecentlyClosedTabs = data.showRecentlyClosedTabs;
+	}
 
 	/**
      * Enum-backed fields: validate against the enum instead of trusting
