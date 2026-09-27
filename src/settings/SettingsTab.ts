@@ -195,6 +195,14 @@ export default class TabCandySettingTab extends PluginSettingTab {
 							key: 'replaceEmptyTabsWithTabCandy',
 						},
 					},
+					{
+						name: 'Switch to notes that are already open',
+						desc: "When you click a note in the recent files, bookmarks, or recently closed tabs lists and it's already open in another tab, switch to that tab instead of opening it in this one.",
+						control: {
+							type: 'toggle',
+							key: 'dashboardFocusesOpenTab',
+						},
+					},
 				],
 			},
 		];
@@ -618,6 +626,14 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						control: {
 							type: 'toggle',
 							key: 'closeTabsInFolderRecursive',
+						},
+					},
+					{
+						name: 'Widen stacked tab panes',
+						desc: 'In stacked tab mode, make each pane fill the workspace instead of the narrower default. To pick a width between 40% and 100%, use the slider in Style Settings → Tab Candy.',
+						control: {
+							type: 'toggle',
+							key: 'widenStackedTabPanes',
 						},
 					},
 				],

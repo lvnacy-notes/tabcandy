@@ -139,7 +139,22 @@ export default defineConfig([
 			// not an eslint-disable, which eslint-plugin-obsidianmd's
 			// recommended config hard-blocks for every obsidianmd/* rule
 			// (see eslint-comments/no-restricted-disable above).
-			'obsidianmd/ui/sentence-case': ['warn', { brands: ['Tab Candy'] }]
+			'obsidianmd/ui/sentence-case': ['warn', { brands: ['Tab Candy', 'Style Settings'] }],
+
+			// eslint-plugin-obsidianmd's own recommended config (spread at
+			// the top of this file) already registers the
+			// `eslint-comments` plugin and sets this rule to block
+			// disabling a specific list of rules (every obsidianmd/* rule,
+			// no-console, no-explicit-any, and a handful of others) -
+			// not eslint-disable comments in general. Overriding it here
+			// with the wildcard pattern widens that to every rule, so
+			// eslint-disable is never an escape hatch anywhere, in any
+			// file: eslint-comments/no-unlimited-disable (also from that
+			// same recommended config) already requires every disable to
+			// name a specific rule rather than silencing the whole line;
+			// the wildcard here closes the other half of the same gap, so
+			// naming a rule doesn't help either.
+			'eslint-comments/no-restricted-disable': ['error', '*']
 		}
 	},
 	{

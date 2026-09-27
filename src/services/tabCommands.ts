@@ -7,6 +7,7 @@ import {
 	closeDuplicateTabs,
 	closeOtherTabs,
 	closeTabsInFolder,
+	goToAdjacentTab,
 	reopenLastClosedTab,
 } from './tabNavigation';
 
@@ -46,10 +47,26 @@ export function registerTabCommands(
 	});
 
 	addCommand({
+		id: 'next-tab-across-groups',
+		name: 'Go to next tab across groups',
+		callback: () => {
+			goToAdjacentTab(app, 1);
+		},
+	});
+
+	addCommand({
 		id: 'open-tab-candy',
 		name: 'Open new tab',
 		callback: () => {
 			void activateView(app);
+		},
+	});
+
+	addCommand({
+		id: 'previous-tab-across-groups',
+		name: 'Go to previous tab across groups',
+		callback: () => {
+			goToAdjacentTab(app, -1);
 		},
 	});
 

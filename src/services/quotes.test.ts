@@ -7,7 +7,11 @@ import {
 	vi
 } from 'vitest';
 import SettingsStore from '../settings/SettingsStore';
-import { buildSettings, createConfiguredApp } from '../test/fakes';
+import {
+	buildSettings,
+	createConfiguredApp,
+	getExistingFile
+} from '../test/fakes';
 import {
 	listQuotesFromFile,
 	parseQuoteBlockquotes,
@@ -376,9 +380,9 @@ describe('registerQuotesVaultWatcher', () => {
 		const { app, store } = setUp();
 
 		await app.vault.adapter.write('Quotes/quotes.md', '> Updated quote.');
-		const file = app.vault.getAbstractFileByPath('Quotes/quotes.md');
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present
-		app.vault.trigger('modify', file!);
+		const file = getExistingFile(app, 'Quotes/quotes.md');
+
+		app.vault.trigger('modify', file);
 		expect(store.get().fileQuotes).not.toEqual([
 			{ text: 'Updated quote.', author: '' },
 		]);
@@ -393,10 +397,9 @@ describe('registerQuotesVaultWatcher', () => {
 	it('does not re-sync when a different file is modified', async () => {
 		const { app, store } = setUp();
 		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = app.vault.getAbstractFileByPath('Quotes/other.md');
+		const file = getExistingFile(app, 'Quotes/other.md');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present
-		app.vault.trigger('modify', file!);
+		app.vault.trigger('modify', file);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().fileQuotes).toEqual([]);
@@ -407,9 +410,8 @@ describe('registerQuotesVaultWatcher', () => {
 
 		for (let i = 0; i < 3; i++) {
 			await app.vault.adapter.write('Quotes/quotes.md', `> Version ${i}.`);
-			const file = app.vault.getAbstractFileByPath('Quotes/quotes.md');
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present
-			app.vault.trigger('modify', file!);
+			const file = getExistingFile(app, 'Quotes/quotes.md');
+			app.vault.trigger('modify', file);
 			vi.advanceTimersByTime(200);
 		}
 		await vi.advanceTimersByTimeAsync(500);
@@ -437,10 +439,12 @@ describe('registerQuotesVaultWatcher', () => {
 		const { app, store } = setUp({
 			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
 		});
-		const file = app.vault.getAbstractFileByPath('Quotes/quotes.md');
+		const file = getExistingFile(app, 'Quotes/quotes.md');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present. Vault.delete() (not FileManager.trashFile()) is deliberate: it's what fires the 'delete' event this test exercises, not a stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file!);
+		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
+		// what fires the 'delete' event this test exercises, not a
+		// stand-in for a user-facing delete action.
+		await app.fileManager.trashFile(file);
 
 		expect(store.get().fileQuotes).toEqual([]);
 	});
@@ -450,10 +454,9 @@ describe('registerQuotesVaultWatcher', () => {
 			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
 		});
 		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = app.vault.getAbstractFileByPath('Quotes/other.md');
+		const file = getExistingFile(app, 'Quotes/other.md');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present
-		await app.fileManager.trashFile(file!);
+		await app.fileManager.trashFile(file);
 
 		expect(store.get().fileQuotes).toEqual([
 			{ text: 'Existing quote.', author: 'Existing Author' },
@@ -464,10 +467,9 @@ describe('registerQuotesVaultWatcher', () => {
 		const { app, store } = setUp({
 			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
 		});
-		const file = app.vault.getAbstractFileByPath('Quotes/quotes.md');
+		const file = getExistingFile(app, 'Quotes/quotes.md');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present
-		await app.vault.rename(file!, 'Quotes/renamed.md');
+		await app.vault.rename(file, 'Quotes/renamed.md');
 
 		expect(store.get().quotesFilePath).toBe('Quotes/renamed.md');
 		expect(store.get().fileQuotes).toEqual([
@@ -478,10 +480,9 @@ describe('registerQuotesVaultWatcher', () => {
 	it('does not react to a rename of an unrelated file', async () => {
 		const { app, store } = setUp();
 		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = app.vault.getAbstractFileByPath('Quotes/other.md');
+		const file = getExistingFile(app, 'Quotes/other.md');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present
-		await app.vault.rename(file!, 'Quotes/renamed-other.md');
+		await app.vault.rename(file, 'Quotes/renamed-other.md');
 
 		expect(store.get().quotesFilePath).toBe('Quotes/quotes.md');
 	});

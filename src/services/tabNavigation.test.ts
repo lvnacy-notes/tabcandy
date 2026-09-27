@@ -29,8 +29,11 @@ import {
 	closeLeaves,
 	closeOtherTabs,
 	closeTabsInFolder,
+	focusOpenLeaf,
+	getAdjacentLeaf,
 	getClosedTabs,
 	getViewStateFilePath,
+	goToAdjacentTab,
 	isUnderFolder,
 	planDuplicateClosures,
 	pushClosedTab,
@@ -229,6 +232,163 @@ describe('closeOtherTabs', () => {
 		closeOtherTabs(app);
 
 		expect(collectRootLeaves(app)).toEqual([current]);
+	});
+});
+
+describe('getAdjacentLeaf', () => {
+	it('returns the next element for a middle leaf going forward', () => {
+		expect(getAdjacentLeaf(['a', 'b', 'c'], 'b', 1)).toBe('c');
+	});
+
+	it('returns the previous element for a middle leaf going backward', () => {
+		expect(getAdjacentLeaf(['a', 'b', 'c'], 'b', -1)).toBe('a');
+	});
+
+	it('wraps from the last element to the first going forward', () => {
+		expect(getAdjacentLeaf(['a', 'b', 'c'], 'c', 1)).toBe('a');
+	});
+
+	it('wraps from the first element to the last going backward', () => {
+		expect(getAdjacentLeaf(['a', 'b', 'c'], 'a', -1)).toBe('c');
+	});
+
+	it('returns null when there is only one element to cycle within', () => {
+		expect(getAdjacentLeaf(['a'], 'a', 1)).toBeNull();
+	});
+
+	it('returns null when the current element is not in the list', () => {
+		expect(getAdjacentLeaf(['a', 'b', 'c'], 'z', 1)).toBeNull();
+	});
+});
+
+describe('goToAdjacentTab', () => {
+	it('does nothing when there is no resolved current leaf', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const other = createFakeLeaf(app);
+		addRootLeaf(app, other);
+		setMostRecentLeaf(app, null);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		goToAdjacentTab(app, 1);
+
+		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+
+	it('does nothing when the resolved leaf is not among the root leaves', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const rootLeaf = createFakeLeaf(app);
+		addRootLeaf(app, rootLeaf);
+		const sidebarLeaf = createFakeLeaf(app);
+		addSidebarLeaf(app, sidebarLeaf);
+		setMostRecentLeaf(app, sidebarLeaf);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		goToAdjacentTab(app, 1);
+
+		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+
+	it('focuses the next root leaf, wrapping past the end', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const first = createFakeLeaf(app);
+		addRootLeaf(app, first);
+		const second = createFakeLeaf(app);
+		addRootLeaf(app, second);
+		setMostRecentLeaf(app, second);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		goToAdjacentTab(app, 1);
+
+		expect(setActiveLeaf).toHaveBeenCalledWith(first, { focus: true });
+	});
+
+	it('focuses the previous root leaf, wrapping past the start', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const first = createFakeLeaf(app);
+		addRootLeaf(app, first);
+		const second = createFakeLeaf(app);
+		addRootLeaf(app, second);
+		setMostRecentLeaf(app, first);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		goToAdjacentTab(app, -1);
+
+		expect(setActiveLeaf).toHaveBeenCalledWith(second, { focus: true });
+	});
+});
+
+describe('focusOpenLeaf', () => {
+	it('finds a match, focuses it, and returns true', async () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const host = createFakeLeaf(app);
+		addRootLeaf(app, host);
+		const target = createFakeLeaf(app);
+		await target.setViewState({ type: 'markdown', state: { file: 'A.md' } });
+		addRootLeaf(app, target);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		const result = focusOpenLeaf(app, 'A.md', host);
+
+		expect(result).toBe(true);
+		expect(setActiveLeaf).toHaveBeenCalledWith(target, { focus: true });
+	});
+
+	it('activates nothing and returns false when no root leaf has the path', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const host = createFakeLeaf(app);
+		addRootLeaf(app, host);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		const result = focusOpenLeaf(app, 'A.md', host);
+
+		expect(result).toBe(false);
+		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+
+	it('skips the host leaf even when it has the same path', async () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const host = createFakeLeaf(app);
+		await host.setViewState({ type: 'markdown', state: { file: 'A.md' } });
+		addRootLeaf(app, host);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		const result = focusOpenLeaf(app, 'A.md', host);
+
+		expect(result).toBe(false);
+		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+
+	it('never matches a leaf whose state cannot be read', () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const host = createFakeLeaf(app);
+		addRootLeaf(app, host);
+		const broken = createFakeLeaf(app);
+		makeUnreadable(broken);
+		addRootLeaf(app, broken);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		const result = focusOpenLeaf(app, 'A.md', host);
+
+		expect(result).toBe(false);
+		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+
+	it('picks the first match when several leaves have the path', async () => {
+		const app = createFakeWorkspaceApp({ files: {} });
+		const host = createFakeLeaf(app);
+		addRootLeaf(app, host);
+		const first = createFakeLeaf(app);
+		await first.setViewState({ type: 'markdown', state: { file: 'A.md' } });
+		addRootLeaf(app, first);
+		const second = createFakeLeaf(app);
+		await second.setViewState({ type: 'markdown', state: { file: 'A.md' } });
+		addRootLeaf(app, second);
+		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+
+		const result = focusOpenLeaf(app, 'A.md', host);
+
+		expect(result).toBe(true);
+		expect(setActiveLeaf).toHaveBeenCalledWith(first, { focus: true });
 	});
 });
 

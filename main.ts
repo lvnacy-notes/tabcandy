@@ -13,6 +13,7 @@ import {
 import { checkForPluginUpdates } from './src/services/versionCheck';
 import { registerQuotesVaultWatcher, syncQuotesFile } from './src/services/quotes';
 import { registerNewTabHijack } from './src/services/newTabHijack';
+import { registerStackedTabPanes } from './src/services/stackedTabPanes';
 import { registerTabCommands } from './src/services/tabCommands';
 import { registerTabTracking } from './src/services/tabNavigation';
 
@@ -119,6 +120,11 @@ export default class TabCandyPlugin extends Plugin {
 		registerTabTracking(
 			this.app,
 			(eventRef) => this.registerEvent(eventRef)
+		);
+
+		registerStackedTabPanes(
+			this.settingsStore,
+			(cleanup) => this.register(cleanup)
 		);
 	}
 

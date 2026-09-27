@@ -10,7 +10,13 @@ import {
 } from 'obsidian';
 import SettingsStore from '../settings/SettingsStore';
 import { executeEnabledPluginCommand } from '../services/commands';
-import { getClosedTabs, reopenClosedTab } from '../services/tabNavigation';
+import {
+	focusOpenLeaf,
+	getClosedTabs,
+	getViewStateFilePath,
+	removeClosedTab,
+	reopenClosedTab,
+} from '../services/tabNavigation';
 import { BackgroundTheme, ClosedTabEntry } from '../types';
 import { getTimeOfDayGreeting } from './utils/time';
 import {
@@ -56,20 +62,44 @@ const App = ({
 		mainDivRef.current?.focus();
 	}, []);
 
-	// Opens directly on the leaf hosting *this* Tab Candy instance, rather
-	// than asking Obsidian to resolve "the right leaf" itself (e.g. via
-	// workspace.getLeaf(false)). Clicking something in Recent Files or
-	// Bookmarks should always land in the exact new tab you're looking at
-	// - using the leaf reference we already hold is simply the most direct
-	// way to guarantee that, regardless of whatever heuristics Obsidian's
-	// own leaf-resolution might apply.
+	/**
+	 * Opens directly on the leaf hosting *this* Tab Candy instance, rather
+	 * than asking Obsidian to resolve "the right leaf" itself (e.g. via
+	 * workspace.getLeaf(false)). Clicking something in Recent Files or
+	 * Bookmarks should always land in the exact new tab you're looking at
+	 * - using the leaf reference we already hold is simply the most direct
+	 * way to guarantee that, regardless of whatever heuristics Obsidian's
+	 * own leaf-resolution might apply. This stays true whenever
+	 * dashboardFocusesOpenTab is off, or the file has no other open tab to
+	 * switch to instead.
+	 */ 
 	const openFile = (file: TFile) => {
+		if (
+			settings.dashboardFocusesOpenTab &&
+			focusOpenLeaf(app, file.path, leaf)
+		) {
+			return;
+		}
 		void leaf.openFile(file);
 	};
 
-	// Same rationale as openFile() above: always reopens into the leaf
-	// hosting this Tab Candy instance.
+	/**
+	 * Same rationale as openFile() above: always reopens into the leaf hosting
+	 * this Tab Candy instance, unless dashboardFocusesOpenTab is on and the
+	 * closed note is already open somewhere else - in which case switching to
+	 * it, rather than reopening a second copy, is itself the "use" that
+	 * removes the entry from the ring.
+	 */
 	const reopenTab = (entry: ClosedTabEntry) => {
+		const path = getViewStateFilePath(entry.viewState);
+		if (
+			settings.dashboardFocusesOpenTab &&
+			path !== null &&
+			focusOpenLeaf(app, path, leaf)
+		) {
+			removeClosedTab(entry);
+			return;
+		}
 		void reopenClosedTab(app, entry, leaf);
 	};
 

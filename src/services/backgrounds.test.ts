@@ -7,7 +7,11 @@ import {
 	vi
 } from 'vitest';
 import SettingsStore from '../settings/SettingsStore';
-import { buildSettings, createConfiguredApp } from '../test/fakes';
+import {
+	buildSettings,
+	createConfiguredApp,
+	getExistingFile
+} from '../test/fakes';
 import { TFile } from 'obsidian';
 import {
 	filterExistingFiles,
@@ -397,9 +401,9 @@ describe('registerBackgroundVaultWatchers', () => {
 		const { app, store } = setUp();
 
 		await app.vault.adapter.write('Backgrounds/existing.png', 'new bytes');
-		const file = app.vault.getAbstractFileByPath('Backgrounds/existing.png');
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present
-		app.vault.trigger('modify', file!);
+		const file = getExistingFile(app, 'Backgrounds/existing.png');
+
+		app.vault.trigger('modify', file);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual(['Backgrounds/existing.png']);
@@ -429,10 +433,12 @@ describe('registerBackgroundVaultWatchers', () => {
 			manualBackgroundFiles: ['Elsewhere/picture.png'],
 		});
 		await app.vault.create('Elsewhere/picture.png', '');
-		const file = app.vault.getAbstractFileByPath('Elsewhere/picture.png');
+		const file = getExistingFile(app, 'Elsewhere/picture.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present. Vault.delete() (not FileManager.trashFile()) is deliberate: it's what fires the 'delete' event this test exercises, not a stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file!);
+		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
+		// what fires the 'delete' event this test exercises, not a
+		// stand-in for a user-facing delete action.
+		await app.fileManager.trashFile(file);
 
 		expect(store.get().manualBackgroundFiles).toEqual([]);
 	});
@@ -442,20 +448,24 @@ describe('registerBackgroundVaultWatchers', () => {
 			manualBackgroundFiles: ['Elsewhere/keep.png'],
 		});
 		await app.vault.create('Elsewhere/other.png', '');
-		const file = app.vault.getAbstractFileByPath('Elsewhere/other.png');
+		const file = getExistingFile(app, 'Elsewhere/other.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present. Vault.delete() (not FileManager.trashFile()) is deliberate: it's what fires the 'delete' event this test exercises, not a stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file!);
+		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
+		// what fires the 'delete' event this test exercises, not a
+		// stand-in for a user-facing delete action.
+		await app.fileManager.trashFile(file);
 
 		expect(store.get().manualBackgroundFiles).toEqual(['Elsewhere/keep.png']);
 	});
 
 	it('re-syncs when a file inside the configured folder is deleted', async () => {
 		const { app, store } = setUp();
-		const file = app.vault.getAbstractFileByPath('Backgrounds/existing.png');
+		const file = getExistingFile(app, 'Backgrounds/existing.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present. Vault.delete() (not FileManager.trashFile()) is deliberate: it's what fires the 'delete' event this test exercises, not a stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file!);
+		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
+		// what fires the 'delete' event this test exercises, not a
+		// stand-in for a user-facing delete action.
+		await app.fileManager.trashFile(file);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([]);
@@ -466,10 +476,9 @@ describe('registerBackgroundVaultWatchers', () => {
 			manualBackgroundFiles: ['Elsewhere/old-name.png'],
 		});
 		await app.vault.create('Elsewhere/old-name.png', '');
-		const file = app.vault.getAbstractFileByPath('Elsewhere/old-name.png');
+		const file = getExistingFile(app, 'Elsewhere/old-name.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present
-		await app.vault.rename(file!, 'Elsewhere/new-name.png');
+		await app.vault.rename(file, 'Elsewhere/new-name.png');
 
 		expect(store.get().manualBackgroundFiles).toEqual([
 			'Elsewhere/new-name.png',
@@ -479,10 +488,9 @@ describe('registerBackgroundVaultWatchers', () => {
 	it('re-syncs when a file is renamed into the configured folder', async () => {
 		const { app, store } = setUp();
 		await app.vault.create('Elsewhere/incoming.png', '');
-		const file = app.vault.getAbstractFileByPath('Elsewhere/incoming.png');
+		const file = getExistingFile(app, 'Elsewhere/incoming.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- created above, guaranteed present
-		await app.vault.rename(file!, 'Backgrounds/incoming.png');
+		await app.vault.rename(file, 'Backgrounds/incoming.png');
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([
@@ -493,10 +501,9 @@ describe('registerBackgroundVaultWatchers', () => {
 
 	it('re-syncs when a file is renamed out of the configured folder', async () => {
 		const { app, store } = setUp();
-		const file = app.vault.getAbstractFileByPath('Backgrounds/existing.png');
+		const file = getExistingFile(app, 'Backgrounds/existing.png');
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- seeded above, guaranteed present
-		await app.vault.rename(file!, 'Elsewhere/existing.png');
+		await app.vault.rename(file, 'Elsewhere/existing.png');
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([]);

@@ -75,6 +75,17 @@ export interface TabCandySettings {
 	 * matches the plugin's out-of-the-box behavior.
 	 */
 	replaceEmptyTabsWithTabCandy: boolean;
+	/**
+	 * Governs focusOpenLeaf() in src/services/tabNavigation.ts: when true,
+	 * clicking a note in the recent files, bookmarks, or recently closed
+	 * tabs lists that is already open in another root leaf switches to
+	 * that leaf instead of opening a second copy in the dashboard's own
+	 * leaf. Scoped to those three dashboard lists only - commands (like
+	 * "Reopen closed tab"), links, the Quick Switcher and the File
+	 * Explorer are unaffected. Off by default, matching every other
+	 * behavior-changing toggle added in v1.3.
+	 */
+	dashboardFocusesOpenTab: boolean;
 	backgroundTheme: BackgroundTheme;
 	/**
 	 * A vault-relative path to a single image, picked via the `file`
@@ -167,6 +178,15 @@ export interface TabCandySettings {
 	 * by this - it only controls whether the list is shown.
 	 */
 	showRecentlyClosedTabs: boolean;
+	/**
+	 * Governs src/services/stackedTabPanes.ts: when true, a Tab Candy body
+	 * class makes stacked-tab panes fill the workspace instead of
+	 * Obsidian's default half-width layout. Off by default so nothing
+	 * changes on install or upgrade. The optional Style Settings slider
+	 * (styles.css's @settings block) only ever narrows the width while
+	 * this is on - it has no effect while it's off.
+	 */
+	widenStackedTabPanes: boolean;
 }
 
 /**

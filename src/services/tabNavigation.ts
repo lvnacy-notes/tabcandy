@@ -106,6 +106,29 @@ export function closeTabsInFolder(
 }
 
 /**
+ * If a root leaf other than `host` already has `path` open, switches focus
+ * to it and returns true. Otherwise returns false and leaves the workspace
+ * untouched. Matches by file path only, regardless of view type, and takes
+ * the first match in iterateRootLeaves() order - deliberately looser than
+ * toTabRecord()'s type-plus-path duplicate key, since this only moves
+ * focus rather than destroying a tab.
+ */
+export function focusOpenLeaf(
+	app: App,
+	path: string,
+	host: WorkspaceLeaf
+): boolean {
+	const existing = getRootLeaves(app).find(
+		(leaf) => leaf !== host && getLeafFilePath(leaf) === path
+	);
+	if (!existing) {
+		return false;
+	}
+	app.workspace.setActiveLeaf(existing, { focus: true });
+	return true;
+}
+
+/**
  * Removes a leaf's snapshot, so closing it afterward is not recorded.
  */
 function forgetLeaf(leaf: WorkspaceLeaf): void {
@@ -113,10 +136,38 @@ function forgetLeaf(leaf: WorkspaceLeaf): void {
 }
 
 /**
+ * Returns the element adjacent to `current` in `leaves`, wrapping around at
+ * either end. Returns null when `current` isn't in the list (nothing to
+ * cycle from) or the list has fewer than two elements (nothing to cycle
+ * to).
+ */
+export function getAdjacentLeaf<T>(
+	leaves: T[],
+	current: T,
+	direction: 1 | -1
+): T | null {
+	const index = leaves.indexOf(current);
+	if (index === -1 || leaves.length < 2) {
+		return null;
+	}
+	return leaves[(index + direction + leaves.length) % leaves.length];
+}
+
+/**
  * The closed-tabs ring, newest first.
  */
 export function getClosedTabs(): readonly ClosedTabEntry[] {
 	return [...closedTabsRing].reverse();
+}
+
+/**
+ * A leaf's file path, or null if it has none or its state can't be read.
+ * A one-line wrapper around getViewStateFilePath() for callers that only
+ * have a leaf, not an already-read view state.
+ */
+function getLeafFilePath(leaf: WorkspaceLeaf): string | null {
+	const viewState = readViewState(leaf);
+	return viewState === null ? null : getViewStateFilePath(viewState);
 }
 
 /**
@@ -140,6 +191,31 @@ function getRootLeaves(app: App): WorkspaceLeaf[] {
 export function getViewStateFilePath(viewState: ViewState): string | null {
 	const { file } = viewState.state ?? {};
 	return typeof file === 'string' ? file : null;
+}
+
+/**
+ * Moves focus to the next (`1`) or previous (`-1`) tab, walking every root
+ * leaf in iterateRootLeaves() order and wrapping at both ends. The current
+ * tab is resolved via getMostRecentLeaf(); if that returns null, or a leaf
+ * outside the root leaves, nothing happens - getAdjacentLeaf() already
+ * returns null for a `current` that isn't in the list, so there's no need
+ * to check root-leaf membership separately here the way closeOtherTabs()
+ * does.
+ */
+export function goToAdjacentTab(app: App, direction: 1 | -1): void {
+	const current = app.workspace.getMostRecentLeaf();
+	if (current === null) {
+		return;
+	}
+
+	const next = getAdjacentLeaf(
+		getRootLeaves(app),
+		current,
+		direction
+	);
+	if (next) {
+		app.workspace.setActiveLeaf(next, { focus: true });
+	}
 }
 
 /**

@@ -125,6 +125,41 @@ Tab Candy's colors can be customized through the [Style Settings](https://github
 
 When you're using a Local or Custom background image, Tab Candy can pick its overlay text color automatically from that image's own dominant color, contrast-adjusted for legibility, instead of a single fixed tone. Turn it on from the **Design** page in Tab Candy's settings.
 
+## Navigation
+
+Beyond the new tab screen itself, Tab Candy adds a handful of commands and settings for managing tabs day to day. Commands are available from the command palette; none of them come with a default hotkey, so bind whichever ones you use often under **Settings → Hotkeys**.
+
+### Closing tabs
+
+- **Close duplicate tabs** — if the same note is open in more than one tab, closes the extras and keeps one.
+- **Close all tabs except this one**.
+- **Close tabs in folder…** — pick a folder, and every tab showing a note inside it closes. Whether this reaches into subfolders too is a toggle on the **Function** page, under **Workspace**.
+
+None of the three ever close a pinned tab.
+
+### Reopening tabs
+
+- **Reopen closed tab** re-opens your most recently closed tab.
+- Turn on **Show recently closed tabs** (Function page) to also see a short list of recently closed tabs right on the new tab screen — click one to reopen it.
+
+### Moving between tabs
+
+- **Search open tabs** — a quick fuzzy-search list of every open tab, for jumping straight to one by name instead of clicking through the tab bar.
+- **Go to next/previous tab across groups** — cycles through every open tab, across every tab group, wrapping back to the start once it reaches the end. Unlike Obsidian's own tab-cycling shortcuts, it isn't limited to the current group.
+
+### Stacked tab panes
+
+If you use Obsidian's stacked tabs, **Widen stacked tab panes** (Function page, under **Workspace**) makes the open pane fill the available width instead of the narrower default Obsidian ships with. With the [Style Settings](https://github.com/community-archive/obsidian-style-settings) plugin installed, a slider under Style Settings → Tab Candy lets you pick a width between 40% and 100% instead of always going full width.
+
+> [!NOTE]
+> If you already use a CSS snippet that sets `--tab-stacked-pane-width` yourself, this setting and your snippet are touching the same property — whichever one Obsidian happens to load later wins, so don't rely on either one reliably overriding the other.
+>
+> Separately, some versions of Obsidian don't immediately size a newly-opened stacked pane to the full width, even once this setting (or a plain snippet doing the same thing) is on — dragging the pane's border applies it. This is Obsidian's own stacked-tab layout behavior, not something Tab Candy controls.
+
+### Switch to notes that are already open
+
+Normally, clicking a note in Recent Files, Bookmarks, or the recently closed tabs list opens it in the current tab, even if that note is already open somewhere else. Turn on **Switch to notes that are already open** (Function page, under **New tab behavior**) to switch to the existing tab instead of opening a second copy.
+
 ## Installation
 
 ### Via Community Plugins (recommended)

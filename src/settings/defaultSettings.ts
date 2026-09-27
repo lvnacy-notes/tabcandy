@@ -18,6 +18,7 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	// wrong number here should never be load-bearing).
 	settingsVersion: 0,
 	replaceEmptyTabsWithTabCandy: true,
+	dashboardFocusesOpenTab: false,
 	backgroundTheme: BackgroundTheme.TRANSPARENT,
 	customBackground: '',
 	backgroundsFolder: '',
@@ -43,4 +44,5 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	overlayTextContrastCache: {},
 	closeTabsInFolderRecursive: false,
 	showRecentlyClosedTabs: false,
+	widenStackedTabPanes: false,
 };
