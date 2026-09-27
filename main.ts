@@ -1,11 +1,8 @@
 import { Plugin } from 'obsidian';
-import {
-	TabCandyView,
-	TAB_CANDY_VIEW_TYPE
-} from './src/TabCandyView';
+import { TabCandyView } from './src/TabCandyView';
 import SettingsStore from './src/settings/SettingsStore';
 import TabCandySettingTab from './src/settings/SettingsTab';
-import { TabCandySettings } from './src/types';
+import { TAB_CANDY_VIEW_TYPE, TabCandySettings } from './src/types';
 import { normalizeSettings } from './src/settings/normalizeSettings';
 import {
 	pruneMissingManualBackgroundFiles,
@@ -15,7 +12,10 @@ import {
 } from './src/services/backgrounds';
 import { checkForPluginUpdates } from './src/services/versionCheck';
 import { registerQuotesVaultWatcher, syncQuotesFile } from './src/services/quotes';
-import { activateView, registerNewTabHijack } from './src/services/newTabHijack';
+import { registerNewTabHijack } from './src/services/newTabHijack';
+import { registerStackedTabPanes } from './src/services/stackedTabPanes';
+import { registerTabCommands } from './src/services/tabCommands';
+import { registerTabTracking } from './src/services/tabNavigation';
 
 /**
  * This allows a "live-reload" of Obsidian when developing the plugin.
@@ -105,18 +105,26 @@ export default class TabCandyPlugin extends Plugin {
 
 		this.addSettingTab(new TabCandySettingTab(this.app, this));
 
-		this.addCommand({
-			id: 'open-tab-candy',
-			name: 'Open new tab',
-			callback: () => {
-				void activateView(this.app);
-			},
-		});
-
 		registerNewTabHijack(
 			this.app,
 			this.settingsStore,
 			(eventRef) => this.registerEvent(eventRef)
+		);
+
+		registerTabCommands(
+			this.app,
+			this.settingsStore,
+			(command) => this.addCommand(command)
+		);
+
+		registerTabTracking(
+			this.app,
+			(eventRef) => this.registerEvent(eventRef)
+		);
+
+		registerStackedTabPanes(
+			this.settingsStore,
+			(cleanup) => this.register(cleanup)
 		);
 	}
 

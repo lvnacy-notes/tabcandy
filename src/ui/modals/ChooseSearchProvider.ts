@@ -1,6 +1,9 @@
 import { App, FuzzySuggestModal } from 'obsidian';
-import { SearchProvider, TabCandySettings } from '../../types';
-import { SEARCH_PROVIDER } from '../../settings/defaultSettings';
+import {
+	SEARCH_PROVIDER,
+	SearchProvider,
+	TabCandySettings
+} from '../../types';
 import { listSearchProviderCommands } from '../../services/commands';
 
 /**

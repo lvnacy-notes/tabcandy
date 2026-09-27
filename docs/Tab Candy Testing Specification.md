@@ -140,7 +140,7 @@ Distinct from the permanent exclusions above: things not tested *yet*, not thing
 
 | Gap | Reason |
 |:----|:-------|
-| _(none logged yet)_ | |
+| `App.tsx`'s `openFile()` (Recent Files / Bookmarks click-to-open, including its `dashboardFocusesOpenTab` branch) | The whole function has never had a render-and-click harness. Recent Files/Bookmarks click-to-open is a supplementary dashboard convenience, not on the load-bearing list; closing just the `dashboardFocusesOpenTab` branch would mean building that harness from scratch for a non-load-bearing surface. `reopenTab`'s equivalent branch, by contrast, already had a test harness in place (`closedTabs.test.tsx`), so its gap was closed directly instead of logged here. |
 
 
 ## When to Expand the Suite

@@ -2,5 +2,8 @@
   "tabcandy",
   "git-graph",
   "automatic-table-of-contents",
-  "obsidian-style-settings"
+  "obsidian-style-settings",
+  "templater-obsidian",
+  "dataview",
+  "folder-notes"
 ]

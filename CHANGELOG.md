@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Release [1.3.0] - 2026-09-27
+
+- Added commands to close duplicate tabs, close every tab except the current one, and close every tab in a chosen folder (optionally including its subfolders) — none of these ever close a pinned tab
+- Added a "Reopen closed tab" command, and an optional "Recently closed tabs" list on the new tab screen
+- Added a "Search open tabs" command for fuzzy-jumping straight to any currently open tab
+- Added commands to cycle to the next/previous tab across every tab group, not just the current one
+- Added a "Widen stacked tab panes" setting, with an optional Style Settings slider for picking an exact width
+- Added a setting to switch to a note's existing tab instead of opening a duplicate, when clicking it from Recent Files, Bookmarks, or Recently closed tabs
+- Cleaned up latent ESLint disable directives in test files
+- Updated ESLint config to block disable directives project-wide
+
 ## Release [1.2.0] - 2026-09-17
 
 - Split the Settings into two categories, organizing all options within them

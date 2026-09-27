@@ -16,6 +16,16 @@ settings:
         type: variable-color
         format: hex
         default: '#dadada'
+    -
+        id: tabcandy-stacked-pane-width
+        title: Stacked tab pane width
+        description: Width of each pane in stacked tab mode. Only applies while "Widen stacked tab panes" is on in Tab Candy's settings.
+        type: variable-number-slider
+        default: 100
+        min: 40
+        max: 100
+        step: 5
+        format: '%'
 */
 
 @import "src/app/App.css";
@@ -45,4 +55,11 @@ stock Obsidian. */
 		--tabcandy-tab-active-color,
 		var(--tab-text-color-focused-active)
 	);
+}
+
+/* Global workspace layout, not scoped to Tab Candy's view. Only applies while
+the "Widen stacked tab panes" setting has put the class on <body>. The width is
+100% unless the optional Style Settings slider sets --tabcandy-stacked-pane-width. */
+body:where(.tabcandy-widen-stacked-panes) {
+	--tab-stacked-pane-width: var(--tabcandy-stacked-pane-width, 100%);
 }

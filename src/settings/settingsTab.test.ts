@@ -61,7 +61,7 @@ describe('getSettingDefinitions', () => {
 		]);
 	});
 
-	it('relocates New tab behavior, Search, Time, Greeting, Recent files, Bookmark, and Quote settings under Function', () => {
+	it('relocates New tab behavior, Search, Time, Greeting, Recent files, Bookmark, Recently closed tabs, Quote, and Workspace settings under Function', () => {
 		const tab = buildTab();
 
 		const [functionPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
@@ -76,7 +76,9 @@ describe('getSettingDefinitions', () => {
 			'Greeting settings',
 			'Recent file settings',
 			'Bookmark settings',
+			'Recently closed tabs settings',
 			'Quote settings',
+			'Workspace',
 		]);
 	});
 

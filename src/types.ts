@@ -1,4 +1,18 @@
+import { ViewState, WorkspaceLeaf } from 'obsidian';
 import { OverlayContrastResult } from './services/overlayContrast';
+
+// The number of entries kept in the closed-tabs ring, and shown in the
+// dashboard list - the same count Recent Files and Bookmarks use.
+export const CLOSED_TABS_LIMIT = 5;
+
+export const SEARCH_PROVIDER = [
+	'switcher',
+	'omnisearch',
+	'darlal-switcher-plus',
+	'obsidian-another-quick-switcher',
+];
+
+export const TAB_CANDY_VIEW_TYPE = 'tabcandy-react-view';
 
 export enum BackgroundTheme {
 	CUSTOM = 'custom',
@@ -7,19 +21,25 @@ export enum BackgroundTheme {
 	TRANSPARENT_WITH_SHADOWS = 'transparent with shadows',
 }
 
-export enum TIME_FORMAT {
-	TWELVE_HOUR = '12-hour',
-	TWENTY_FOUR_HOUR = '24-hour',
-}
-
 export enum BOOKMARK_SOURCE {
 	ALL = 'all',
 	GROUP = 'group',
 }
 
-export interface SearchProvider {
-	command: string;
-	display: string;
+export enum TIME_FORMAT {
+	TWELVE_HOUR = '12-hour',
+	TWENTY_FOUR_HOUR = '24-hour',
+}
+
+/**
+ * A closed tab's remembered state: the view state it can be reopened from,
+ * and the title it was showing at the moment it closed (captured
+ * separately since a closed leaf can no longer report its own display
+ * text).
+ */
+export interface ClosedTabEntry {
+	viewState: ViewState;
+	title: string;
 }
 
 export interface CustomQuote {
@@ -33,6 +53,11 @@ export interface CustomQuote {
 export interface Quote {
 	content: string;
 	author: string;
+}
+
+export interface SearchProvider {
+	command: string;
+	display: string;
 }
 
 export interface TabCandySettings {
@@ -50,6 +75,17 @@ export interface TabCandySettings {
 	 * matches the plugin's out-of-the-box behavior.
 	 */
 	replaceEmptyTabsWithTabCandy: boolean;
+	/**
+	 * Governs focusOpenLeaf() in src/services/tabNavigation.ts: when true,
+	 * clicking a note in the recent files, bookmarks, or recently closed
+	 * tabs lists that is already open in another root leaf switches to
+	 * that leaf instead of opening a second copy in the dashboard's own
+	 * leaf. Scoped to those three dashboard lists only - commands (like
+	 * "Reopen closed tab"), links, the Quick Switcher and the File
+	 * Explorer are unaffected. Off by default, matching every other
+	 * behavior-changing toggle added in v1.3.
+	 */
+	dashboardFocusesOpenTab: boolean;
 	backgroundTheme: BackgroundTheme;
 	/**
 	 * A vault-relative path to a single image, picked via the `file`
@@ -127,4 +163,39 @@ export interface TabCandySettings {
 	 * entries whose file has since been deleted or edited.
 	 */
 	overlayTextContrastCache: Record<string, { mtime: number } & OverlayContrastResult>;
+	/**
+	 * Governs the "Close tabs in folder…" command. When true, closing tabs 
+     * in a folder also closes tabs in every subfolder beneath it. When false,
+     * only tabs directly inside the chosen folder are closed, leaving
+     * subfolders' tabs open. Neither behavior is strictly safer than the
+     * other, so this is a setting rather than a fixed choice.
+	 */
+	closeTabsInFolderRecursive: boolean;
+	/**
+	 * Shows the "Recently closed tabs" list on the dashboard
+	 * (src/app/components.tsx). Tracking closed tabs and the "Reopen
+	 * closed tab" command (src/services/tabNavigation.ts) are unaffected
+	 * by this - it only controls whether the list is shown.
+	 */
+	showRecentlyClosedTabs: boolean;
+	/**
+	 * Governs src/services/stackedTabPanes.ts: when true, a Tab Candy body
+	 * class makes stacked-tab panes fill the workspace instead of
+	 * Obsidian's default half-width layout. Off by default so nothing
+	 * changes on install or upgrade. The optional Style Settings slider
+	 * (styles.css's @settings block) only ever narrows the width while
+	 * this is on - it has no effect while it's off.
+	 */
+	widenStackedTabPanes: boolean;
+}
+
+/**
+ * A tab as far as duplicate detection is concerned: its identity key (view
+ * type + file path, or null if it has neither or its state can't be read)
+ * and whether it's protected from being auto-closed.
+ */
+export interface TabRecord {
+	leaf: WorkspaceLeaf;
+	key: string | null;   // JSON.stringify([type, file]); null when the leaf has no file path
+	isProtected: boolean; // pinned, linked (has a non-null `group`), or unreadable
 }

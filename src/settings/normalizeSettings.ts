@@ -101,6 +101,9 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 		normalized.replaceEmptyTabsWithTabCandy =
 			data.replaceEmptyTabsWithTabCandy;
 	}
+	if (typeof data.dashboardFocusesOpenTab === 'boolean') {
+		normalized.dashboardFocusesOpenTab = data.dashboardFocusesOpenTab;
+	}
 	if (typeof data.customBackground === 'string') {
 		normalized.customBackground = data.customBackground;
 	}
@@ -139,6 +142,15 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	}
 	if (typeof data.autoContrastOverlayText === 'boolean') {
 		normalized.autoContrastOverlayText = data.autoContrastOverlayText;
+	}
+	if (typeof data.closeTabsInFolderRecursive === 'boolean') {
+		normalized.closeTabsInFolderRecursive = data.closeTabsInFolderRecursive;
+	}
+	if (typeof data.showRecentlyClosedTabs === 'boolean') {
+		normalized.showRecentlyClosedTabs = data.showRecentlyClosedTabs;
+	}
+	if (typeof data.widenStackedTabPanes === 'boolean') {
+		normalized.widenStackedTabPanes = data.widenStackedTabPanes;
 	}
 
 	/**

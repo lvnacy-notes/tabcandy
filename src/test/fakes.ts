@@ -1,4 +1,4 @@
-import { App } from 'obsidian';
+import { App, TAbstractFile } from 'obsidian';
 import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import { DEFAULT_SETTINGS } from '../settings/defaultSettings';
 import { TabCandySettings } from '../types';
@@ -34,6 +34,24 @@ export function buildSettings(
 	overrides: Partial<TabCandySettings> = {}
 ): TabCandySettings {
 	return { ...DEFAULT_SETTINGS, ...overrides };
+}
+
+/**
+ * `Vault.getAbstractFileByPath()` returns `TAbstractFile | null`. Call
+ * sites in `backgrounds.test.ts`/`quotes.test.ts` that just seeded or
+ * created the file at `path` know it's already there, but the return type
+ * doesn't reflect that. This narrows to non-null via an actual runtime
+ * check rather than a `!` assertion, so there's nothing for
+ * `@typescript-eslint/no-non-null-assertion` to flag - no eslint-disable
+ * comment needed, and it fails with a clear message if a test's own setup
+ * was ever wrong, rather than a bare `null`-dereference TypeError.
+ */
+export function getExistingFile(app: App, path: string): TAbstractFile {
+	const file = app.vault.getAbstractFileByPath(path);
+	if (file === null) {
+		throw new Error(`Expected "${ path }" to already exist in the fake vault.`);
+	}
+	return file;
 }
 
 /**

@@ -11,13 +11,6 @@ const DEFAULT_SEARCH_PROVIDER: SearchProvider = {
 	display: 'Obsidian Core Quick Switcher',
 };
 
-export const SEARCH_PROVIDER = [
-	'switcher',
-	'omnisearch',
-	'darlal-switcher-plus',
-	'obsidian-another-quick-switcher',
-];
-
 export const DEFAULT_SETTINGS: TabCandySettings = {
 	// Real value is always stamped by normalizeSettings() on load; this
 	// default only matters for code that constructs settings without
@@ -25,6 +18,7 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	// wrong number here should never be load-bearing).
 	settingsVersion: 0,
 	replaceEmptyTabsWithTabCandy: true,
+	dashboardFocusesOpenTab: false,
 	backgroundTheme: BackgroundTheme.TRANSPARENT,
 	customBackground: '',
 	backgroundsFolder: '',
@@ -48,4 +42,7 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	fileQuotes: [],
 	autoContrastOverlayText: false,
 	overlayTextContrastCache: {},
+	closeTabsInFolderRecursive: false,
+	showRecentlyClosedTabs: false,
+	widenStackedTabPanes: false,
 };

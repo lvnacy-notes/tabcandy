@@ -13,6 +13,7 @@ import {
 	cleanup
 } from '@testing-library/react';
 import { addIcon, TFile } from 'obsidian';
+import { ClosedTabEntry } from '../types';
 import { createConfiguredApp } from '../test/fakes';
 import {
 	BackgroundSurface,
@@ -20,6 +21,7 @@ import {
 	Icon,
 	QuoteDisplay,
 	RecentFiles,
+	RecentlyClosedTabs,
 	SearchButton
 } from './components';
 
@@ -144,6 +146,35 @@ describe('Bookmarks', () => {
 
 		expect(onOpen).toHaveBeenCalledTimes(1);
 		expect(onOpen).toHaveBeenCalledWith(fileTwo);
+	});
+});
+
+describe('RecentlyClosedTabs', () => {
+	it('renders an empty wrapper when there are no closed tabs', () => {
+		const { container } = render(<RecentlyClosedTabs entries = { [] } onOpen = { () => {} } />);
+
+		const wrapper = container.querySelector('.tabcandy-dashboard-centeredrow');
+		expect(wrapper).not.toBeNull();
+		expect(wrapper?.children.length).toBe(0);
+	});
+
+	it('renders one entry per closed tab and opens the right one on click', () => {
+		const entryOne: ClosedTabEntry = {
+			viewState: { type: 'markdown', state: { file: 'One.md' } },
+			title: 'Untitled',
+		};
+		const entryTwo: ClosedTabEntry = {
+			viewState: { type: 'markdown', state: { file: 'Two.md' } },
+			title: 'Untitled',
+		};
+		const onOpen = vi.fn();
+		render(<RecentlyClosedTabs entries = { [entryOne, entryTwo] } onOpen = { onOpen } />);
+
+		expect(screen.getAllByText('Untitled')).toHaveLength(2);
+		fireEvent.click(screen.getAllByText('Untitled')[1]);
+
+		expect(onOpen).toHaveBeenCalledTimes(1);
+		expect(onOpen).toHaveBeenCalledWith(entryTwo);
 	});
 });
 
