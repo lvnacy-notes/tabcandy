@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "45c75fb871921c56",
+        "id": "7303732a99fdf779",
         "type": "tabs",
         "children": [
           {
-            "id": "7451abf3ba9c4b0e",
+            "id": "a121229fd0249054",
             "type": "leaf",
             "state": {
               "type": "tabcandy-react-view",
@@ -60,19 +60,6 @@
               },
               "icon": "lucide-search",
               "title": "Search"
-            }
-          },
-          {
-            "id": "3d47641f5c9ec2d2",
-            "type": "leaf",
-            "state": {
-              "type": "bookmarks",
-              "state": {
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-bookmark",
-              "title": "Bookmarks"
             }
           }
         ]
@@ -172,6 +159,16 @@
               "icon": "git-graph",
               "title": "Git graph"
             }
+          },
+          {
+            "id": "c24d23fe0392321d",
+            "type": "leaf",
+            "state": {
+              "type": "footnotes",
+              "state": {},
+              "icon": "lucide-file-signature",
+              "title": "Footnotes"
+            }
           }
         ],
         "currentTab": 5
@@ -194,8 +191,9 @@
       "git-graph:Open Git graph": false
     }
   },
-  "active": "7451abf3ba9c4b0e",
+  "active": "a121229fd0249054",
   "lastOpenFiles": [
+    "README.md",
     "temp.md",
     "dist/styles.css",
     "dist/manifest.json",

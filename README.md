@@ -4,7 +4,7 @@
 
 # 🍬 Tab Candy 🍬
 
-**A customizable new tab screen for [Obsidian](https://obsidian.md) — backgrounds, quotes, search, and more.**
+**A customizable new tab screen and tab navigation utilities for [Obsidian](https://obsidian.md) — backgrounds, quotes, search, better tab cycling, and more.**
 
 [![CI](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml/badge.svg)](https://github.com/lvnacy-notes/tabcandy/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -15,9 +15,9 @@
 
 ## What is this?
 
-Tab Candy turns Obsidian's blank new-tab screen into something worth looking at: a background image, the time, a greeting, quick search, your recent files, your bookmarks, and a quote, all in one customizable view.
+Tab Candy turns Obsidian's blank new-tab screen into something worth looking at: a background image, the time, a greeting, quick search, your recent files, your bookmarks, and a quote, all in one customizable view. And now with a host of tab navigation utilities included, Tab Candy has a little bit of sugar for everyone.
 
-It's an **evolution** of [Beautitab](https://github.com/andrewmcgivery/obsidian-beautitab) — not a continuation of it. Beautitab fell into disrepair, as unmaintained projects tend to. Tab Candy started as a fork, but the codebase underneath it has since been rebuilt from the ground up: modernized against the current Obsidian API, made to work properly on both desktop and mobile, backed by an actual automated test suite, and given a CI pipeline that gates every change. What you're looking at today shares Beautitab's spirit and its original idea, but very little of its original code.
+Some background: Tab Candy is an **evolution** of [Beautitab](https://github.com/andrewmcgivery/obsidian-beautitab) — not a continuation of it. Tab Candy started as a fork, but the codebase has since been rebuilt from the ground up: modernized against the current Obsidian API, made to work properly on both desktop and mobile, backed by an actual automated test suite, and given a CI pipeline that gates every change. What you're looking at today shares Beautitab's spirit and its original idea, but very little of its original code.
 
 > [!NOTE]
 > **A word of thanks.** None of this exists without Andrew McGivery's original work on Beautitab — the concept, the settings-first design philosophy, the whole idea of what a "pretty new tab" could be for Obsidian. Building something fun enough that someone else wants to keep it alive for years afterward is its own kind of success. Thank you for making Tab Candy possible in the first place. 🙏
@@ -127,13 +127,16 @@ When you're using a Local or Custom background image, Tab Candy can pick its ove
 
 ## Navigation
 
-Beyond the new tab screen itself, Tab Candy adds a handful of commands and settings for managing tabs day to day. Commands are available from the command palette; none of them come with a default hotkey, so bind whichever ones you use often under **Settings → Hotkeys**.
+Beyond the new tab screen itself, Tab Candy adds a handful of commands and settings for general tabs management. Commands are available from the command palette; bind your hotkeys under **Settings → Hotkeys** to add them your workflows.
+
+> [!NOTE]
+> Some of these features overlap with a number of plugins, which will be listed at the end of this section.
 
 ### Closing tabs
 
 - **Close duplicate tabs** — if the same note is open in more than one tab, closes the extras and keeps one.
 - **Close all tabs except this one**.
-- **Close tabs in folder…** — pick a folder, and every tab showing a note inside it closes. Whether this reaches into subfolders too is a toggle on the **Function** page, under **Workspace**.
+- **Close tabs in folder…** — pick a folder, and every tab showing a note inside it closes. Whether or not this reaches into subfolders is a toggle on the **Function** page, under **Workspace**.
 
 None of the three ever close a pinned tab.
 
@@ -152,13 +155,27 @@ None of the three ever close a pinned tab.
 If you use Obsidian's stacked tabs, **Widen stacked tab panes** (Function page, under **Workspace**) makes the open pane fill the available width instead of the narrower default Obsidian ships with. With the [Style Settings](https://github.com/community-archive/obsidian-style-settings) plugin installed, a slider under Style Settings → Tab Candy lets you pick a width between 40% and 100% instead of always going full width.
 
 > [!NOTE]
-> If you already use a CSS snippet that sets `--tab-stacked-pane-width` yourself, this setting and your snippet are touching the same property — whichever one Obsidian happens to load later wins, so don't rely on either one reliably overriding the other.
->
+> If you already use a CSS snippet that sets `--tab-stacked-pane-width` yourself, this setting and your snippet are touching the same property — whichever one Obsidian happens to load later wins. If you're content with your snippet, leave this feature turned off. If you want access to the slider in Style Settings, to customize the width, turn your snippet off and turn this feature on. You will need the [Style Settings plugin](https://community.obsidian.md/plugins/obsidian-style-settings) to use the slider.
+
+> [!IMPORTANT]
 > Separately, some versions of Obsidian don't immediately size a newly-opened stacked pane to the full width, even once this setting (or a plain snippet doing the same thing) is on — dragging the pane's border applies it. This is Obsidian's own stacked-tab layout behavior, not something Tab Candy controls.
 
 ### Switch to notes that are already open
 
 Normally, clicking a note in Recent Files, Bookmarks, or the recently closed tabs list opens it in the current tab, even if that note is already open somewhere else. Turn on **Switch to notes that are already open** (Function page, under **New tab behavior**) to switch to the existing tab instead of opening a second copy.
+
+### Plugins with similar features
+
+This table lists other plugins that provide some of the included features. If you need specific behavior and not all the bells and whistles Tab Candy provides, one of these plugins may be a better fit.
+
+I do not endorse or recommend these plugins, as I have not used them myself. I mention them as alternatives to help you decide how best to augment your Obsidian experience. Do your due diligence before installing and enabling any plugins, including Tab Candy.
+
+| Feature | Plugin |
+| ------- | ------ |
+| Protecting pinned notes from being closed | [Pin Tab Guard](https://community.obsidian.md/plugins/pin-tab-guard) or [Real Pin](https://community.obsidian.md/plugins/real-pin) |
+| Close duplicate tabs                      | [Tab Navigator](https://community.obsidian.md/plugins/tab-navigator)                                                               |
+| Fuzzy search open tabs                    | [Tab Navigator](https://community.obsidian.md/plugins/tab-navigator)                                                               |
+| Cycle through open tabs                   | [Tab Switcher](https://community.obsidian.md/plugins/cycle-through-panes)                                                          |
 
 ## Installation
 
@@ -205,22 +222,11 @@ BRAT will also keep you on the latest release, betas included, if you opt into p
 
 ## Reporting issues
 
-Found a bug? [Open an issue](../../issues) and include as much detail as you can — what you expected, what happened instead, and a screenshot if it's visual. The more context, the faster it gets fixed.
+Found a bug? [Open an issue](https://github.com/lvnacy-notes/tabcandy/issues) and include as much detail as you can — what you expected, what happened instead, and a screenshot if it's visual. The more context, the faster it gets fixed. Please review existing issues before submitting a new one to avoid duplication.
 
 ## Contributing
 
-Tab Candy has a real test suite (Vitest, run against mocked Obsidian internals) and a CI pipeline that runs typecheck, lint, tests, and a coverage floor on every pull request. If you're looking to contribute code, that's the bar a PR needs to clear.
-
-```bash
-pnpm install
-pnpm test      # run the test suite
-pnpm lint      # lint
-pnpm build     # production build → dist/
-```
-
-Requires Node 24 or newer, and [pnpm](https://pnpm.io/) (version pinned in `package.json`).
-
-See [CONTRIBUTING.md](./.github/CONTRIBUTING.md) for more.
+Tab Candy is not accepting PRs at this time. Please report bugs or submit feature requests by raising an issue or starting a discussion. If Tab Candy opens up to PRs in the future, guidance for contributing to the project can be found in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Credits
 

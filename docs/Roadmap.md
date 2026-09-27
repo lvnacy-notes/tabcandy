@@ -14,7 +14,7 @@ The future of Tab Candy! Have ideas for additional features? Please raise an [is
 - **v1.0 — Shipped.** Tab Candy is live in Obsidian's community plugin browser.
 - **v1.1 — Shipped.** Markdown-based `fileQuotes` (vault-synced blockquote file, additive alongside manual custom quotes) is live.
 - **v1.2 — Shipped.** Style customization is live: tab-bar colors via the Style Settings community plugin, plus an auto-contrast overlay text option.
-- **v1.3 — Not started.** Scoped below. Navigation conveniences Obsidian doesn't ship out of the box: acting on tabs that are already open (closing a group of them, searching just among them), and a recently-closed-tabs stack.
+- **v1.3 — Shipped.** Navigation conveniences Obsidian doesn't ship out of the box: acting on tabs that are already open (closing a group of them, searching just among them), a recently-closed-tabs stack, custom tab pane width, and more.
 - **v2.0 — Not started.** Scoped below. Tab identity & grouping: coloring a grouped tab's header itself, and whether that leans on v1.2's `variable-color` Style Settings mechanism or needs its own UI.
 - **v3.0 — Not started.** Scoped below. Creates an ordered, composable list of sections users can add, remove, and reorder.
 
@@ -47,9 +47,12 @@ Uses [Style Settings](https://github.com/community-archive/obsidian-style-settin
 
 **Navigation sugar Obsidian doesn't ship**
 - `iterateAllLeaves()`/`iterateRootLeaves()` as the primitive behind "close all except this one," "close tabs matching a folder," or a fuzzy search scoped to *currently open* tabs (distinct from the quick switcher, which searches every file whether it's open or not).
-- A "recently closed tabs" stack — no browser-style Ctrl+Shift+T exists in core Obsidian. `'layout-change'` plus a small in-memory ring buffer of closed leaf states gets most of the way there. Small and self-contained enough to not need to wait on v2.0 - could slot into the current fixed layout the same way Recent Files does today.
+- "Close duplicate tabs" is now available.
+- A "recently closed tabs" stack. `'layout-change'` plus a small in-memory ring buffer of closed leaf states gets most of the way there. Small and self-contained, slots right into the current fixed layout the same way as Recent Files.
+- Tab pane width is now manageable with a switch and a slider; no more custom snippet for full pane width.
 
 ## v2.0 — Tab identity & Grouping
+---
 
 Group-based tab coloring could become a themeable variable.
 
