@@ -1,37 +1,57 @@
 {
   "main": {
-    "id": "685fb8123c60b320",
+    "id": "test-split",
     "type": "split",
     "children": [
       {
-        "id": "7303732a99fdf779",
+        "id": "026ca5f40f95b1e2",
         "type": "tabs",
         "children": [
           {
-            "id": "a121229fd0249054",
+            "id": "b69e8ff9f790e62b",
             "type": "leaf",
             "state": {
-              "type": "tabcandy-react-view",
-              "state": {},
-              "title": "New tab"
+              "type": "markdown",
+              "state": {
+                "file": "Roadmap/Tab Candy v2.0 Specification.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Tab Candy v2.0 Specification"
+            }
+          },
+          {
+            "id": "1c54e568e299a2c5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/Roadmap.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Roadmap"
             }
           }
         ],
+        "currentTab": 1,
         "stacked": true
       }
     ],
     "direction": "vertical"
   },
   "left": {
-    "id": "41807369e5129ec9",
+    "id": "cfb6716ead8bb91e",
     "type": "split",
     "children": [
       {
-        "id": "616b95effad8e2b3",
+        "id": "8802e1d3341b8fb8",
         "type": "tabs",
         "children": [
           {
-            "id": "649e8ce3c65275e3",
+            "id": "0369fe047dc03289",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -46,7 +66,7 @@
             }
           },
           {
-            "id": "dbeab9267e25e1d9",
+            "id": "3e0baf8afd702f07",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,6 +81,19 @@
               "icon": "lucide-search",
               "title": "Search"
             }
+          },
+          {
+            "id": "442424498c5df2c1",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
           }
         ]
       }
@@ -69,15 +102,15 @@
     "width": 300
   },
   "right": {
-    "id": "7704da68ffc65427",
+    "id": "948deebcf5cf3ff8",
     "type": "split",
     "children": [
       {
-        "id": "05d15632fd6fb616",
+        "id": "d4044883dce02672",
         "type": "tabs",
         "children": [
           {
-            "id": "851e07cb05cee276",
+            "id": "0a84dbeadbf501c4",
             "type": "leaf",
             "state": {
               "type": "backlink",
@@ -95,7 +128,7 @@
             }
           },
           {
-            "id": "cd5381347f170065",
+            "id": "e9c95d0931608c0a",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
@@ -108,7 +141,7 @@
             }
           },
           {
-            "id": "a01b16a59061465d",
+            "id": "dc68de47f9a58174",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -123,7 +156,7 @@
             }
           },
           {
-            "id": "a06f4e3a869da324",
+            "id": "38d34f3587da1d16",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -137,7 +170,7 @@
             }
           },
           {
-            "id": "20323be7c42de79a",
+            "id": "e893809edb48b81c",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -149,29 +182,8 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
-          },
-          {
-            "id": "fa432e0fa625c82c",
-            "type": "leaf",
-            "state": {
-              "type": "git-graph",
-              "state": {},
-              "icon": "git-graph",
-              "title": "Git graph"
-            }
-          },
-          {
-            "id": "c24d23fe0392321d",
-            "type": "leaf",
-            "state": {
-              "type": "footnotes",
-              "state": {},
-              "icon": "lucide-file-signature",
-              "title": "Footnotes"
-            }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
@@ -180,55 +192,55 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "templater-obsidian:Templater": false,
+      "daily-notes:Open today's daily note": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
-      "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
       "bases:Create new base": false,
-      "git-graph:Open Git graph": false
+      "git-graph:Open Git graph": false,
+      "templater-obsidian:Templater": false,
+      "code-space:Open code space dashboard": false
     }
   },
-  "active": "a121229fd0249054",
+  "active": "1c54e568e299a2c5",
   "lastOpenFiles": [
-    "README.md",
-    "temp.md",
+    "docs/Roadmap.md",
+    "Roadmap/Tab Candy v2.0 Specification.md",
     "dist/styles.css",
     "dist/manifest.json",
     "dist/main.js",
     "dist",
-    "node_modules/@stylistic",
-    "node_modules/@typescript",
-    "node_modules/@eslint",
-    "node_modules/@types",
-    "node_modules/@vitest",
-    "node_modules/@typescript-eslint",
-    "updates.md",
-    "Roadmap/Tab Feature Requests/Focus previously active tab after closing current tab.md",
-    "Roadmap/Tab Feature Requests/Change pinning behaviour, so tabs are “properly” pinned.md",
-    "Roadmap/Tab Feature Requests/Add new tabs last in the tab bar.md",
+    "temp.ts",
+    "Roadmap/Roadmap.md",
+    "docs/Advanced Roadmap.md",
+    "docs/temp.md",
+    "Roadmap/Tab Candy v2.0 Tab Identity and Grouping Worksheet.md",
+    "Roadmap/template-requests.md",
     "Roadmap/Tab Feature Requests/Move and Change position of tabs with commands (within the same tab group).md",
-    "Roadmap/Tab Feature Requests/Open backlinks in the second tab without creating new tabs.md",
+    "Roadmap/template-plugins.md",
+    "Roadmap/Tab Feature Requests/Navigation/IDE style navigation (tab reuse on link opening, tab management, switch to already open note).md",
     "Roadmap/Tab Feature Requests/Search for Open Tabs and Reorder Tabs in Tab Overview.md",
-    "Roadmap/Search Feature Requests/Search Plugins/Lilbee.md",
-    "Roadmap/Search Feature Requests/Search Plugins/VaultDex.md",
-    "Roadmap/Search Feature Requests/Search Plugins/VaultSearch.md",
+    "Roadmap/Tab Feature Requests/Focus previously active tab after closing current tab.md",
+    "docs/Tab Candy Testing Specification.md",
+    "Roadmap/Tab Feature Requests/Navigation/Swipe the navigation toolbar to switch between tabs on mobile.md",
+    "Roadmap/Tab Feature Requests/Navigation/Consolidate Go To Next Tab and Focus On Tab Group To The Right.md",
+    "docs/temp.js",
     "Roadmap/Tab Feature Requests/“Undo Close Tab” Action to Re-Open in Previous Location.md",
+    "Roadmap/Tab Feature Requests/Add new tabs last in the tab bar.md",
+    "Roadmap/Tab Feature Requests/Change pinning behaviour, so tabs are “properly” pinned.md",
+    "Roadmap/Tab Feature Requests/Open backlinks in the second tab without creating new tabs.md",
+    "Roadmap/weird ideas.md",
+    "Roadmap/Search Feature Requests/Search Plugins/Lilbee.md",
+    "Roadmap/Search Feature Requests/Search Plugins/VaultSearch.md",
+    "src/services/stackedTabPanes.test 2.ts",
+    "src/services/stackedTabPanes 2.ts",
     "Roadmap/temp.md",
     "Roadmap/Tab Candy v1.3 Navigation Sugar.md",
-    "Roadmap/Search Feature Requests/Search Providers.md",
-    "docs/Roadmap.md",
-    "Roadmap/Search Feature Requests/Search among tabs (Ctrl+Shift+A in browsers).md",
-    "CHANGELOG.md",
-    "CONTRIBUTING.md",
-    "ARCHIVE/refactor-implementation/REFACTOR-BASELINE.md",
-    "ARCHIVE/refactor-implementation/REFACTOR-IMPLEMENTATION-CHECKLIST.md",
-    "ARCHIVE/refactor-implementation/REFACTOR.md",
-    "ARCHIVE/refactor-implementation/REFACTOR-DECISIONS.md",
-    "ARCHIVE/prior-feature-development/Tab Candy v1.2 Implementation Spec.md",
-    "ARCHIVE/Feature Development/Tab Candy v1.2 Implementation Spec.md",
+    "src/services/stackedTabPanes.ts",
+    "src/services/stackedTabPanes.test.ts",
+    "README.md",
     "tab-candy-images/dmptnnl-e0c0fbe7-e4fb-4ca6-9807-8f403d563114.jpg",
     "tab-candy-images/dmptnnl-8f3e84fe-b633-47cf-bbcf-df809c3b8fc2.jpg",
     "tab-candy-images/dmptnnl-2b55d462-66bf-4a0e-9df1-27fbae382693.jpg",

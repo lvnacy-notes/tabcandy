@@ -1,6 +1,6 @@
 {
 	"name": "tabcandy",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"description": "A plugin for Obsidian. Create customizable new tab views with backgrounds, quotes, search, and more.",
 	"main": "dist/main.js",
 	"type": "module",
@@ -10,14 +10,12 @@
 	},
 	"scripts": {
 		"dev": "node esbuild.config.js",
-		"dev:mobile": "node esbuild.config.js --mobile",
 		"typecheck": "tsc --noEmit --skipLibCheck",
 		"typecheck:fast": "tsgo --noEmit --skipLibCheck",
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest",
-		"test:ui": "vitest --ui",
 		"build": "pnpm run typecheck && node esbuild.config.js production",
 		"version": "node version-bump.js && git add manifest.json versions.json"
 	},
