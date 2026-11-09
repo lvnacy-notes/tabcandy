@@ -215,18 +215,35 @@ export const useOverlayContrast = (
 		}
 
 		let cancelled = false;
-		void computeOverlayContrast(getBackgroundResourcePath(app, activePath)).then(
-			(result) => {
-				if (cancelled) {return;}
-				setOverlayTextColor(result.overlayTextColor);
-				void settingsStore.update({
-					overlayTextContrastCache: {
-						...settingsStore.get().overlayTextContrastCache,
-						[activePath]: { mtime: file.stat.mtime, ...result },
-					},
-				});
-			}
-		);
+		// Load via a same-origin blob: URL instead of the app://<hash>/ resource
+		// URL, which Chromium treats as cross-origin and uses to taint the canvas.
+		let blobUrl: string | null = null;
+		void app.vault
+			.readBinary(file)
+			.then((buf) => {
+				blobUrl = URL.createObjectURL(new Blob([buf]));
+				return computeOverlayContrast(blobUrl);
+			})
+			.finally(() => {
+				if (blobUrl) {URL.revokeObjectURL(blobUrl);}
+			})
+			.catch((error: unknown) => {
+				// File deleted/unreadable between the existence check and the read.
+				console.warn(`Tab Candy: could not read ${activePath} for overlay contrast`, error);
+				return null;
+			})
+			.then(
+				(result) => {
+					if (cancelled || !result) {return;}
+					setOverlayTextColor(result.overlayTextColor);
+					void settingsStore.update({
+						overlayTextContrastCache: {
+							...settingsStore.get().overlayTextContrastCache,
+							[activePath]: { mtime: file.stat.mtime, ...result },
+						},
+					});
+				}
+			);
 
 		return () => {
 			cancelled = true;

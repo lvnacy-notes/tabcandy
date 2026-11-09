@@ -347,11 +347,20 @@ export async function computeOverlayContrast(imageUrl: string): Promise<OverlayC
 		return { dominantColor: DEFAULT_OVERLAY_COLOR, overlayTextColor: DEFAULT_OVERLAY_COLOR };
 	}
 
-	const img = await loadImage(imageUrl);
-	ctx.drawImage(img, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
-	const { data } = ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+	try {
+		const img = await loadImage(imageUrl);
+		ctx.drawImage(img, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+		const { data } = ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
 
-	return computeOverlayContrastFromPixelData(data);
+		return computeOverlayContrastFromPixelData(data);
+	} catch (error) {
+		// getImageData throws a SecurityError if the canvas was tainted by a
+		// cross-origin image; loadImage rejects on decode failure. Either way,
+		// fail open to the default colors rather than leaving an unhandled
+		// promise rejection.
+		console.warn(`Tab Candy: overlay contrast failed for ${imageUrl}`, error);
+		return { dominantColor: DEFAULT_OVERLAY_COLOR, overlayTextColor: DEFAULT_OVERLAY_COLOR };
+	}
 }
 
 /**

@@ -1,5 +1,7 @@
 {
   "showRibbon": false,
   "enabledCssSnippets": [],
-  "cssTheme": "Obsidian Nord"
+  "cssTheme": "Obsidian Nord",
+  "showViewHeader": true,
+  "nativeMenus": true
 }

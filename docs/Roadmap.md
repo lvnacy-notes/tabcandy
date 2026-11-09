@@ -1,6 +1,6 @@
 The future of Tab Candy! Have ideas for additional features? Please raise an [issue](https://github.com/lvnacy-notes/tabcandy/issues/new) or start a [discussion](https://github.com/lvnacy-notes/tabcandy/discussions/new/choose). Please review issues and discussions before submitting a new idea; duplicate threads will be closed without consideration.
 
-> [!IMPORTANT] Mobile parity is a hard constraint.
+> [!IMPORTANT] Mobile parity is a hard constraint.
 > If a feature can't work on Obsidian mobile, it doesn't ship — not "desktop-only for now," not "mobile later." This isn't weighed against other tradeoffs; it rules ideas out entirely, brainstorm items included.
 
 ## Contents
@@ -15,7 +15,9 @@ The future of Tab Candy! Have ideas for additional features? Please raise an [is
 - **v1.1 — Shipped.** Markdown-based `fileQuotes` (vault-synced blockquote file, additive alongside manual custom quotes) is live.
 - **v1.2 — Shipped.** Style customization is live: tab-bar colors via the Style Settings community plugin, plus an auto-contrast overlay text option.
 - **v1.3 — Shipped.** Navigation conveniences Obsidian doesn't ship out of the box: acting on tabs that are already open (closing a group of them, searching just among them), a recently-closed-tabs stack, custom tab pane width, and more.
+- **v1.4 — Not started.** Scoped below. Standalone tab conveniences with no dependency on v2.0's grouping work — surfaced during v2.0 planning as things that don't need to wait on it.
 - **v2.0 — Not started.** Scoped below. Tab identity & grouping: coloring a grouped tab's header itself, and whether that leans on v1.2's `variable-color` Style Settings mechanism or needs its own UI.
+- **v2.1 — Not started.** Scoped below. Programmatic pin/unpin: rules that set and unset pins, plus a pin-by-default toggle, building on v2.0's tab-group work.
 - **v3.0 — Not started.** Scoped below. Creates an ordered, composable list of sections users can add, remove, and reorder.
 
 ## v1.0 — Stabilize what's shipped
@@ -51,20 +53,38 @@ Uses [Style Settings](https://github.com/community-archive/obsidian-style-settin
 - A "recently closed tabs" stack. `'layout-change'` plus a small in-memory ring buffer of closed leaf states gets most of the way there. Small and self-contained, slots right into the current fixed layout the same way as Recent Files.
 - Tab pane width is now manageable with a switch and a slider; no more custom snippet for full pane width.
 
+## v1.4 — Standalone tab conveniences
+---
+
+Small, independent additions with no dependency on v2.0's grouping work. Surfaced while scoping v2.0 as things that don't need to wait on the grouping primitive — logged here so they have a home instead of getting lost.
+
+- [ ] **Hide stacked tab titles.** A setting to hide titles on stacked tab panes, so stacked layouts stay compact. Targets Obsidian's existing stacked-tabs feature (already surfaced via `widenStackedTabPanes`/`stackedTabPanes.ts`) — a standalone setting plus a CSS rule, nothing to do with v2.0's grouping primitive.
+- [ ] Swipe the mobile nav toolbar to switch between tabs — the mobile-gesture counterpart to `goToAdjacentTab()`'s desktop command/hotkey (v1.3). No dependency on v2.0's grouping work; belongs alongside v1.3's navigation sugar rather than the grouping primitive.
+
 ## v2.0 — Tab identity & Grouping
 ---
 
 Group-based tab coloring could become a themeable variable.
-
-- Programmatic pin/unpin (`leaf.setPinned()`/`togglePinned()`) — an automation like "always pin the daily note" or "pin these N project notes," rather than requiring the user to right-click each one by hand.
 
 Obsidian's linked-pane groups (`leaf.setGroup()`/`setGroupMember()`, `workspace.getGroupLeaves()`) — the mechanism behind "these panes follow the same file." Mostly unused for anything beyond that one built-in case; a real primitive for "these tabs move together" if a use case shows up.
 
 - [ ] Scope what "colorable" actually means against Obsidian's real API surface — `setGroup()`/`setGroupMember()`/`getGroupLeaves()` identify which panes follow the same file today; there's no color concept in the public API yet. Confirm what's actually available before committing to a design.
 - [ ] Color the tab header itself for a grouped tab — the header element directly, not a separate dot or status indicator.
 - [ ] Decide whether this leans on v1.2's `variable-color` Style Settings mechanism (as originally floated) or needs its own UI, given v1.2's tab-bar work no longer needs a group-color slot itself.
-- [ ] Programmatic pin/unpin (`leaf.setPinned()`/`togglePinned()`) — an automation like "always pin the daily note" or "pin these N project notes," rather than requiring the user to right-click each one by hand.
-- [ ] React to `'pinned-change'`/`'group-change'` events directly instead of polling leaf state.
+- [ ] React to `'group-change'` events directly instead of polling leaf state.
+
+## v2.1 — Programmatic pin/unpin
+---
+
+Pinning driven by Tab Candy instead of right-clicking each tab by hand. Moved here from v1.4, and built after v2.0's tab-group work lands, since pinning tab groups wholesale hasn't been touched yet. Mobile parity applies: if it can't be done on an iPad, it doesn't ship, so desktop pointer gestures (double-click on a tab header, middle-click) are out.
+
+- [ ] **Programmatic pin/unpin.** `leaf.setPinned()`/`togglePinned()` driven by user-defined rules that set and unset pins — an automation like "pin these N project notes" instead of a right-click on each one.
+- [ ] **Pin-by-default toggle.** A setting that makes pinning the default when a note is opened (label still to be improved).
+- [ ] **Pin a tab group as a unit.** Pin each tab in a group wholesale, using v2.0's group primitive — each individual tab pinned, not a tray.
+- [ ] **Rule criteria as additive conditions on public metadata only.** Path, folder, name, extension, tags, and frontmatter properties, so everything works on mobile. No Dataview or Bases evaluation. Incomplete or empty conditions must match nothing, never everything. Keep the rule structure simple now, with room to stack rules later.
+- [ ] **Inline editor in the settings tab, not a modal,** so users can review and modify their criteria in place. Use declarative settings rows if they can handle it; otherwise hand-roll the simplest version that leaves room for complex rules later.
+
+Decided against: a "focus note in pinned tab" toggle, since Obsidian already opens links from a pinned tab in a new tab. Open questions: whether editing a note's tags or properties after it opens should pin or unpin its tab, and rule precedence if rules ever stack.
 
 ## v3.0 — Composable dashboard
 ---
@@ -79,11 +99,11 @@ Everything the new tab view shows today — the top-left search button, time, gr
 - [ ] **Reordering UI.** Some way to add a section, remove one, and change order, in the settings tab — drag handles if the declarative `Setting` API supports them cleanly, up/down buttons otherwise. Scope this after the data model and rendering land; it's the part users touch most, but it's the least risky part to get wrong.
 - [ ] **Built-in section config carries over.** Each built-in type keeps whatever configuration it has today (bookmark source/group, time format, greeting text, search provider) as that section's `type`-specific config — this is a reshaping of existing settings, not a loss of any.
 
-## v2.1 — Layouts & Workspace Enhancements
+## v3.1 — Layouts & Workspace Enhancements
 ---
 
 **Layout & splits**
-Saved-workspace launch tiles and a recently-closed-tabs widget are both plausible v2.0 built-in section types once sections are data instead of fixed JSX.
+Saved-workspace launch tiles and a recently-closed-tabs widget are both plausible v3.0 built-in section types once sections are data instead of fixed JSX.
 
 - `createLeafBySplit()` — split panes programmatically instead of requiring a drag.
-- Saved layout snapshots (what the core Workspaces plugin does under the hood) — capture an entire tab/split/group arrangement and restore it later. Candidate: quick-launch tiles on the new tab dashboard ("Project X" / "Journal" / "Research") that call `changeLayout()` against a saved arrangement. Reads naturally as a v2.0 built-in section type once sections are composable — a launcher, not a content widget.
+- Saved layout snapshots (what the core Workspaces plugin does under the hood) — capture an entire tab/split/group arrangement and restore it later. Candidate: quick-launch tiles on the new tab dashboard ("Project X" / "Journal" / "Research") that call `changeLayout()` against a saved arrangement. Reads naturally as a v3.0 built-in section type once sections are composable — a launcher, not a content widget.

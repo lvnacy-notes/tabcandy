@@ -260,6 +260,14 @@ describe('useOverlayContrast', () => {
 		return file.stat.mtime;
 	}
 
+	// The in-memory vault only serves seeded text files through readBinary(),
+	// and jsdom has no URL.createObjectURL - stub both so the blob: path runs.
+	function stubBinaryRead(app: ReturnType<typeof createConfiguredApp>) {
+		vi.spyOn(app.vault, 'readBinary').mockResolvedValue(new ArrayBuffer(8));
+		URL.createObjectURL = vi.fn(() => 'blob:tabcandy-test');
+		URL.revokeObjectURL = vi.fn();
+	}
+
 	it('returns no override when autoContrastOverlayText is off, even with an active background', () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const store = buildStore({
@@ -326,6 +334,7 @@ describe('useOverlayContrast', () => {
 
 	it('recomputes and persists a result when there is no cache entry for the active file', async () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		stubBinaryRead(app);
 		const mtime = getMtime(app, 'Backgrounds/sunset.png');
 		const store = buildStore({
 			autoContrastOverlayText: true,
@@ -357,6 +366,7 @@ describe('useOverlayContrast', () => {
 
 	it('recomputes when the cached mtime no longer matches the file', async () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		stubBinaryRead(app);
 		const mtime = getMtime(app, 'Backgrounds/sunset.png');
 		const store = buildStore({
 			autoContrastOverlayText: true,
