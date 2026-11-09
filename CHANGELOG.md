@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Release [1.3.1] - 2026-11-09
+
+- patched "SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has been tainted by cross-origin data." error
+- removed mobile and ui scripts from `package.json`
+
 ## Release [1.3.0] - 2026-09-27
 
 - Added commands to close duplicate tabs, close every tab except the current one, and close every tab in a chosen folder (optionally including its subfolders) — none of these ever close a pinned tab
