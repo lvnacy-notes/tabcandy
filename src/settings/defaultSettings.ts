@@ -6,16 +6,19 @@ import {
 	TabCandySettings,
 } from '../types';
 
+/** Search provider used until the user picks another: Obsidian's Quick Switcher. */
 const DEFAULT_SEARCH_PROVIDER: SearchProvider = {
 	command: 'switcher:open',
 	display: 'Obsidian Core Quick Switcher',
 };
 
+/**
+ * Baseline for every setting. `normalizeSettings()` starts from these and
+ * overlays validated user data, so each field here is the fallback for a
+ * missing or malformed value.
+ */
 export const DEFAULT_SETTINGS: TabCandySettings = {
-	// Real value is always stamped by normalizeSettings() on load; this
-	// default only matters for code that constructs settings without
-	// going through normalizeSettings() (there shouldn't be any, but a
-	// wrong number here should never be load-bearing).
+	/** Always overwritten by normalizeSettings(); must not be load-bearing. */
 	settingsVersion: 0,
 	replaceEmptyTabsWithTabCandy: true,
 	dashboardFocusesOpenTab: false,

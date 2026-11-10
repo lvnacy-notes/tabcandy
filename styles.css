@@ -41,11 +41,8 @@ settings:
 	text-align: right;
 }
 
-/* Real Obsidian tab-bar chrome, not anything Tab Candy owns or scopes to its
-own view - these apply globally to every tab header in the workspace.
-Untouched (no Style Settings, or the setting never edited), both fall
-through to Obsidian's own live theme variables and render identically to
-stock Obsidian. */
+/* Applies to every tab header in the workspace. Without a Style Settings
+value, both rules fall back to Obsidian's own theme variables. */
 .workspace-tab-header-inner-title {
 	color: var(--tabcandy-tab-label-color, var(--tab-text-color));
 }
@@ -57,9 +54,8 @@ stock Obsidian. */
 	);
 }
 
-/* Global workspace layout, not scoped to Tab Candy's view. Only applies while
-the "Widen stacked tab panes" setting has put the class on <body>. The width is
-100% unless the optional Style Settings slider sets --tabcandy-stacked-pane-width. */
+/* Active while "Widen stacked tab panes" is on. Width is 100% unless the
+Style Settings slider sets --tabcandy-stacked-pane-width. */
 body:where(.tabcandy-widen-stacked-panes) {
 	--tab-stacked-pane-width: var(--tabcandy-stacked-pane-width, 100%);
 }

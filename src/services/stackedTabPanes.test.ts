@@ -1,3 +1,7 @@
+/**
+ * @file Tests for `registerStackedTabPanes`: the body class follows the
+ * `widenStackedTabPanes` setting, and cleanup removes it and stops listening.
+ */
 import {
 	afterEach,
 	describe,
@@ -11,13 +15,18 @@ import {
 	registerStackedTabPanes,
 } from './stackedTabPanes';
 
+/**
+ * Builds a store seeded with default settings plus the given overrides.
+ * Persistence is a no-op.
+ *
+ * @param overrides - Settings to override on top of the defaults.
+ * @returns A SettingsStore ready to pass to `registerStackedTabPanes`.
+ */
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
 	return new SettingsStore(buildSettings(overrides), async () => {});
 }
 
-// document.body is real, shared jsdom state, not something each test gets
-// a fresh copy of - a class left on it by one test would otherwise leak
-// into the next.
+/** document.body is shared across tests; reset it so classes don't leak. */
 afterEach(() => {
 	document.body.removeClass(WIDEN_STACKED_PANES_CLASS);
 });

@@ -1,3 +1,7 @@
+/**
+ * @file Tests for `normalizeSettings`: defaults for missing or malformed
+ * data, per-type validation of every field, and version stamping.
+ */
 import {
 	describe,
 	expect,

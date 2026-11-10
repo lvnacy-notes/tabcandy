@@ -15,9 +15,9 @@ The future of Tab Candy! Have ideas for additional features? Please raise an [is
 - **v1.1 — Shipped.** Markdown-based `fileQuotes` (vault-synced blockquote file, additive alongside manual custom quotes) is live.
 - **v1.2 — Shipped.** Style customization is live: tab-bar colors via the Style Settings community plugin, plus an auto-contrast overlay text option.
 - **v1.3 — Shipped.** Navigation conveniences Obsidian doesn't ship out of the box: acting on tabs that are already open (closing a group of them, searching just among them), a recently-closed-tabs stack, custom tab pane width, and more.
-- **v1.4 — Not started.** Scoped below. Standalone tab conveniences with no dependency on v2.0's grouping work — surfaced during v2.0 planning as things that don't need to wait on it.
 - **v2.0 — Not started.** Scoped below. Tab identity & grouping: coloring a grouped tab's header itself, and whether that leans on v1.2's `variable-color` Style Settings mechanism or needs its own UI.
 - **v2.1 — Not started.** Scoped below. Programmatic pin/unpin: rules that set and unset pins, plus a pin-by-default toggle, building on v2.0's tab-group work.
+- **v2.2 — Tentative, unconfirmed.** Scoped below. Standalone tab conveniences, currently just a mobile swipe gesture for switching tabs. Held until after v2.0; not committed to a release.
 - **v3.0 — Not started.** Scoped below. Creates an ordered, composable list of sections users can add, remove, and reorder.
 
 ## v1.0 — Stabilize what's shipped
@@ -53,14 +53,6 @@ Uses [Style Settings](https://github.com/community-archive/obsidian-style-settin
 - A "recently closed tabs" stack. `'layout-change'` plus a small in-memory ring buffer of closed leaf states gets most of the way there. Small and self-contained, slots right into the current fixed layout the same way as Recent Files.
 - Tab pane width is now manageable with a switch and a slider; no more custom snippet for full pane width.
 
-## v1.4 — Standalone tab conveniences
----
-
-Small, independent additions with no dependency on v2.0's grouping work. Surfaced while scoping v2.0 as things that don't need to wait on the grouping primitive — logged here so they have a home instead of getting lost.
-
-- [ ] **Hide stacked tab titles.** A setting to hide titles on stacked tab panes, so stacked layouts stay compact. Targets Obsidian's existing stacked-tabs feature (already surfaced via `widenStackedTabPanes`/`stackedTabPanes.ts`) — a standalone setting plus a CSS rule, nothing to do with v2.0's grouping primitive.
-- [ ] Swipe the mobile nav toolbar to switch between tabs — the mobile-gesture counterpart to `goToAdjacentTab()`'s desktop command/hotkey (v1.3). No dependency on v2.0's grouping work; belongs alongside v1.3's navigation sugar rather than the grouping primitive.
-
 ## v2.0 — Tab identity & Grouping
 ---
 
@@ -76,7 +68,7 @@ Obsidian's linked-pane groups (`leaf.setGroup()`/`setGroupMember()`, `workspace.
 ## v2.1 — Programmatic pin/unpin
 ---
 
-Pinning driven by Tab Candy instead of right-clicking each tab by hand. Moved here from v1.4, and built after v2.0's tab-group work lands, since pinning tab groups wholesale hasn't been touched yet. Mobile parity applies: if it can't be done on an iPad, it doesn't ship, so desktop pointer gestures (double-click on a tab header, middle-click) are out.
+Pinning driven by Tab Candy instead of right-clicking each tab by hand. Built after v2.0's tab-group work lands, since pinning tab groups wholesale hasn't been touched yet. Mobile parity applies: if it can't be done on an iPad, it doesn't ship, so desktop pointer gestures (double-click on a tab header, middle-click) are out.
 
 - [ ] **Programmatic pin/unpin.** `leaf.setPinned()`/`togglePinned()` driven by user-defined rules that set and unset pins — an automation like "pin these N project notes" instead of a right-click on each one.
 - [ ] **Pin-by-default toggle.** A setting that makes pinning the default when a note is opened (label still to be improved).
@@ -85,6 +77,16 @@ Pinning driven by Tab Candy instead of right-clicking each tab by hand. Moved he
 - [ ] **Inline editor in the settings tab, not a modal,** so users can review and modify their criteria in place. Use declarative settings rows if they can handle it; otherwise hand-roll the simplest version that leaves room for complex rules later.
 
 Decided against: a "focus note in pinned tab" toggle, since Obsidian already opens links from a pinned tab in a new tab. Open questions: whether editing a note's tags or properties after it opens should pin or unpin its tab, and rule precedence if rules ever stack.
+
+## v2.2 — Standalone tab conveniences
+---
+
+> [!NOTE] Tentative and unconfirmed.
+> Not committed to a release. Held until after v2.0 ships, since a single standalone item doesn't justify a release of its own.
+
+Small, independent additions with no dependency on v2.0's grouping work.
+
+- [ ] Swipe the mobile nav toolbar to switch between tabs — the mobile-gesture counterpart to `goToAdjacentTab()`'s desktop command/hotkey (v1.3). No dependency on v2.0's grouping work; belongs alongside v1.3's navigation sugar rather than the grouping primitive.
 
 ## v3.0 — Composable dashboard
 ---

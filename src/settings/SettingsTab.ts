@@ -28,32 +28,32 @@ import { syncQuotesFile } from '../services/quotes';
 import debounce from '../utils/debounce';
 
 /**
- * Capitalizes the first letter of a string. The only consumer is the
- * background theme dropdown's option labels below, so this stays local
- * rather than living as its own shared utility.
+ * Uppercases the first character of a string.
+ *
+ * @param string - Text to capitalize.
+ * @returns The text with its first character uppercased.
  */
 const capitalizeFirstLetter = (string: string) =>
 	string.charAt(0).toUpperCase() + string.slice(1);
 
-// Settings whose control commits a value on every keystroke (raw text
-// input, not a discrete pick like a toggle/dropdown/folder suggestion).
-// Routed through the debounced writer so typing doesn't fire a disk write
-// per character; everything else writes immediately.
+/** Settings that commit on every keystroke, so their writes are debounced. */
 const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set([
 	'greetingText',
 ]);
 
+/** Tab Candy's settings tab, split into Function and Design pages. */
 export default class TabCandySettingTab extends PluginSettingTab {
 	plugin: TabCandyPlugin;
 
-	// Bound once in the constructor rather than created fresh inside
-	// getSettingDefinitions() (which reruns on every render), so debounced
-	// keystrokes across a rerender still collapse into the same timer
-	// instead of each rerender silently starting a new one.
+	/** Created once so debounced keystrokes share one timer across re-renders. */
 	private readonly debouncedUpdateSettings: (
 		patch: Partial<TabCandySettings>
 	) => void;
 
+	/**
+	 * @param app - The Obsidian app instance.
+	 * @param plugin - The owning plugin, used to reach the settings store.
+	 */
 	constructor(app: App, plugin: TabCandyPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
@@ -66,10 +66,12 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Update settings through the typed store and, if requested, re-render
-	 * the settings tab. Persisting to disk can fail (e.g. a disk/permissions
-	 * error surfacing from Obsidian's saveData()); that failure is caught
-	 * and surfaced here, once, rather than at every call site below.
+	 * Applies a settings patch through the store and optionally re-renders.
+	 * A failed save is logged and surfaced as a Notice, and no re-render
+	 * happens.
+	 *
+	 * @param patch - Settings fields to change.
+	 * @param options - `redraw: true` re-renders the tab after a successful save.
 	 */
 	private async updateSettings(
 		patch: Partial<TabCandySettings>,
@@ -88,13 +90,10 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Reads live settings through the store rather than PluginSettingTab's
-	 * default (which reads/writes `this.plugin.settings` directly) so a
-	 * value never bypasses SettingsStore's single source of truth. The
-	 * base class declares this as returning `unknown` (the framework can't
-	 * know our settings shape); overriding a method's return type with a
-	 * narrower type is sound covariance, so `key`'s indexed-access type
-	 * gives an honest, non-cast return type instead.
+	 * Reads a control's value from the settings store.
+	 *
+	 * @param key - The settings field the control is bound to.
+	 * @returns The field's current value.
 	 */
 	getControlValue(
 		key: keyof TabCandySettings
@@ -103,30 +102,16 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Writes live settings through the store rather than PluginSettingTab's
-	 * default. The default implementation would mutate `this.plugin.settings`
-	 * in place and persist it directly, bypassing SettingsStore.update()'s
-	 * subscriber notifications (which the live Tab Candy view depends on to
-	 * reflect a settings change without a reload) and its replace-rather-
-	 * than-mutate semantics (which React's reference-equality checks depend
-	 * on). Text-bearing keys are routed through the debounced writer so
-	 * typing doesn't persist on every keystroke; everything else persists
-	 * and re-renders immediately, matching every non-debounced call site
-	 * this replaces.
+	 * Writes a control's value through the store, so subscribers (the live
+	 * view) are notified. Debounced keys are written after a pause; all
+	 * others save immediately and re-render the tab.
 	 *
-	 * The base class declares `value: unknown` (again, the framework can't
-	 * know our settings shape). Every `SettingControl` this file defines is
-	 * a toggle, dropdown, text, or folder control, whose values are always
-	 * boolean or string - never the array/object-valued settings fields
-	 * (manualBackgroundFiles, customQuotes, topLeftSearchProvider, etc.),
-	 * which are only ever written via updateSettings() directly from a
-	 * modal callback, not through a control's key. Narrowing the override's
-	 * parameter to that real union (method parameters are checked
-	 * bivariantly, so a narrower override parameter type is accepted) is
-	 * an honest reflection of what this method actually receives, and
-	 * still requires one cast below - `key`'s type spans every settings
-	 * field including the array/object ones `value` can't be - to build
-	 * the patch object itself.
+	 * Controls here are only toggles, dropdowns, text and file/folder
+	 * pickers, so `value` is a boolean or string. Array and object fields
+	 * are written through `updateSettings()` by their modals instead.
+	 *
+	 * @param key - The settings field the control is bound to.
+	 * @param value - The new value.
 	 */
 	setControlValue(
 		key: keyof TabCandySettings,
@@ -141,6 +126,14 @@ export default class TabCandySettingTab extends PluginSettingTab {
 		return this.updateSettings(patch, { redraw: true });
 	}
 
+	/**
+	 * Computes the Design page's status badge.
+	 *
+	 * @param existingManualBackgroundFiles - Manual picks that still exist in the vault.
+	 * @param existingBackgroundFiles - Synced files that still exist in the vault.
+	 * @returns `'warning'` when the LOCAL theme is active and a recorded file
+	 *   is missing; otherwise `null`.
+	 */
 	private getDesignPageStatus(
 		existingManualBackgroundFiles: string[],
 		existingBackgroundFiles: string[]
@@ -161,18 +154,19 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			: null;
 	}
 
+	/**
+	 * Builds the declarative definitions for the Function and Design pages.
+	 * Re-run on every render.
+	 *
+	 * @returns The two settings pages.
+	 */
 	getSettingDefinitions(): SettingDefinitionItem<
 		keyof TabCandySettings
 	>[] {
-		// Filtered defensively at render time rather than trusting settings
-		// as-is: a file recorded here can be deleted or renamed outside of
-		// a vault event the plugin caught (most commonly, while Obsidian
-		// wasn't running to see the event at all). main.ts prunes both
-		// manualBackgroundFiles and backgroundFiles for real - persisting
-		// the result - once on every load and live on delete/rename events
-		// while running; this is a cheap best-effort display-only pass for
-		// whatever a slow-to-arrive prune hasn't caught up with yet, not a
-		// substitute for it.
+		/**
+		 * Display-only filter: hides recorded files that no longer exist.
+		 * Persisted pruning happens on load and on vault events.
+		 */
 		const existingManualBackgroundFiles = filterExistingFiles(
 			this.app,
 			this.plugin.settings.manualBackgroundFiles
@@ -274,11 +268,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				items: existingBackgroundFiles.map((filePath) => ({
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
-						// Every item in this group shares one `group.listEl`, so
-						// tagging it here (repeated harmlessly per item, since
-						// addClass is idempotent) turns the stack of one-image-
-						// per-row settings into a responsive CSS grid, without
-						// touching how each row itself is defined or rendered.
+						/** Rows share one `group.listEl`; tag it so they lay out as a grid. */
 						group.listEl.addClass(
 							'tabcandy-settings-localbackgrounds-grid'
 						);
@@ -301,12 +291,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				addItem: {
 					name: 'Add vault image',
 					action: () => {
-						// Stores the picked file's vault-relative path,
-						// resolved to a displayable URL at render time via
-						// getBackgroundResourcePath(). Kept as a modal
-						// rather than the native `file` control type since
-						// this appends to an array field, not a single
-						// scalar settings key.
+						/** A modal rather than a `file` control: this appends to an array. */
 						new ChooseImageSuggestModal(this.app, (result) => {
 							if (
 								this.plugin.settings.manualBackgroundFiles.includes(
@@ -329,11 +314,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 				},
 				onDelete: (index) => {
-					// Resolved by value against the same filtered array used
-					// to build `items` below, rather than trusting `index`
-					// against the raw settings array directly - the two can
-					// diverge if a recorded file no longer exists and was
-					// filtered out of what's actually rendered.
+					/** `index` refers to the filtered list, not the raw setting. */
 					const filePath = existingManualBackgroundFiles[index];
 					if (!filePath) {return;}
 					void this.updateSettings(
@@ -349,11 +330,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				items: existingManualBackgroundFiles.map((filePath) => ({
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
-						// Same shared-container trick as the synced-folder
-						// group above: tag the list's `listEl` with the grid
-						// class so these rows wrap into a grid too, while
-						// leaving addItem/onDelete/keyboard-delete (which are
-						// wired to each row by index) completely untouched.
+						/** Same grid layout as the synced-folder group above. */
 						group.listEl.addClass(
 							'tabcandy-settings-localbackgrounds-grid'
 						);
