@@ -1,3 +1,4 @@
+import { TFile, getIcon } from 'obsidian';
 import {
 	KeyboardEvent,
 	ReactNode,
@@ -5,7 +6,6 @@ import {
 	useEffect,
 	useRef
 } from 'react';
-import { TFile, getIcon } from 'obsidian';
 import { ClosedTabEntry, Quote } from '../types';
 
 interface BackgroundSurfaceProps {

@@ -1,24 +1,21 @@
 import {
+	App as ObsidianApp,
+	TFile,
+	WorkspaceLeaf
+} from 'obsidian';
+import {
 	KeyboardEvent,
 	useEffect,
 	useRef
 } from 'react';
 import {
-	App as ObsidianApp,
-	TFile,
-	WorkspaceLeaf
-} from 'obsidian';
-import SettingsStore from '../settings/SettingsStore';
-import { executeEnabledPluginCommand } from '../services/commands';
-import {
-	focusOpenLeaf,
-	getClosedTabs,
-	getViewStateFilePath,
-	removeClosedTab,
-	reopenClosedTab,
-} from '../services/tabNavigation';
-import { BackgroundTheme, ClosedTabEntry } from '../types';
-import { getTimeOfDayGreeting } from './utils/time';
+	BackgroundSurface,
+	Bookmarks,
+	QuoteDisplay,
+	RecentFiles,
+	RecentlyClosedTabs,
+	SearchButton,
+} from './components';
 import {
 	useBackground,
 	useBookmarks,
@@ -28,14 +25,17 @@ import {
 	useRecentFiles,
 	useSettings,
 } from './hooks';
+import { executeEnabledPluginCommand } from '../newtab/pluginCommands';
 import {
-	BackgroundSurface,
-	Bookmarks,
-	QuoteDisplay,
-	RecentFiles,
-	RecentlyClosedTabs,
-	SearchButton,
-} from './components';
+	focusOpenLeaf,
+	getClosedTabs,
+	getViewStateFilePath,
+	removeClosedTab,
+	reopenClosedTab,
+} from '../tabs/tabNavigation';
+import SettingsStore from '../settings/SettingsStore';
+import { getTimeOfDayGreeting } from './utils/time';
+import { BackgroundTheme, ClosedTabEntry } from '../types';
 
 const App = ({
 	app,
@@ -54,13 +54,6 @@ const App = ({
 	const recentFiles = useRecentFiles(app);
 	const bookmarks = useBookmarks(app, settings);
 	const mainDivRef = useRef<HTMLDivElement>(null);
-
-	/**
-	 * Auto focus so key presses launch search
-	 */
-	useEffect(() => {
-		mainDivRef.current?.focus();
-	}, []);
 
 	/**
 	 * Opens directly on the leaf hosting *this* Tab Candy instance, rather
@@ -111,6 +104,13 @@ const App = ({
 			runInlineSearch();
 		}
 	};
+
+	/**
+	 * Auto focus so key presses launch search
+	 */
+	useEffect(() => {
+		mainDivRef.current?.focus();
+	}, []);
 
 	return (
 		<BackgroundSurface

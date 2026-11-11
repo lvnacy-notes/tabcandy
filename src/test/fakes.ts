@@ -1,7 +1,11 @@
 import { App, TAbstractFile } from 'obsidian';
 import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import { DEFAULT_SETTINGS } from '../settings/defaultSettings';
-import { TabCandySettings } from '../types';
+import {
+	TabCandyCluster,
+	TabCandyClusters,
+	TabCandySettings
+} from '../types';
 
 /**
  * Builds a fully-wired in-memory vault via obsidian-test-mocks'
@@ -34,6 +38,39 @@ export function buildSettings(
 	overrides: Partial<TabCandySettings> = {}
 ): TabCandySettings {
 	return { ...DEFAULT_SETTINGS, ...overrides };
+}
+
+/**
+ * Cluster test-data builder, in the same spirit as `buildSettings()`:
+ * every field has a valid default, so a test only spells out the fields it
+ * cares about, and a new `TabCandyCluster` field means updating this one
+ * factory rather than every test that constructs a Cluster.
+ */
+export function buildCluster(
+	overrides: Partial<TabCandyCluster> = {}
+): TabCandyCluster {
+	return {
+		id: 'cluster-a',
+		name: 'Cluster A',
+		members: [],
+		lastTouchedAt: 0,
+		pairedWith: null,
+		...overrides,
+	};
+}
+
+/**
+ * Keys the given Clusters by their own `id`, so a test can't build a record
+ * that breaks the `clusters[id].id === id` invariant by accident.
+ */
+export function buildClusters(
+	...clusters: TabCandyCluster[]
+): TabCandyClusters {
+	const record: TabCandyClusters = {};
+	for (const cluster of clusters) {
+		record[cluster.id] = cluster;
+	}
+	return record;
 }
 
 /**

@@ -3,7 +3,7 @@ import {
 	FuzzySuggestModal,
 	TFile
 } from 'obsidian';
-import { BACKGROUND_IMAGE_EXTENSIONS } from '../../utils/imageExtensions';
+import { BACKGROUND_IMAGE_EXTENSIONS } from '../../types';
 
 class ChooseImageSuggestModal extends FuzzySuggestModal<TFile> {
 	onSubmit: (result: TFile) => void;
@@ -13,12 +13,7 @@ class ChooseImageSuggestModal extends FuzzySuggestModal<TFile> {
 		this.onSubmit = onSubmit;
 	}
 
-	/**
-	 * Gets all supported image types from the vault. Uses the same extension
-	 * list as the background-folder sync (src/utils/imageExtensions.ts) so a
-	 * manually picked image and a folder-synced image are always held to the
-	 * same rules.
-	 */
+	/** Gets all supported image types from the vault. */
 	getItems(): TFile[] {
 		return this.app.vault
 			.getFiles()

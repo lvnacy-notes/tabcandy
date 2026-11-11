@@ -1,10 +1,10 @@
 import { App, FuzzySuggestModal } from 'obsidian';
+import { listSearchProviderCommands } from '../../newtab/pluginCommands';
 import {
 	SEARCH_PROVIDER,
 	SearchProvider,
 	TabCandySettings
 } from '../../types';
-import { listSearchProviderCommands } from '../../services/commands';
 
 /**
  * This class is used to create a modal to choose a search provider from a list of available search providers

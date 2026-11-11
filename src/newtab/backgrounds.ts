@@ -5,9 +5,9 @@ import {
 	TFile,
 	normalizePath
 } from 'obsidian';
-import { BACKGROUND_IMAGE_EXTENSIONS } from '../utils/imageExtensions';
 import SettingsStore from '../settings/SettingsStore';
 import debounce from '../utils/debounce';
+import { BACKGROUND_IMAGE_EXTENSIONS } from '../types';
 
 /**
  * Filters a list of vault-relative paths down to the ones that still

@@ -8,12 +8,12 @@ import {
 	expect,
 	it
 } from 'vitest';
-import SettingsStore from '../settings/SettingsStore';
-import { buildSettings } from '../test/fakes';
 import {
 	WIDEN_STACKED_PANES_CLASS,
 	registerStackedTabPanes,
 } from './stackedTabPanes';
+import SettingsStore from '../settings/SettingsStore';
+import { buildSettings } from '../test/fakes';
 
 /**
  * Builds a store seeded with default settings plus the given overrides.

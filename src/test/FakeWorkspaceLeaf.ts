@@ -1,4 +1,8 @@
-import { App, ViewState, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	ViewState,
+	WorkspaceLeaf
+} from 'obsidian';
 import {
 	App as AppMock,
 	WorkspaceLeaf as WorkspaceLeafMock,

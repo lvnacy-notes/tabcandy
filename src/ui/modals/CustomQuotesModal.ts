@@ -1,17 +1,17 @@
-import TabCandyPlugin from '../../../main';
 import {
 	Modal,
 	Notice,
 	Setting,
 	TFile
 } from 'obsidian';
-import ConfirmModal from './ConfirmModal';
 import ChooseFolderModal from './ChooseFolderModal';
 import ChooseMarkdownFileModal from './ChooseMarkdownFileModal';
+import ConfirmModal from './ConfirmModal';
+import TabCandyPlugin from '../../../main';
 import {
 	parseQuoteBlockquotes,
 	serializeQuotesAsBlockquotes,
-} from '../../services/quotes';
+} from '../../newtab/quotes';
 import { CustomQuote } from '../../types';
 
 /** Filename Export writes to (within whatever folder is picked). */

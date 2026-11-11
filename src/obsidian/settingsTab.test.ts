@@ -1,22 +1,22 @@
 import {
-	describe,
-	expect,
-	it
-} from 'vitest';
-import {
 	SettingDefinitionGroup,
 	SettingDefinitionList,
 	SettingDefinitionPage,
 } from 'obsidian';
 import {
+	describe,
+	expect,
+	it
+} from 'vitest';
+import TabCandySettingTab from './SettingsTab';
+import TabCandyPlugin from '../../main';
+import {
 	buildSettings,
 	createConfiguredApp,
 	withEmptyPrivateRegistries,
 } from '../test/fakes';
-import SettingsStore from './SettingsStore';
-import TabCandySettingTab from './SettingsTab';
+import SettingsStore from '../settings/SettingsStore';
 import { BackgroundTheme, TabCandySettings } from '../types';
-import TabCandyPlugin from '../../main';
 
 /**
  * A minimal stand-in for TabCandyPlugin, narrowed to just the two members

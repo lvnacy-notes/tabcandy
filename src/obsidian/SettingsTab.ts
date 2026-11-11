@@ -1,5 +1,3 @@
-import { getBookmarkGroups } from '../services/bookmarks';
-import TabCandyPlugin from '../../main';
 import {
 	App,
 	Notice,
@@ -8,24 +6,26 @@ import {
 	SettingDefinitionItem,
 	SettingGroup,
 } from 'obsidian';
+import TabCandyPlugin from '../../main';
+import {
+	filterExistingFiles,
+	getBackgroundResourcePath,
+	syncBackgroundsFolder,
+} from '../newtab/backgrounds';
+import { getBookmarkGroups } from '../newtab/bookmarks';
+import { syncQuotesFile } from '../newtab/quotes';
 import ChooseSearchProvider from '../ui/modals/ChooseSearchProvider';
 import CustomQuotesModal from '../ui/modals/CustomQuotesModal';
+import ChooseImageSuggestModal from '../ui/modals/ChooseImageSuggestModal';
+import debounce from '../utils/debounce';
 import {
+	BACKGROUND_IMAGE_EXTENSIONS,
 	BOOKMARK_SOURCE,
 	BackgroundTheme,
 	CustomQuote,
 	TIME_FORMAT,
 	TabCandySettings,
 } from '../types';
-import ChooseImageSuggestModal from '../ui/modals/ChooseImageSuggestModal';
-import {
-	filterExistingFiles,
-	getBackgroundResourcePath,
-	syncBackgroundsFolder,
-} from '../services/backgrounds';
-import { BACKGROUND_IMAGE_EXTENSIONS } from '../utils/imageExtensions';
-import { syncQuotesFile } from '../services/quotes';
-import debounce from '../utils/debounce';
 
 /**
  * Uppercases the first character of a string.

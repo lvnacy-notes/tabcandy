@@ -1,3 +1,4 @@
+import { ViewState, WorkspaceLeaf } from 'obsidian';
 import {
 	beforeEach,
 	describe,
@@ -5,25 +6,6 @@ import {
 	it,
 	vi,
 } from 'vitest';
-import { ViewState, WorkspaceLeaf } from 'obsidian';
-import {
-	CLOSED_TABS_LIMIT,
-	TAB_CANDY_VIEW_TYPE,
-	ClosedTabEntry,
-	TabRecord,
-} from '../types';
-import {
-	addRootLeaf,
-	addSidebarLeaf,
-	createFakeWorkspaceApp,
-	setLayoutReady,
-	setMostRecentLeaf,
-} from '../test/FakeWorkspace';
-import {
-	createFakeLeaf,
-	makeUnreadable,
-	setDisplayText,
-} from '../test/FakeWorkspaceLeaf';
 import {
 	closeDuplicateTabs,
 	closeLeaves,
@@ -44,6 +26,24 @@ import {
 	resetTabTrackingState,
 	toTabRecord,
 } from './tabNavigation';
+import {
+	addRootLeaf,
+	addSidebarLeaf,
+	createFakeWorkspaceApp,
+	setLayoutReady,
+	setMostRecentLeaf,
+} from '../test/FakeWorkspace';
+import {
+	createFakeLeaf,
+	makeUnreadable,
+	setDisplayText,
+} from '../test/FakeWorkspaceLeaf';
+import {
+	CLOSED_TABS_LIMIT,
+	TAB_CANDY_VIEW_TYPE,
+	ClosedTabEntry,
+	TabRecord,
+} from '../types';
 
 beforeEach(() => {
 	resetTabTrackingState();

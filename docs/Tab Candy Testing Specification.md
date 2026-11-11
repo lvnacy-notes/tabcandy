@@ -35,15 +35,12 @@ Everything else — a quote fetching correctly, the clock format switching, whic
 
 Vitest is ESM-native, which matters here because this project is `"type": "module"` end to end — no transpilation shims, no CommonJS interop layer fighting the rest of the toolchain. It ships with everything a test suite in this spec actually needs bundled into one dependency rather than assembled from parts: `expect`-style assertions, `vi.fn()`/`vi.useFakeTimers()` for the mocking and fake-timer work Methodology already requires, a jsdom-backed environment for the React hook/component tests, and native V8 coverage for the Ratchet — one install, not a runner plus an assertion library plus a mocking library plus a coverage instrumenter stitched together by hand.
 
-The bigger reason is architectural: Vitest runs on the same engine as the build tool. Once Vite is doing the actual `main.js` build (see below), picking Vitest means the whole toolchain shares one transform/bundler stack instead of running two — the test suite isn't dragging in a second, unrelated pipeline just to execute `*.test.ts` files. It also happens to be the natural pairing for `obsidian-test-mocks`, which ships a native Vitest setup file (`obsidian-test-mocks/vitest-setup`) with zero adapter work required.[^runner-alternatives]
+It also happens to be the natural pairing for `obsidian-test-mocks`, which ships a native Vitest setup file (`obsidian-test-mocks/vitest-setup`) with zero adapter work required.[^runner-alternatives]
 
-### Build tool: Vite (library mode), replacing esbuild
+### Build tool: esbuild (unchanged)
 
-Current Vite (8.x) dropped esbuild and Rollup as hard dependencies in favor of Rolldown and Oxc — esbuild is now optional-only in Vite's own tree — so putting Vite under both the build and the test runner is a genuine one-for-one swap, not a second bundler stacked on the one already there.
+The build stays on esbuild (`esbuild.config.js`). The test runner and the build tool are independent choices; nothing in this spec depends on them sharing a bundler.
 
-- Vite library mode (`build.lib`, `formats: ['cjs']`) replaces `esbuild.config.js` for producing `main.js`. Externals (`obsidian`, `electron`, Node builtins) move to `build.rolldownOptions.external` — same list, different config key.
-- `esbuild-copy-static-files` is dropped in favor of a small hand-written postbuild script copying `manifest.json`/`styles.css` next to `main.js`.
-- If the migration hits a wall during implementation, the accepted fallback is reverting the build to esbuild while keeping Vitest for tests regardless — the two are separable decisions being made together, not one that stands or falls as a unit.
 - Because `build` already gates on a full-repo `tsc --noEmit` pass, a type-broken test file blocks `pnpm build` exactly like type-broken source does. This is intentional, not a side effect. Test files import `describe`/`it`/`expect` explicitly from `'vitest'` rather than relying on global-injection mode, so nothing needs to change in `tsconfig.json`'s `types` array to support it.
 
 ### Fake Obsidian layer: `obsidian-test-mocks`

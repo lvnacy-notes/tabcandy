@@ -4,6 +4,7 @@ import {
 	it,
 	vi
 } from 'vitest';
+import { executeEnabledPluginCommand, listSearchProviderCommands } from './pluginCommands';
 import {
 	createConfiguredApp,
 	setCommandsRegistry,
@@ -11,7 +12,6 @@ import {
 	setPluginsRegistry,
 	withEmptyPrivateRegistries,
 } from '../test/fakes';
-import { executeEnabledPluginCommand, listSearchProviderCommands } from './commands';
 
 function buildApp() {
 	return withEmptyPrivateRegistries(createConfiguredApp({ files: {} }));

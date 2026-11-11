@@ -8,18 +8,18 @@ import {
 	useMemo,
 	useState
 } from 'react';
+import { filterExistingFiles, getBackgroundResourcePath } from '../newtab/backgrounds';
+import { getBookmarks } from '../newtab/bookmarks';
+import { computeOverlayContrast, getFreshCacheEntry } from '../newtab/overlayContrast';
 import SettingsStore from '../settings/SettingsStore';
+import getBackground from './utils/getBackground';
+import getQuote from './utils/getQuote';
+import { getTime } from './utils/time';
 import {
 	BackgroundTheme,
 	Quote,
 	TabCandySettings
 } from '../types';
-import { filterExistingFiles, getBackgroundResourcePath } from '../services/backgrounds';
-import { getBookmarks } from '../services/bookmarks';
-import { computeOverlayContrast, getFreshCacheEntry } from '../services/overlayContrast';
-import getBackground from './utils/getBackground';
-import getQuote from './utils/getQuote';
-import { getTime } from './utils/time';
 
 /**
  * Subscribes to a SettingsStore and keeps a piece of React state in sync

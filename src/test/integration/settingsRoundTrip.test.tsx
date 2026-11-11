@@ -1,3 +1,5 @@
+import { App as ObsidianApp, WorkspaceLeaf } from 'obsidian';
+import { act } from 'react';
 import {
 	afterEach,
 	describe,
@@ -5,21 +7,19 @@ import {
 	it,
 	vi
 } from 'vitest';
-import { act } from 'react';
 import {
 	cleanup,
 	render,
 	screen
 } from '@testing-library/react';
-import { App as ObsidianApp, WorkspaceLeaf } from 'obsidian';
 import {
 	createConfiguredApp,
 	withEmptyPrivateRegistries
 } from '../fakes';
+import ReactApp from '../../app/App';
 import SettingsStore from '../../settings/SettingsStore';
 import { normalizeSettings } from '../../settings/normalizeSettings';
 import { TabCandySettings } from '../../types';
-import ReactApp from '../../app/App';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

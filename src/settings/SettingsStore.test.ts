@@ -4,8 +4,8 @@ import {
 	it,
 	vi
 } from 'vitest';
-import { buildSettings } from '../test/fakes';
 import SettingsStore from './SettingsStore';
+import { buildSettings } from '../test/fakes';
 
 describe('SettingsStore', () => {
 	it('get() returns the initial value passed to the constructor', () => {

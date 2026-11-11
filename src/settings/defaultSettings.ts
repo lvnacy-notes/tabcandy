@@ -6,19 +6,15 @@ import {
 	TabCandySettings,
 } from '../types';
 
-/** Search provider used until the user picks another: Obsidian's Quick Switcher. */
+/** Obsidian's Quick Switcher, the provider used until the user picks another. */
 const DEFAULT_SEARCH_PROVIDER: SearchProvider = {
 	command: 'switcher:open',
 	display: 'Obsidian Core Quick Switcher',
 };
 
-/**
- * Baseline for every setting. `normalizeSettings()` starts from these and
- * overlays validated user data, so each field here is the fallback for a
- * missing or malformed value.
- */
+/** Default for every setting; `normalizeSettings()` falls back to these for missing or malformed values. */
 export const DEFAULT_SETTINGS: TabCandySettings = {
-	/** Always overwritten by normalizeSettings(); must not be load-bearing. */
+	/** Always overwritten by `normalizeSettings()`. */
 	settingsVersion: 0,
 	replaceEmptyTabsWithTabCandy: true,
 	dashboardFocusesOpenTab: false,
@@ -48,4 +44,7 @@ export const DEFAULT_SETTINGS: TabCandySettings = {
 	closeTabsInFolderRecursive: false,
 	showRecentlyClosedTabs: false,
 	widenStackedTabPanes: false,
+	clusters: {},
+	keepPairedClustersInSync: false,
+	jumpToExistingCluster: false,
 };

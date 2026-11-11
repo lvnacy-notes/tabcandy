@@ -3,8 +3,8 @@ import {
 	EventRef,
 	WorkspaceLeaf
 } from 'obsidian';
-import { TAB_CANDY_VIEW_TYPE } from '../types';
 import SettingsStore from '../settings/SettingsStore';
+import { TAB_CANDY_VIEW_TYPE } from '../types';
 
 /**
  * Points `leaf` at the Tab Candy view, replacing whatever it currently

@@ -1,3 +1,5 @@
+import { App as ObsidianApp } from 'obsidian';
+import { act } from 'react';
 import {
 	afterEach,
 	describe,
@@ -5,9 +7,7 @@ import {
 	it,
 	vi,
 } from 'vitest';
-import { act } from 'react';
 import { fireEvent } from '@testing-library/react';
-import { App as ObsidianApp } from 'obsidian';
 import { withEmptyPrivateRegistries } from '../fakes';
 import {
 	addRootLeaf,
@@ -15,14 +15,14 @@ import {
 	setLayoutReady,
 } from '../FakeWorkspace';
 import { createFakeLeaf, setDisplayText } from '../FakeWorkspaceLeaf';
+import { TabCandyView } from '../../obsidian/TabCandyView';
 import {
 	getClosedTabs,
 	registerTabTracking,
 	resetTabTrackingState,
-} from '../../services/tabNavigation';
+} from '../../tabs/tabNavigation';
 import { normalizeSettings } from '../../settings/normalizeSettings';
 import SettingsStore from '../../settings/SettingsStore';
-import { TabCandyView } from '../../TabCandyView';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

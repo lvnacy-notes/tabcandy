@@ -1,10 +1,8 @@
 [
   "tabcandy",
+  "code-space",
   "git-graph",
-  "automatic-table-of-contents",
-  "obsidian-style-settings",
-  "templater-obsidian",
-  "dataview",
   "folder-notes",
-  "code-space"
+  "obsidian-style-settings",
+  "automatic-table-of-contents"
 ]

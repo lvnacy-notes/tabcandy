@@ -1,3 +1,5 @@
+import { App as ObsidianApp } from 'obsidian';
+import { act } from 'react';
 import {
 	afterEach,
 	describe,
@@ -5,15 +7,13 @@ import {
 	it,
 	vi
 } from 'vitest';
-import { act } from 'react';
-import { App as ObsidianApp } from 'obsidian';
 import {
 	createConfiguredApp,
 	withEmptyPrivateRegistries
 } from '../fakes';
+import { TabCandyView } from '../../obsidian/TabCandyView';
 import { normalizeSettings } from '../../settings/normalizeSettings';
 import SettingsStore from '../../settings/SettingsStore';
-import { TabCandyView } from '../../TabCandyView';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

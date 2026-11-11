@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { TabCandyView } from './src/TabCandyView';
 import SettingsStore from './src/settings/SettingsStore';
-import TabCandySettingTab from './src/settings/SettingsTab';
+import TabCandySettingTab from './src/obsidian/SettingsTab';
 import { TAB_CANDY_VIEW_TYPE, TabCandySettings } from './src/types';
 import { normalizeSettings } from './src/settings/normalizeSettings';
 import {
@@ -9,18 +9,16 @@ import {
 	pruneStaleOverlayContrastCache,
 	registerBackgroundVaultWatchers,
 	syncBackgroundsFolder,
-} from './src/services/backgrounds';
-import { checkForPluginUpdates } from './src/services/versionCheck';
-import { registerQuotesVaultWatcher, syncQuotesFile } from './src/services/quotes';
-import { registerNewTabHijack } from './src/services/newTabHijack';
-import { registerStackedTabPanes } from './src/services/stackedTabPanes';
-import { registerTabCommands } from './src/services/tabCommands';
-import { registerTabTracking } from './src/services/tabNavigation';
+} from './src/obsidian/backgrounds';
+import { registerClusterRenameWatcher } from './src/obsidian/clusters';
+import { checkForPluginUpdates } from './src/obsidian/versionCheck';
+import { registerQuotesVaultWatcher, syncQuotesFile } from './src/obsidian/quotes';
+import { registerNewTabHijack } from './src/obsidian/newTabHijack';
+import { registerStackedTabPanes } from './src/obsidian/stackedTabPanes';
+import { registerTabCommands } from './src/obsidian/tabCommands';
+import { registerTabTracking } from './src/obsidian/tabNavigation';
 
-/**
- * This allows a "live-reload" of Obsidian when developing the plugin.
- * Any changes to the code will force reload Obsidian.
- */
+/** Reloads Obsidian on every rebuild. Development builds only. */
 if (process.env.NODE_ENV === 'development') {
 	new EventSource('http://127.0.0.1:8000/esbuild').addEventListener(
 		'change',
@@ -28,24 +26,15 @@ if (process.env.NODE_ENV === 'development') {
 	);
 }
 
+/** Plugin entry point: wires settings, views, commands and vault watchers. */
 export default class TabCandyPlugin extends Plugin {
-	// Populated in onload(), which Obsidian guarantees resolves before any
-	// other plugin lifecycle method (registerView, addSettingTab, etc.) runs -
-	// safe to assert definite assignment rather than union with `undefined`
-	// and push null-checks into every consumer.
+	/** Source of truth for settings. Assigned in `onload()` before anything reads it. */
 	settingsStore!: SettingsStore;
 
-	// Obsidian's own Plugin base class declares `settings?: unknown` as a
-	// plain field (see obsidian.d.ts), so it can't be overridden with a
-	// getter here (TS2611: property/accessor kind mismatch). Instead this
-	// stays a plain field, kept in sync by subscribing to settingsStore in
-	// onload() below - purely a read convenience so the many pre-existing
-	// `this.plugin.settings.X` reads throughout the settings tab and
-	// elsewhere didn't all need rewriting to `this.plugin.settingsStore.
-	// get().X`. Writes must go through settingsStore.update(), never by
-	// assigning to this field directly.
+	/** Read-only mirror of `settingsStore.get()`. Write through `settingsStore.update()`, never here. */
 	settings!: TabCandySettings;
 
+	/** Loads settings, then registers the view, settings tab, commands and watchers. */
 	async onload() {
 		await this.loadSettings();
 
@@ -56,28 +45,16 @@ export default class TabCandyPlugin extends Plugin {
 
 		void checkForPluginUpdates();
 
-		// Style Settings only re-scans plugin CSS for `@settings` blocks
-		// when told to - per its documented plugin-support contract, every
-		// plugin shipping one must trigger this itself on load (and again
-		// any time an update changes what's in the block).
+		// Tells Style Settings to re-scan this plugin's `@settings` block.
 		this.app.workspace.trigger('parse-style-settings');
 
-		// Refreshes the list of synced files on every load/reload/restart so
-		// background images are available immediately, without requiring an
-		// explicit "Sync now" click first.
+		// Syncs the backgrounds folder.
 		await syncBackgroundsFolder(this.app, this.settingsStore);
 
-		// Catches deletions/renames of individually-added images that
-		// happened while the plugin wasn't loaded to see the vault event
-		// (closing Obsidian, editing the vault elsewhere, reopening it -
-		// an ordinary flow, not an edge case). Deletions/renames that
-		// happen while the plugin is running are instead caught live by
-		// the event listeners registered below.
+		// Drops manually added images deleted or renamed while the plugin wasn't running.
 		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
 
-		// Same rationale as pruneMissingManualBackgroundFiles above: catches
-		// overlayTextContrastCache entries whose backing file was deleted or
-		// edited while the plugin wasn't loaded to see the vault event.
+		// Drops contrast cache entries whose image was deleted or edited while the plugin wasn't running.
 		await pruneStaleOverlayContrastCache(this.app, this.settingsStore);
 
 		registerBackgroundVaultWatchers(
@@ -86,13 +63,17 @@ export default class TabCandyPlugin extends Plugin {
 			(eventRef) => this.registerEvent(eventRef)
 		);
 
-		// Refreshes fileQuotes on every load/reload/restart, same
-		// rationale as syncBackgroundsFolder above - quotes are
-		// available immediately rather than only after the first vault
-		// event or a manual "Sync now" click.
+		// Syncs the quotes file.
 		await syncQuotesFile(this.app, this.settingsStore);
 
 		registerQuotesVaultWatcher(
+			this.app,
+			this.settingsStore,
+			(eventRef) => this.registerEvent(eventRef)
+		);
+
+		// Patches Cluster paths on rename. Missing members are kept, not pruned.
+		registerClusterRenameWatcher(
 			this.app,
 			this.settingsStore,
 			(eventRef) => this.registerEvent(eventRef)
@@ -128,17 +109,9 @@ export default class TabCandyPlugin extends Plugin {
 		);
 	}
 
-	/**
-	 * Load data from disk (data.json in the plugin folder), normalize it
-	 * against defaults and validation rules (normalizeSettings.ts), and
-	 * construct the typed settings store around the result. normalizeSettings()
-	 * enforces enum checking and schema validation on every field.
-	 */
+	/** Loads `data.json`, validates it with `normalizeSettings()`, and builds `settingsStore` from the result. */
 	async loadSettings() {
-		// loadData() is typed Promise<any> by Obsidian's own typings, since
-		// data.json is arbitrary disk data with no compile-time shape.
-		// Widening to `unknown` here means nothing downstream can touch it
-		// without going through normalizeSettings()'s runtime validation.
+		// `loadData()` returns `any`; `unknown` forces it through normalization.
 		const data: unknown = (await this.loadData()) ?? {};
 		const normalized = normalizeSettings(data);
 		this.settingsStore = new SettingsStore(

@@ -6,12 +6,6 @@ import {
 	it,
 	vi
 } from 'vitest';
-import SettingsStore from '../settings/SettingsStore';
-import {
-	buildSettings,
-	createConfiguredApp,
-	getExistingFile
-} from '../test/fakes';
 import {
 	listQuotesFromFile,
 	parseQuoteBlockquotes,
@@ -19,6 +13,12 @@ import {
 	serializeQuotesAsBlockquotes,
 	syncQuotesFile,
 } from './quotes';
+import SettingsStore from '../settings/SettingsStore';
+import {
+	buildSettings,
+	createConfiguredApp,
+	getExistingFile
+} from '../test/fakes';
 
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
 	return new SettingsStore(buildSettings(overrides), async () => {});

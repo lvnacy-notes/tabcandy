@@ -1,3 +1,4 @@
+import { TFile } from 'obsidian';
 import {
 	afterEach,
 	beforeEach,
@@ -8,21 +9,20 @@ import {
 } from 'vitest';
 import { act } from 'react';
 import {
-	cleanup,
-	renderHook,
-	waitFor
-} from '@testing-library/react';
-import { TFile } from 'obsidian';
-import SettingsStore from '../settings/SettingsStore';
-import {
 	resolveActiveBackgroundPath,
 	useBackground,
 	useClock,
 	useOverlayContrast,
 } from './hooks';
-import { DEFAULT_OVERLAY_COLOR } from '../services/overlayContrast';
-import { BackgroundTheme, TIME_FORMAT } from '../types';
+import { DEFAULT_OVERLAY_COLOR } from '../newtab/overlayContrast';
+import {
+	cleanup,
+	renderHook,
+	waitFor
+} from '@testing-library/react';
 import { buildSettings, createConfiguredApp } from '../test/fakes';
+import SettingsStore from '../settings/SettingsStore';
+import { BackgroundTheme, TIME_FORMAT } from '../types';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

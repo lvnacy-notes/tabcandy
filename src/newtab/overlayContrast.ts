@@ -15,13 +15,11 @@
  * and `SettingsStore`/`TabCandySettings` both live upstream of this file.
  */
 
-export interface OverlayContrastResult {
-	dominantColor: string;
-	overlayTextColor: string;
-}
-
-export type OverlayContrastCacheEntry = { mtime: number } & OverlayContrastResult;
-export type OverlayContrastCache = Record<string, OverlayContrastCacheEntry>;
+import type {
+	OverlayContrastCache,
+	OverlayContrastCacheEntry,
+	OverlayContrastResult
+} from '../types';
 
 interface RGB {
 	r: number;

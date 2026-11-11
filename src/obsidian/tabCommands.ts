@@ -1,15 +1,15 @@
 import { App, Command } from 'obsidian';
-import SettingsStore from '../settings/SettingsStore';
-import ChooseFolderModal from '../ui/modals/ChooseFolderModal';
 import { activateView } from './newTabHijack';
-import SearchOpenTabsModal from '../ui/modals/SearchOpenTabsModal';
 import {
 	closeDuplicateTabs,
 	closeOtherTabs,
 	closeTabsInFolder,
 	goToAdjacentTab,
 	reopenLastClosedTab,
-} from './tabNavigation';
+} from '../tabs/tabNavigation';
+import ChooseFolderModal from '../ui/modals/ChooseFolderModal';
+import SearchOpenTabsModal from '../ui/modals/SearchOpenTabsModal';
+import SettingsStore from '../settings/SettingsStore';
 
 export function registerTabCommands(
 	app: App,

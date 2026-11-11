@@ -1,13 +1,13 @@
+import { App, WorkspaceLeaf } from 'obsidian';
+import { act } from 'react';
 import {
 	describe,
 	expect,
 	it,
 	vi
 } from 'vitest';
-import { act } from 'react';
-import { App, WorkspaceLeaf } from 'obsidian';
-import { buildSettings, createConfiguredApp } from './test/fakes';
-import SettingsStore from './settings/SettingsStore';
+import SettingsStore from '../settings/SettingsStore';
+import { buildSettings, createConfiguredApp } from '../test/fakes';
 
 // Tells React it's safe to batch/flush effects synchronously inside act()
 // in this non-testing-library environment - without this, act() still

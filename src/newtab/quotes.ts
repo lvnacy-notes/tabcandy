@@ -4,8 +4,8 @@ import {
 	normalizePath
 } from 'obsidian';
 import SettingsStore from '../settings/SettingsStore';
-import { CustomQuote } from '../types';
 import debounce from '../utils/debounce';
+import { CustomQuote } from '../types';
 
 /**
  * Matches a blockquote line that is nothing but an attribution: an
