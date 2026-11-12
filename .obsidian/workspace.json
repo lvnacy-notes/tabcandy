@@ -219,6 +219,7 @@
   },
   "active": "7209ab8f9efe5227",
   "lastOpenFiles": [
+    "src/settings/fuckery.test.ts",
     "temp 2.ts",
     "temp.ts",
     "temp.tsx",
@@ -229,7 +230,6 @@
     "src/settings/settingsStore.test.ts",
     "src/obsidian/tabCandyView.test.tsx",
     "closedTabs.test.log",
-    "tabNavigation.test.log",
     "Roadmap/Tab Candy v2.0 Tab Identity and Grouping Worksheet.md",
     "docs/Tab Candy Code Style Guide.md",
     "temp.md",
