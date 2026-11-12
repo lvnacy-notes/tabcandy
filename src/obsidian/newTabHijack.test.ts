@@ -48,9 +48,13 @@ describe('activateView', () => {
 	});
 
 	it('does not disturb an unrelated existing leaf when creating the Tab Candy one', async () => {
-		const app = createConfiguredApp({ files: {} });
+		const app = createConfiguredApp({ files: { 'A.md': '' } });
 		const otherLeaf = app.workspace.getLeaf(true);
-		await otherLeaf.setViewState({ type: 'markdown', active: false });
+		await otherLeaf.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' },
+			active: false,
+		});
 
 		await activateView(app);
 

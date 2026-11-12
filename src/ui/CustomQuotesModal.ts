@@ -7,12 +7,12 @@ import {
 import ChooseFolderModal from './ChooseFolderModal';
 import ChooseMarkdownFileModal from './ChooseMarkdownFileModal';
 import ConfirmModal from './ConfirmModal';
-import TabCandyPlugin from '../../../main';
+import TabCandyPlugin from '../../main';
 import {
 	parseQuoteBlockquotes,
 	serializeQuotesAsBlockquotes,
-} from '../../newtab/quotes';
-import { CustomQuote } from '../../types';
+} from '../newtab/quotes';
+import { CustomQuote } from '../types';
 
 /** Filename Export writes to (within whatever folder is picked). */
 const EXPORT_FILE_NAME = 'Tab Candy Quotes.md';

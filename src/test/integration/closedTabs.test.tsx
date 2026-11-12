@@ -2,6 +2,7 @@ import { App as ObsidianApp } from 'obsidian';
 import { act } from 'react';
 import {
 	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
@@ -27,7 +28,7 @@ import SettingsStore from '../../settings/SettingsStore';
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 function buildApp(): ObsidianApp {
-	return withEmptyPrivateRegistries(createFakeWorkspaceApp({ files: {} }));
+	return withEmptyPrivateRegistries(createFakeWorkspaceApp({ files: { 'A.md': '' } }));
 }
 
 async function open(view: TabCandyView): Promise<void> {
@@ -37,7 +38,12 @@ async function open(view: TabCandyView): Promise<void> {
 }
 
 describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
 	afterEach(() => {
+		vi.useRealTimers();
 		resetTabTrackingState();
 	});
 
@@ -72,8 +78,7 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		// same as the dashboard's other click handlers - so its two
 		// sequential internal awaits (setViewState, then revealLeaf) need
 		// flushing before the leaf's resulting state can be asserted on.
-		await Promise.resolve();
-		await Promise.resolve();
+		await vi.runOnlyPendingTimersAsync();
 
 		expect(getClosedTabs()).toEqual([]);
 		expect(hostingLeaf.getViewState()).toEqual({
@@ -160,8 +165,7 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		// isn't awaited by the click handler, so its own sequential awaits
 		// need flushing before the hosting leaf's resulting state can be
 		// asserted on.
-		await Promise.resolve();
-		await Promise.resolve();
+		await vi.runOnlyPendingTimersAsync();
 
 		expect(getClosedTabs()).toEqual([]);
 		expect(hostingLeaf.getViewState()).toEqual({

@@ -3,7 +3,7 @@ import {
 	FuzzySuggestModal,
 	TFile
 } from 'obsidian';
-import { BACKGROUND_IMAGE_EXTENSIONS } from '../../types';
+import { BACKGROUND_IMAGE_EXTENSIONS } from '../types';
 
 class ChooseImageSuggestModal extends FuzzySuggestModal<TFile> {
 	onSubmit: (result: TFile) => void;

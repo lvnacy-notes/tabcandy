@@ -14,9 +14,9 @@ import {
 } from '../newtab/backgrounds';
 import { getBookmarkGroups } from '../newtab/bookmarks';
 import { syncQuotesFile } from '../newtab/quotes';
-import ChooseSearchProvider from '../ui/modals/ChooseSearchProvider';
-import CustomQuotesModal from '../ui/modals/CustomQuotesModal';
-import ChooseImageSuggestModal from '../ui/modals/ChooseImageSuggestModal';
+import ChooseSearchProvider from '../ui/ChooseSearchProvider';
+import CustomQuotesModal from '../ui/CustomQuotesModal';
+import ChooseImageSuggestModal from '../ui/ChooseImageSuggestModal';
 import debounce from '../utils/debounce';
 import {
 	BACKGROUND_IMAGE_EXTENSIONS,

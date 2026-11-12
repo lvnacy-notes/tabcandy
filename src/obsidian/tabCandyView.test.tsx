@@ -23,7 +23,7 @@ import { buildSettings, createConfiguredApp } from '../test/fakes';
 // view's own contract: does onOpen() mount something into contentEl, does
 // onClose() actually unmount it, and does that hold up across repeated
 // open/close and multiple leaves.
-vi.mock('./app/App', () => ({
+vi.mock('../app/App', () => ({
 	default: () => <div data-testid = 'tabcandy-app-marker' />,
 }));
 

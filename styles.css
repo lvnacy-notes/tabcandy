@@ -29,7 +29,7 @@ settings:
 */
 
 @import "src/app/App.css";
-@import "src/ui/modals/CustomQuotesModal.css";
+@import "src/ui/CustomQuotesModal.css";
 @import "src/settings/Settings.css";
 
 .setting-item.search-provider .setting-item-control input {

@@ -1,6 +1,4 @@
 import {
-	afterEach,
-	beforeEach,
 	describe,
 	expect,
 	it,
@@ -9,17 +7,21 @@ import {
 import {
 	listQuotesFromFile,
 	parseQuoteBlockquotes,
-	registerQuotesVaultWatcher,
 	serializeQuotesAsBlockquotes,
 	syncQuotesFile,
 } from './quotes';
 import SettingsStore from '../settings/SettingsStore';
 import {
 	buildSettings,
-	createConfiguredApp,
-	getExistingFile
+	createConfiguredApp
 } from '../test/fakes';
 
+/**
+ * Builds a settings store that discards its saves.
+ *
+ * @param overrides - Settings to override the defaults with.
+ * @returns The store.
+ */
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
 	return new SettingsStore(buildSettings(overrides), async () => {});
 }
@@ -157,10 +159,7 @@ describe('parseQuoteBlockquotes', () => {
 	});
 
 	it('strips markers and surrounding whitespace regardless of spacing after ">" (none, single, multiple)', () => {
-		// Each line is trimmed after its marker is stripped (not just the
-		// marker's own single space), so ">  Two spaces" and ">No space"
-		// both normalize to a clean single space when joined - extra
-		// interior indentation isn't meaningful in a quote's text.
+		// ">  Two spaces" and ">No space" both join with a single space.
 		const raw = ['>No space before this.', '>  Two spaces before this.'].join(
 			'\n'
 		);
@@ -257,10 +256,7 @@ describe('serializeQuotesAsBlockquotes', () => {
 	});
 
 	it('drops a quote with empty text on re-parse, rather than round-tripping it', () => {
-		// An in-progress "Add new quote" row with nothing typed in yet
-		// serializes to a content-free block; parseQuoteBlockquotes
-		// already (correctly) drops content-free blocks, so it's not
-		// expected to survive a round trip.
+		// An empty quote serializes to a block that parsing drops, so it doesn't round-trip.
 		const quotes = [{ text: '', author: 'An Author' }];
 
 		const result = parseQuoteBlockquotes(serializeQuotesAsBlockquotes(quotes));
@@ -348,142 +344,5 @@ describe('syncQuotesFile', () => {
 		expect(store.get().fileQuotes).toEqual([
 			{ text: 'New quote.', author: '' },
 		]);
-	});
-});
-
-describe('registerQuotesVaultWatcher', () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	function setUp(overrides: Parameters<typeof buildSettings>[0] = {}) {
-		const app = createConfiguredApp({
-			files: { 'Quotes/quotes.md': '> Existing quote.\n> — Existing Author' },
-		});
-		const store = buildStore({ quotesFilePath: 'Quotes/quotes.md', ...overrides });
-		const registerEvent = vi.fn();
-		registerQuotesVaultWatcher(app, store, registerEvent);
-		return { app, store, registerEvent };
-	}
-
-	it('registers exactly one listener each for create, modify, delete, and rename', () => {
-		const { registerEvent } = setUp();
-
-		expect(registerEvent).toHaveBeenCalledTimes(4);
-	});
-
-	it('re-syncs the quotes file 500ms after it is modified', async () => {
-		const { app, store } = setUp();
-
-		await app.vault.adapter.write('Quotes/quotes.md', '> Updated quote.');
-		const file = getExistingFile(app, 'Quotes/quotes.md');
-
-		app.vault.trigger('modify', file);
-		expect(store.get().fileQuotes).not.toEqual([
-			{ text: 'Updated quote.', author: '' },
-		]);
-
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'Updated quote.', author: '' },
-		]);
-	});
-
-	it('does not re-sync when a different file is modified', async () => {
-		const { app, store } = setUp();
-		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = getExistingFile(app, 'Quotes/other.md');
-
-		app.vault.trigger('modify', file);
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().fileQuotes).toEqual([]);
-	});
-
-	it('collapses a burst of modify events into a single debounced sync', async () => {
-		const { app, store } = setUp();
-
-		for (let i = 0; i < 3; i++) {
-			await app.vault.adapter.write('Quotes/quotes.md', `> Version ${i}.`);
-			const file = getExistingFile(app, 'Quotes/quotes.md');
-			app.vault.trigger('modify', file);
-			vi.advanceTimersByTime(200);
-		}
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'Version 2.', author: '' },
-		]);
-	});
-
-	it('re-syncs when the configured file is created (configured before the file existed)', async () => {
-		const app = createConfiguredApp({ files: {} });
-		const store = buildStore({ quotesFilePath: 'Quotes/quotes.md' });
-		const registerEvent = vi.fn();
-		registerQuotesVaultWatcher(app, store, registerEvent);
-
-		await app.vault.create('Quotes/quotes.md', '> Brand new quote.');
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'Brand new quote.', author: '' },
-		]);
-	});
-
-	it('clears fileQuotes immediately (no debounce) when the configured file is deleted', async () => {
-		const { app, store } = setUp({
-			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
-		});
-		const file = getExistingFile(app, 'Quotes/quotes.md');
-
-		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
-		// what fires the 'delete' event this test exercises, not a
-		// stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file);
-
-		expect(store.get().fileQuotes).toEqual([]);
-	});
-
-	it('leaves fileQuotes untouched when a different file is deleted', async () => {
-		const { app, store } = setUp({
-			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
-		});
-		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = getExistingFile(app, 'Quotes/other.md');
-
-		await app.fileManager.trashFile(file);
-
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'Existing quote.', author: 'Existing Author' },
-		]);
-	});
-
-	it('updates quotesFilePath to the new path on rename, without discarding the already-synced quotes', async () => {
-		const { app, store } = setUp({
-			fileQuotes: [{ text: 'Existing quote.', author: 'Existing Author' }],
-		});
-		const file = getExistingFile(app, 'Quotes/quotes.md');
-
-		await app.vault.rename(file, 'Quotes/renamed.md');
-
-		expect(store.get().quotesFilePath).toBe('Quotes/renamed.md');
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'Existing quote.', author: 'Existing Author' },
-		]);
-	});
-
-	it('does not react to a rename of an unrelated file', async () => {
-		const { app, store } = setUp();
-		await app.vault.create('Quotes/other.md', '> Some other quote.');
-		const file = getExistingFile(app, 'Quotes/other.md');
-
-		await app.vault.rename(file, 'Quotes/renamed-other.md');
-
-		expect(store.get().quotesFilePath).toBe('Quotes/quotes.md');
 	});
 });

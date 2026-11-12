@@ -9,12 +9,13 @@ import {
 } from 'obsidian-test-mocks/obsidian';
 
 /**
- * A leaf whose getViewState() can be made to throw, and which reports
- * itself as empty - `{ type: 'empty', state: {} }` from getViewState(),
+ * A leaf whose getViewState() can be made to throw, reports the `active`,
+ * `group` and `pinned` fields it was last given, and reports itself as empty - `{ type: 'empty', state: {} }` from getViewState(),
  * `"New tab"` from getDisplayText() - until it's given real content, and
  * again after detach() is called.
  */
 export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
+	private extraState: Partial<ViewState> = {};
 	private unreadable = false;
 	private hasContent = false;
 	private displayText: string | null = null;
@@ -42,10 +43,21 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 	): Promise<void> {
 		await super.setViewState(viewState, eState);
 		this.hasContent = true;
+		this.extraState = {};
+		if (viewState.active !== undefined) {
+			this.extraState.active = viewState.active;
+		}
+		if (viewState.group !== undefined) {
+			this.extraState.group = viewState.group;
+		}
+		if (viewState.pinned !== undefined) {
+			this.extraState.pinned = viewState.pinned;
+		}
 	}
 
 	override detach(): void {
 		super.detach();
+		this.extraState = {};
 		this.hasContent = false;
 		this.displayText = null;
 	}
@@ -59,7 +71,7 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		if (!this.hasContent) {
 			return { type: 'empty', state: {} };
 		}
-		return super.getViewState();
+		return { ...super.getViewState(), ...this.extraState };
 	}
 
 	override getDisplayText(): string {

@@ -234,8 +234,8 @@ importers:
         specifier: ^1.13.1
         version: 1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
       obsidian-test-mocks:
-        specifier: ^4.2.1
-        version: 4.2.1(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0)
+        specifier: ^7.3.0
+        version: 7.3.0(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)(moment@2.29.4)(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0)
       obsidian-typings:
         specifier: ^6.36.0
         version: 6.36.0(@types/node@24.13.4)
@@ -1982,10 +1982,13 @@ packages:
     resolution: {integrity: sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA==}
     engines: {node: '>= 0.4'}
 
-  obsidian-test-mocks@4.2.1:
-    resolution: {integrity: sha512-SCSLDxOngEwICiiR6MTKtvyRUpxyon/5FAv1mN/4utbpFTndUpmNC1qtvGbr0NOKhHNcC9HRPetRz6JPbucVTg==}
+  obsidian-test-mocks@7.3.0:
+    resolution: {integrity: sha512-UvTaFdYWmPRJpsHu1pRLqYTmzkOnTcvneqe5rIEfz0yHldvAEbvbKRx1Rr30ipZIAHTwEfsfqra8wjkc9FaXLA==}
     peerDependencies:
+      '@codemirror/state': ^6.5.0
+      '@codemirror/view': ^6.38.6
       jest: '*'
+      moment: ^2.29.4
       obsidian: ^1.12.3
       vitest: '*'
     peerDependenciesMeta:
@@ -2667,6 +2670,11 @@ packages:
 
   yaml@2.9.0:
     resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+  yaml@2.9.1:
+    resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -4569,14 +4577,14 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.1.2
 
-  obsidian-test-mocks@4.2.1(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0):
+  obsidian-test-mocks@7.3.0(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)(moment@2.29.4)(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0):
     dependencies:
       '@codemirror/state': 6.5.0
       '@codemirror/view': 6.38.6
       moment: 2.29.4
       obsidian: 1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
       turndown: 7.2.4
-      yaml: 2.9.0
+      yaml: 2.9.1
     optionalDependencies:
       vitest: 5.0.0(@types/node@24.13.4)(@vitest/coverage-v8@5.0.0)(@vitest/ui@5.0.0)(jsdom@30.0.1)(vite@8.3.0(@types/node@24.13.4)(esbuild@0.28.2)(sass-embedded@1.104.0)(sass@1.104.0)(yaml@2.9.0))
 
@@ -5288,5 +5296,7 @@ snapshots:
       yaml: 2.9.0
 
   yaml@2.9.0: {}
+
+  yaml@2.9.1: {}
 
   yocto-queue@0.1.0: {}

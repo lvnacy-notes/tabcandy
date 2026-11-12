@@ -45,9 +45,40 @@ import {
 	TabRecord,
 } from '../types';
 
+/** Vault files the tests open as markdown tabs. */
+const NOTE_FILES: Record<string, string> = {
+	'1.md': '',
+	'2.md': '',
+	'3.md': '',
+	'4.md': '',
+	'5.md': '',
+	'6.md': '',
+	'A.md': '',
+	'B.md': '',
+	'Close.md': '',
+	'First.md': '',
+	'Flaky.md': '',
+	'Keep.md': '',
+	'Note.md': '',
+	'Notes/a.md': '',
+	'Pinned.md': '',
+	'Projects/2024/a.md': '',
+	'Projects/a.md': '',
+	'Second.md': '',
+};
+
 beforeEach(() => {
 	resetTabTrackingState();
 });
+
+/**
+ * Builds a fake app whose vault holds every file in `NOTE_FILES`.
+ *
+ * @returns The fake app.
+ */
+function buildApp(): ReturnType<typeof createFakeWorkspaceApp> {
+	return createFakeWorkspaceApp({ files: { ...NOTE_FILES } });
+}
 
 function collectRootLeaves(app: ReturnType<typeof createFakeWorkspaceApp>): WorkspaceLeaf[] {
 	const leaves: WorkspaceLeaf[] = [];
@@ -118,7 +149,7 @@ describe('isUnderFolder', () => {
 
 describe('closeLeaves', () => {
 	it('closes exactly the leaves the predicate selects', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const keep = createFakeLeaf(app);
 		await keep.setViewState({ type: 'markdown', state: { file: 'Keep.md' } });
 		addRootLeaf(app, keep);
@@ -132,7 +163,7 @@ describe('closeLeaves', () => {
 	});
 
 	it('never closes a pinned leaf even when selected', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const pinned = createFakeLeaf(app);
 		await pinned.setViewState({
 			type: 'markdown',
@@ -147,7 +178,7 @@ describe('closeLeaves', () => {
 	});
 
 	it('never closes a leaf whose getViewState() throws even when selected', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const broken = createFakeLeaf(app);
 		makeUnreadable(broken);
 		addRootLeaf(app, broken);
@@ -158,7 +189,7 @@ describe('closeLeaves', () => {
 	});
 
 	it('leaves a sidebar leaf untouched even when selected', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const sidebar = createFakeLeaf(app);
 		addSidebarLeaf(app, sidebar);
 
@@ -168,7 +199,7 @@ describe('closeLeaves', () => {
 	});
 
 	it('records a closed leaf in the ring, once layout-change fires, when remember is true', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, leaf);
@@ -182,7 +213,7 @@ describe('closeLeaves', () => {
 	});
 
 	it('does not record a closed leaf in the ring when remember is false', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, leaf);
@@ -198,7 +229,7 @@ describe('closeLeaves', () => {
 
 describe('closeOtherTabs', () => {
 	it('does nothing when there is no resolved current leaf', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const other = createFakeLeaf(app);
 		addRootLeaf(app, other);
 		setMostRecentLeaf(app, null);
@@ -209,7 +240,7 @@ describe('closeOtherTabs', () => {
 	});
 
 	it('does nothing when the resolved leaf is not among the root leaves', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const rootLeaf = createFakeLeaf(app);
 		addRootLeaf(app, rootLeaf);
 		const sidebarLeaf = createFakeLeaf(app);
@@ -222,7 +253,7 @@ describe('closeOtherTabs', () => {
 	});
 
 	it('closes every root leaf except the resolved one', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const current = createFakeLeaf(app);
 		addRootLeaf(app, current);
 		const other = createFakeLeaf(app);
@@ -263,7 +294,7 @@ describe('getAdjacentLeaf', () => {
 
 describe('goToAdjacentTab', () => {
 	it('does nothing when there is no resolved current leaf', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const other = createFakeLeaf(app);
 		addRootLeaf(app, other);
 		setMostRecentLeaf(app, null);
@@ -275,7 +306,7 @@ describe('goToAdjacentTab', () => {
 	});
 
 	it('does nothing when the resolved leaf is not among the root leaves', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const rootLeaf = createFakeLeaf(app);
 		addRootLeaf(app, rootLeaf);
 		const sidebarLeaf = createFakeLeaf(app);
@@ -289,7 +320,7 @@ describe('goToAdjacentTab', () => {
 	});
 
 	it('focuses the next root leaf, wrapping past the end', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const first = createFakeLeaf(app);
 		addRootLeaf(app, first);
 		const second = createFakeLeaf(app);
@@ -303,7 +334,7 @@ describe('goToAdjacentTab', () => {
 	});
 
 	it('focuses the previous root leaf, wrapping past the start', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const first = createFakeLeaf(app);
 		addRootLeaf(app, first);
 		const second = createFakeLeaf(app);
@@ -319,7 +350,7 @@ describe('goToAdjacentTab', () => {
 
 describe('focusOpenLeaf', () => {
 	it('finds a match, focuses it, and returns true', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const host = createFakeLeaf(app);
 		addRootLeaf(app, host);
 		const target = createFakeLeaf(app);
@@ -334,7 +365,7 @@ describe('focusOpenLeaf', () => {
 	});
 
 	it('activates nothing and returns false when no root leaf has the path', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const host = createFakeLeaf(app);
 		addRootLeaf(app, host);
 		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
@@ -346,7 +377,7 @@ describe('focusOpenLeaf', () => {
 	});
 
 	it('skips the host leaf even when it has the same path', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const host = createFakeLeaf(app);
 		await host.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, host);
@@ -359,7 +390,7 @@ describe('focusOpenLeaf', () => {
 	});
 
 	it('never matches a leaf whose state cannot be read', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const host = createFakeLeaf(app);
 		addRootLeaf(app, host);
 		const broken = createFakeLeaf(app);
@@ -374,7 +405,7 @@ describe('focusOpenLeaf', () => {
 	});
 
 	it('picks the first match when several leaves have the path', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const host = createFakeLeaf(app);
 		addRootLeaf(app, host);
 		const first = createFakeLeaf(app);
@@ -394,7 +425,7 @@ describe('focusOpenLeaf', () => {
 
 describe('closeTabsInFolder', () => {
 	it('non-recursive: closes a leaf directly inside the folder and leaves one with no file path open', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const inFolder = createFakeLeaf(app);
 		await inFolder.setViewState({
 			type: 'markdown',
@@ -410,7 +441,7 @@ describe('closeTabsInFolder', () => {
 	});
 
 	it('recursive: also closes a leaf nested in a subfolder', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const nested = createFakeLeaf(app);
 		await nested.setViewState({
 			type: 'markdown',
@@ -507,7 +538,7 @@ describe('planDuplicateClosures', () => {
 
 describe('toTabRecord', () => {
 	it('marks a pinned leaf as protected', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({
 			type: 'markdown',
@@ -519,7 +550,7 @@ describe('toTabRecord', () => {
 	});
 
 	it('marks a leaf with a group as protected', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		const peer = createFakeLeaf(app);
 		await leaf.setViewState({
@@ -532,7 +563,7 @@ describe('toTabRecord', () => {
 	});
 
 	it('does not protect a leaf whose group is explicitly null', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		// Real obsidian's ViewState.group is typed `WorkspaceLeaf | undefined`,
 		// with no `null`, even though a leaf can report `null` for it at
@@ -549,7 +580,7 @@ describe('toTabRecord', () => {
 	});
 
 	it('builds a normal key for a plain leaf', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 
@@ -561,14 +592,14 @@ describe('toTabRecord', () => {
 	});
 
 	it('builds a null key for a readable leaf with no file path', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app); // never given content -> reports 'empty', no file
 
 		expect(toTabRecord(leaf)).toEqual({ leaf, key: null, isProtected: false });
 	});
 
 	it('protects a leaf whose state cannot be read, with a null key', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		makeUnreadable(leaf);
 
@@ -578,7 +609,7 @@ describe('toTabRecord', () => {
 
 describe('closeDuplicateTabs', () => {
 	it('detaches the planned leaves and reveals the survivor when the current leaf was among them', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const protectedLeaf = createFakeLeaf(app);
 		await protectedLeaf.setViewState({
 			type: 'markdown',
@@ -619,7 +650,7 @@ describe('pushClosedTab', () => {
 
 describe('getClosedTabs and removeClosedTab', () => {
 	it('returns entries newest first, removes one by reference, and a repeated removal is a no-op', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const first = createFakeLeaf(app);
 		await first.setViewState({ type: 'markdown', state: { file: 'First.md' } });
 		setDisplayText(first, 'First');
@@ -649,7 +680,7 @@ describe('getClosedTabs and removeClosedTab', () => {
 
 describe('tab tracking', () => {
 	it('pushes a closed note leaf with its view state and title', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'Note.md' } });
 		setDisplayText(leaf, 'Note');
@@ -669,7 +700,7 @@ describe('tab tracking', () => {
 	});
 
 	it('pushes the new note when a leaf navigated in place before it closed', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		setDisplayText(leaf, 'A');
@@ -688,7 +719,7 @@ describe('tab tracking', () => {
 	});
 
 	it('pushes every leaf from a bulk close in one event, keeping only the last five past the cap', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		for (let i = 1; i <= 6; i++) {
 			const leaf = createFakeLeaf(app);
 			await leaf.setViewState({ type: 'markdown', state: { file: `${i}.md` } });
@@ -707,7 +738,7 @@ describe('tab tracking', () => {
 	});
 
 	it('never pushes an empty leaf or a Tab Candy leaf', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const empty = createFakeLeaf(app);
 		addRootLeaf(app, empty);
 		const tabCandy = createFakeLeaf(app);
@@ -723,7 +754,7 @@ describe('tab tracking', () => {
 	});
 
 	it('drops a live leaf\'s snapshot once it becomes empty, so a later close pushes nothing', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, leaf);
@@ -740,7 +771,7 @@ describe('tab tracking', () => {
 	});
 
 	it('strips group and active from the pushed view state', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		const peer = createFakeLeaf(app);
 		await leaf.setViewState({
@@ -764,7 +795,7 @@ describe('tab tracking', () => {
 	});
 
 	it('seeding at layout-ready pushes nothing, and a close after ready is captured', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, leaf);
@@ -780,7 +811,7 @@ describe('tab tracking', () => {
 	});
 
 	it('an unreadable leaf does not stop others from refreshing in the same pass, and keeps its own prior snapshot', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const flaky = createFakeLeaf(app);
 		await flaky.setViewState({ type: 'markdown', state: { file: 'Flaky.md' } });
 		setDisplayText(flaky, 'Flaky');
@@ -811,7 +842,7 @@ describe('tab tracking', () => {
 
 describe('reopenClosedTab', () => {
 	it('removes the entry from the ring before reopening it, and opens into a new tab when no target is given', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const closedLeaf = createFakeLeaf(app);
 		await closedLeaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		setDisplayText(closedLeaf, 'A');
@@ -837,7 +868,7 @@ describe('reopenClosedTab', () => {
 	});
 
 	it('opens into the target leaf when one is given, instead of creating a new tab', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const target = createFakeLeaf(app);
 		addRootLeaf(app, target);
 		const entry: ClosedTabEntry = {
@@ -858,7 +889,7 @@ describe('reopenClosedTab', () => {
 
 describe('reopenLastClosedTab', () => {
 	it('does nothing when the ring is empty', () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 
 		reopenLastClosedTab(app);
 
@@ -866,7 +897,7 @@ describe('reopenLastClosedTab', () => {
 	});
 
 	it('reopens the newest entry into a new tab', async () => {
-		const app = createFakeWorkspaceApp({ files: {} });
+		const app = buildApp();
 		const leaf = createFakeLeaf(app);
 		await leaf.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, leaf);

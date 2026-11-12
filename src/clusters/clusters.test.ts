@@ -1,20 +1,15 @@
 /**
- * @file Tests for the Cluster operations and the rename watcher: each
+ * @file Tests for the Cluster operations: each
  * operation's result, and that a no-op returns the same record by reference.
  */
 import {
 	describe,
 	expect,
-	it,
-	vi
+	it
 } from 'vitest';
-import SettingsStore from '../settings/SettingsStore';
 import {
 	buildCluster,
-	buildClusters,
-	buildSettings,
-	createConfiguredApp,
-	getExistingFile
+	buildClusters
 } from '../test/fakes';
 import { UNTITLED_CLUSTER_NAME } from '../types';
 import {
@@ -25,7 +20,6 @@ import {
 	getClustersContainingPath,
 	getMostRecentCluster,
 	pairClusters,
-	registerClusterRenameWatcher,
 	removeMember,
 	reorderMember,
 	replaceMemberPath,
@@ -545,7 +539,12 @@ describe('getClustersContainingPath', () => {
 });
 
 describe('replaceMemberPath', () => {
-	/** Shaped like `getLayout()` output: a split of tabs holding leaves. */
+	/**
+	 * Builds a layout in the shape of `getLayout()` output: a split of tabs holding leaves.
+	 *
+	 * @param files - File paths, one leaf each.
+	 * @returns The layout.
+	 */
 	function buildLayout(...files: string[]): Record<string, unknown> {
 		return {
 			main: {
@@ -749,70 +748,5 @@ describe('replaceMemberPath', () => {
 		);
 
 		expect(result).toBe(clusters);
-	});
-});
-
-describe('registerClusterRenameWatcher', () => {
-	function setUp(files: Record<string, string>, members: string[]) {
-		const app = createConfiguredApp({ files });
-		const store = new SettingsStore(
-			buildSettings({
-				clusters: buildClusters(buildCluster({ id: 'a', members })),
-			}),
-			async () => {}
-		);
-		const registerEvent = vi.fn();
-		registerClusterRenameWatcher(
-			app,
-			store,
-			registerEvent
-		);
-		return { app, store, registerEvent };
-	}
-
-	it('registers exactly one listener', () => {
-		const { registerEvent } = setUp({}, []);
-
-		expect(registerEvent).toHaveBeenCalledTimes(1);
-	});
-
-	it('patches the member path when a file is renamed', async () => {
-		const { app, store } = setUp({ 'Notes/old.md': '' }, ['Notes/old.md']);
-		const file = getExistingFile(app, 'Notes/old.md');
-
-		await app.vault.rename(file, 'Notes/new.md');
-
-		expect(store.get().clusters.a.members).toEqual(['Notes/new.md']);
-	});
-
-	it('patches the member path when a file is moved to another folder', async () => {
-		const { app, store } = setUp({ 'Notes/old.md': '' }, ['Notes/old.md']);
-		const file = getExistingFile(app, 'Notes/old.md');
-
-		await app.vault.rename(file, 'Archive/old.md');
-
-		expect(store.get().clusters.a.members).toEqual(['Archive/old.md']);
-	});
-
-	it('does not save when the renamed file is in no Cluster', async () => {
-		const { app, store } = setUp(
-			{ 'Notes/other.md': '' },
-			['Notes/member.md']
-		);
-		const updateSpy = vi.spyOn(store, 'update');
-		const file = getExistingFile(app, 'Notes/other.md');
-
-		await app.vault.rename(file, 'Notes/renamed.md');
-
-		expect(updateSpy).not.toHaveBeenCalled();
-	});
-
-	it('does not drop a member whose file is deleted', async () => {
-		const { app, store } = setUp({ 'Notes/member.md': '' }, ['Notes/member.md']);
-		const file = getExistingFile(app, 'Notes/member.md');
-
-		await app.fileManager.trashFile(file);
-
-		expect(store.get().clusters.a.members).toEqual(['Notes/member.md']);
 	});
 });

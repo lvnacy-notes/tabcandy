@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Roadmap/Tab Candy v2.0 Tab Identity and Grouping Worksheet.md",
+                "file": "Roadmap/Tab Candy Restructure Plan.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Tab Candy v2.0 Tab Identity and Grouping Worksheet"
+              "title": "Tab Candy Restructure Plan"
             }
           }
         ],
@@ -219,19 +219,21 @@
   },
   "active": "7209ab8f9efe5227",
   "lastOpenFiles": [
-    "src/commands",
-    "src/obsidian/TabCandyView.test.tsx",
-    "src/obsidian/TabCandyView.tsx",
-    "src/obsidian/settingsTab.test.ts",
-    "src/obsidian/SettingsTab.ts",
-    "src/obsidian/stackedTabPanes.ts",
-    "src/obsidian/stackedTabPanes.test.ts",
-    "src/obsidian/versionCheck.ts",
-    "src/obsidian/tabCommands.ts",
-    "src/obsidian/newTabHijack.ts",
-    "src/obsidian/newTabHijack.test.ts",
-    "Roadmap/Tab Candy Restructure Plan.md",
+    "temp 2.ts",
+    "temp.ts",
+    "temp.tsx",
+    "test.log",
+    "test-results.json",
+    "src/obsidian/someBSTabCandyView.test.tsx",
+    "src/ui/createClusterModal.test.ts",
+    "src/settings/settingsStore.test.ts",
+    "src/obsidian/tabCandyView.test.tsx",
+    "closedTabs.test.log",
+    "tabNavigation.test.log",
+    "Roadmap/Tab Candy v2.0 Tab Identity and Grouping Worksheet.md",
+    "docs/Tab Candy Code Style Guide.md",
     "temp.md",
+    "Roadmap/Tab Candy Restructure Plan.md",
     "Roadmap/Tab Candy v2.0 Specification.md",
     "Roadmap/Tab Candy v1.3 Navigation Sugar.md",
     "docs/Roadmap.md",
@@ -253,8 +255,6 @@
     "Roadmap/Tab Feature Requests/Tab Feature Requests.md",
     "Roadmap/Tab Feature Requests/Search for Open Tabs and Reorder Tabs in Tab Overview.md",
     "Roadmap/Tab Feature Requests/Move and Change position of tabs with commands (within the same tab group).md",
-    "Roadmap/Tab Feature Requests/Open backlinks in the second tab without creating new tabs.md",
-    "Roadmap/Tab Feature Requests/Focus previously active tab after closing current tab.md",
     "tab-candy-images/the_grey_between_ii_by_killerorcaai_dl64b6a-fullview.jpg",
     "tab-candy-images/dmptnnl-e0c0fbe7-e4fb-4ca6-9807-8f403d563114.jpg",
     "tab-candy-images/dmptnnl-8f3e84fe-b633-47cf-bbcf-df809c3b8fc2.jpg",

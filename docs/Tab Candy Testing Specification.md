@@ -18,7 +18,9 @@ Coverage numbers are vanity. A file can sit at 100% and still let a real regress
 - **The settings store's subscribe/unsubscribe doesn't leak or double-fire.** Load-bearing by definition, not because "settings store" is a category that earns coverage.
 - **Background resolution degrades gracefully on a vault someone actually has.** Missing folder, a file deleted mid-session, a malformed nested structure, an unsupported extension. Get this wrong and the plugin doesn't just show a broken image — the view can hang.
 - **View lifecycle doesn't leak React roots on repeated open/close.** `TabCandyView`'s `onClose()` actually unmounting, across open → close → reopen and multiple leaves.
-- **Private-API access in `bookmarks.ts`/`commands.ts` fails closed, not open.** These touch undocumented Obsidian internals that can shift shape on any update with zero warning. A regression here isn't "a test failed in CI," it's "the plugin explodes on someone's Tuesday update" — the surface most likely to break for reasons entirely outside this codebase's control, which is exactly why it earns the same weight as everything else on this list.
+- **Private-API access in `bookmarks.ts`/`pluginCommands.ts` fails closed, not open.** These touch undocumented Obsidian internals that can shift shape on any update with zero warning. A regression here isn't "a test failed in CI," it's "the plugin explodes on someone's Tuesday update" — the surface most likely to break for reasons entirely outside this codebase's control, which is exactly why it earns the same weight as everything else on this list.
+- **Cluster data is never silently lost or corrupted.** Clusters are persisted user data, so the settings bullet above extends to them: `normalizeSettings.ts` rebuilds every Cluster's id from its key, drops members that aren't strings, accepts a Flavor only when it is a hex color, rejects the `__proto__` key, and unpairs any Pairing that isn't reciprocal. Membership is also never pruned behind the user's back: a rename or move patches the path in place (in `members` and in `layoutSnapshot`), a delete leaves the member listed as missing, and an operation with nothing to change returns the record it was given so no pointless save fires.
+- **Obsidian surface that isn't guaranteed fails closed, not open, in Cluster creation.** Cluster creation relies on three things Obsidian doesn't document as stable: `WorkspaceLeaf.parent` as the definition of a pane, the `'tab-header'` `source` string and the `leaf` argument on `file-menu`, and the file path carried in a leaf's view state. When any of them is missing or unreadable, the result has to be "no Cluster, no menu item", never a Cluster built from guessed tabs.
 
 Everything else — a quote fetching correctly, the clock format switching, which CSS class a background theme applies — is real, worth testing, but supplementary. It gets covered because it's cheap to cover once the fakes exist, not because it earns its own coverage target.
 
@@ -52,8 +54,11 @@ The `obsidian` npm package is types-only — zero runtime implementation. Rather
 - `App.createConfigured__({ files: {...} })` builds a fully wired in-memory vault from a plain object, covering the fake-adapter work `backgrounds.ts`'s test cases need without building it from scratch.
 - Its `obsidian-typings` bridge covers `WorkspaceLeaf`'s types, so no separate fake `WorkspaceLeaf` builder is needed for view-lifecycle tests.
 - Author: Michael Naumov (`mnaoumov`), an officially credited contributor to Obsidian's community plugin-review tooling, and maintainer of `obsidian-typings`/`obsidian-dev-utils`. Not a core Obsidian app developer, but a highly credible source for this specific API surface.
+- Version: Tab Candy follows the latest release, not the pinned one. 6.0.0 changed how leaves and layouts behave: a leaf now builds a real view from the view registry, so a `markdown` tab whose file isn't in the vault closes back to an empty tab. A test that opens file-backed tabs must create those files in the vault first (`createConfiguredApp({ files })`, or `vault.create()` for files added mid-test).
+- Components are DOM-driven. Typing into a text component, clicking a button or extra button, and changing a color picker work by dispatching `input`/`click`/`change` events on the element, so modal tests drive the modal's own DOM rather than reaching into component instances.
+- `Modal.open()` schedules an automatic close on a real `setTimeout(0)`. Any test that opens a modal uses fake timers (see Async / timers).
 - **Accepted risk**: a small project (single maintainer, modest adoption at time of writing). Revisit if it goes stale.
-- `src/test/fakes.ts` narrows to just `buildSettings()` and the shared malformed-private-registry fixtures (below) — the things that are actually Tab Candy-specific and this library has no opinion on. Everything Obsidian-shaped comes from `obsidian-test-mocks` instead.
+- `src/test/fakes.ts` holds only what is Tab Candy-specific and the library has no opinion on: `buildSettings()`, `buildCluster()`/`buildClusters()`, the shared malformed-private-registry fixtures (below), and thin wrappers over the library's app construction. Everything Obsidian-shaped comes from `obsidian-test-mocks` instead.
 
 ## Structure
 ---
@@ -66,11 +71,30 @@ The `obsidian` npm package is types-only — zero runtime implementation. Rather
 - `src/test/fakes.ts` is shared by both co-located tests and the integration folder.
 - One Vitest config glob (`src/**/*.test.{ts,tsx}`) covers both locations at once — no special-casing needed.
 
-### `commands.ts`/`bookmarks.ts` private-registry fixtures
+### `pluginCommands.ts`/`bookmarks.ts` private-registry fixtures
 
 Both files touch the same undocumented private surface (`commands.commands`, `plugins.plugins`, `internalPlugins.plugins`) and share the same "fails closed, not open" requirement from the load-bearing list. The malformed-shape cases — missing registry, a malformed entry, `executeCommandById` throwing — live as a small shared addition to `src/test/fakes.ts` rather than duplicated per test file.
 
 This isn't a from-scratch mock: whatever base `App` `obsidian-test-mocks` provides is still the foundation. The malformed-shape fixtures are that base with specific private-registry properties deliberately stripped or corrupted — no general-purpose mock library ships "intentionally broken" as a feature, so this was never contingent on what the library covers.
+
+### Test helper modules
+
+Shared test code lives in `src/test/`, one module per concern, so a helper has one home and a test file never defines a helper another test file also needs:
+
+| Module | Holds |
+|:-------|:------|
+| `fakes.ts` | Settings and Cluster builders, malformed-private-registry fixtures, app construction wrappers. |
+| `FakeWorkspace.ts`, `FakeWorkspaceLeaf.ts` | The workspace and leaf the library's versions don't model well enough: root-leaf lists, most-recent leaf, unreadable view state. |
+| `clusterHelpers.ts` | Helpers shared by the Cluster command, menu and creation tests: file-backed and non-file tabs in a pane, an empty store, submitting and cancelling prompts, command availability. |
+| `commandHelpers.ts` | Helpers shared by command tests, such as collecting a workspace's root leaves. |
+
+A helper used by one test file stays in that file, above its `describe()`, with a JSDoc comment. It moves to `src/test/` when a second file needs it.
+
+### Command modules
+
+Each module in `src/commands/` exports one `buildInvokeCommand()` and gets a co-located test with one `describe()` named after the command id. The test covers the command's id and name, its availability check when it has one, and the observable effect of its callback on the fake workspace or store. The effect is asserted through real fakes, never by mocking the module the command calls. The logic behind a command is tested where that logic lives (`tabNavigation.test.ts`, `clusterCreation.test.ts`), so a command test stays a wiring check, not a second copy of that suite.
+
+A command that opens a modal is tested by stubbing the modal class's `open()` on its prototype and asserting it was called on an instance of that class. Where the command passes a callback to the modal (`close-tabs-in-folder`), the test invokes that callback through the instance to prove the wiring.
 
 ## Coverage: the Ratchet
 ---
@@ -116,9 +140,11 @@ Banned outright. Explicit assertions only, even when it's more typing. A snapsho
 
 Fake timers (`vi.useFakeTimers()`) everywhere a debounce or interval is under test — `debounce.ts`, `useClock`, the debounced folder re-sync in `backgrounds.ts`. No real `setTimeout` waits in the suite; a suite that takes 30 seconds because of real timers is a suite people start skipping.
 
+The same applies to fire-and-forget work: a command callback that starts an async operation it doesn't return (`open-tab-candy`) is settled with `vi.useFakeTimers()` and `await vi.runAllTimersAsync()`, not polled with `vi.waitFor()`. A test that opens a modal uses fake timers for the same reason, so the mock's automatic close timer never fires after the test has ended.
+
 ### Naming / structure conventions
 
-- `describe()` per exported function/hook/class; `it()` written as a sentence describing behavior ("returns an empty array when the folder doesn't exist"), not a fragment.
+- `describe()` per exported function/hook/class (a command module's single `buildInvokeCommand()` is named after the command id instead, see "Command modules"); `it()` written as a sentence describing behavior ("returns an empty array when the folder doesn't exist"), not a fragment.
 - Arrange/act/assert layout inside every test body, with a blank line between each section.
 - No `any` in test files. If a fake needs a shape TypeScript can't infer cleanly, the fake needs a proper type — that's not a rule that relaxes the moment `describe(` shows up.
 
@@ -137,6 +163,9 @@ Distinct from the permanent exclusions above: things not tested *yet*, not thing
 
 | Gap | Reason |
 |:----|:-------|
+| Folder moves and Cluster rename patching | `registerClusterRenameWatcher` patches the exact path from each `rename` event. Whether Obsidian also emits a `rename` per file when a folder is moved has not been verified in a live vault. If it doesn't, members under the folder are kept, not lost, and the manual-selection resolve flow is the recovery path, so this is accepted rather than blocking. |
+| `leaf.parent` as the pane boundary in splits and popout windows | Tested only against the fake workspace, which assigns `parent` by hand. Real split and popout layouts haven't been exercised. |
+| `CreateClusterModal`'s clear-Flavor button against real Obsidian | The mock's `ColorComponent.setValue()` fires `onChange`; whether the real one does hasn't been checked. The handler resets the swatch before clearing Flavor, so the result is the same either way. |
 | `App.tsx`'s `openFile()` (Recent Files / Bookmarks click-to-open, including its `dashboardFocusesOpenTab` branch) | The whole function has never had a render-and-click harness. Recent Files/Bookmarks click-to-open is a supplementary dashboard convenience, not on the load-bearing list; closing just the `dashboardFocusesOpenTab` branch would mean building that harness from scratch for a non-load-bearing surface. `reopenTab`'s equivalent branch, by contrast, already had a test harness in place (`closedTabs.test.tsx`), so its gap was closed directly instead of logged here. |
 
 
@@ -145,7 +174,7 @@ Distinct from the permanent exclusions above: things not tested *yet*, not thing
 
 - **Mandatory: a bug fix ships with a test that would have caught it.** No exceptions for "it was a one-liner" — one-liner bugs are the most embarrassing to repeat. Name the test after what it's catching (`normalizeSettings_drops_unknown_legacy_field`), not after an issue number.
 - **Mandatory: a new setting, background theme, quote source, or bookmark source ships with a `normalizeSettings.ts` case** covering its malformed/missing/legacy-value handling, since that file is the one place on the load-bearing list that grows every time a feature does.
-- **Mandatory: touching a shared service** (`backgrounds.ts`, `bookmarks.ts`, `commands.ts`, `SettingsStore.ts`) **means running its existing tests first.** If a change breaks them, decide whether the test encoded the old contract on purpose (fix the test) or caught a real regression (fix the code). Don't just make it pass.
+- **Mandatory: touching a shared service** (`backgrounds.ts`, `bookmarks.ts`, `pluginCommands.ts`, `quotes.ts`, `clusters.ts`, `SettingsStore.ts`) **means running its existing tests first.** If a change breaks them, decide whether the test encoded the old contract on purpose (fix the test) or caught a real regression (fix the code). Don't just make it pass.
 - **Recommended: a test that pins the wrong behavior gets fixed, not worked around.** If a test enforces a misunderstanding of what the code should do, fix the test and the code together.
 - **Not worth testing: trivial wrappers** (see above).
 
@@ -155,7 +184,6 @@ Distinct from the permanent exclusions above: things not tested *yet*, not thing
 Not open design questions — these are settled in principle above and just need hands-on work to pin down:
 
 - CI job structure (single sequential workflow vs. a matrix) and the mechanics of how the Ratchet's coverage baseline is stored and compared run-to-run.
-- The concrete `vite.config.ts` library-mode shape, once built against this repo's real esbuild config.
 - Whether `eslint-plugin-obsidianmd`'s rules false-positive against test files constructing fake `Setting`/`Modal` instances — verify at the first real test file, not on paper.
 - Whether `obsidian-test-mocks` already populates the private `commands`/`plugins`/`internalPlugins` registries at runtime (its `obsidian-typings` bridge covers their *types*, confirmed; runtime population unconfirmed). Doesn't block the malformed-shape fixtures either way, but affects how much of the happy-path setup for `commands.ts`/`bookmarks.ts` tests comes for free.
 

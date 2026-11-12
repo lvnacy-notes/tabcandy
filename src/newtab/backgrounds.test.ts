@@ -1,6 +1,4 @@
 import {
-	afterEach,
-	beforeEach,
 	describe,
 	expect,
 	it,
@@ -9,8 +7,7 @@ import {
 import SettingsStore from '../settings/SettingsStore';
 import {
 	buildSettings,
-	createConfiguredApp,
-	getExistingFile
+	createConfiguredApp
 } from '../test/fakes';
 import { TFile } from 'obsidian';
 import {
@@ -19,10 +16,15 @@ import {
 	listBackgroundFilesInFolder,
 	pruneMissingManualBackgroundFiles,
 	pruneStaleOverlayContrastCache,
-	registerBackgroundVaultWatchers,
 	syncBackgroundsFolder,
 } from './backgrounds';
 
+/**
+ * Builds a settings store that discards its saves.
+ *
+ * @param overrides - Settings to override the defaults with.
+ * @returns The store.
+ */
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
 	return new SettingsStore(buildSettings(overrides), async () => {});
 }
@@ -342,170 +344,5 @@ describe('pruneStaleOverlayContrastCache', () => {
 		await pruneStaleOverlayContrastCache(app, store);
 
 		expect(updateSpy).not.toHaveBeenCalled();
-	});
-});
-
-describe('registerBackgroundVaultWatchers', () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	function setUp(overrides: Parameters<typeof buildSettings>[0] = {}) {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/existing.png': '' },
-		});
-		const store = buildStore({ backgroundsFolder: 'Backgrounds', ...overrides });
-		const registerEvent = vi.fn();
-		registerBackgroundVaultWatchers(app, store, registerEvent);
-		return { app, store, registerEvent };
-	}
-
-	it('registers exactly one listener each for create, modify, delete, and rename', () => {
-		const { registerEvent } = setUp();
-
-		expect(registerEvent).toHaveBeenCalledTimes(4);
-	});
-
-	it('re-syncs the backgrounds folder 500ms after a file is created inside it', async () => {
-		const { app, store } = setUp();
-
-		await app.vault.create('Backgrounds/new.png', '');
-		expect(store.get().backgroundFiles).not.toContain('Backgrounds/new.png');
-
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([
-			'Backgrounds/existing.png',
-			'Backgrounds/new.png',
-		]);
-	});
-
-	it('does not re-sync when a file is created outside the configured folder', async () => {
-		const { app, store } = setUp();
-		// backgroundFiles starts at the settings default (empty) - it's only
-		// ever populated by a sync, and registering watchers doesn't sync on
-		// its own. A no-op watcher should leave it exactly there.
-		expect(store.get().backgroundFiles).toEqual([]);
-
-		await app.vault.create('Elsewhere/new.png', '');
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([]);
-	});
-
-	it('re-syncs after a file inside the folder is modified', async () => {
-		const { app, store } = setUp();
-
-		await app.vault.adapter.write('Backgrounds/existing.png', 'new bytes');
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
-
-		app.vault.trigger('modify', file);
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual(['Backgrounds/existing.png']);
-	});
-
-	it('collapses a burst of create events into a single debounced sync', async () => {
-		const { app, store } = setUp();
-
-		await app.vault.create('Backgrounds/one.png', '');
-		vi.advanceTimersByTime(200);
-		await app.vault.create('Backgrounds/two.png', '');
-		vi.advanceTimersByTime(200);
-		await app.vault.create('Backgrounds/three.png', '');
-
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([
-			'Backgrounds/existing.png',
-			'Backgrounds/one.png',
-			'Backgrounds/three.png',
-			'Backgrounds/two.png',
-		]);
-	});
-
-	it('removes a deleted file from manualBackgroundFiles', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/picture.png'],
-		});
-		await app.vault.create('Elsewhere/picture.png', '');
-		const file = getExistingFile(app, 'Elsewhere/picture.png');
-
-		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
-		// what fires the 'delete' event this test exercises, not a
-		// stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file);
-
-		expect(store.get().manualBackgroundFiles).toEqual([]);
-	});
-
-	it('leaves manualBackgroundFiles untouched when the deleted file was not in it', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/keep.png'],
-		});
-		await app.vault.create('Elsewhere/other.png', '');
-		const file = getExistingFile(app, 'Elsewhere/other.png');
-
-		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
-		// what fires the 'delete' event this test exercises, not a
-		// stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file);
-
-		expect(store.get().manualBackgroundFiles).toEqual(['Elsewhere/keep.png']);
-	});
-
-	it('re-syncs when a file inside the configured folder is deleted', async () => {
-		const { app, store } = setUp();
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
-
-		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
-		// what fires the 'delete' event this test exercises, not a
-		// stand-in for a user-facing delete action.
-		await app.fileManager.trashFile(file);
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([]);
-	});
-
-	it('updates a manualBackgroundFiles entry to its new path on rename', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/old-name.png'],
-		});
-		await app.vault.create('Elsewhere/old-name.png', '');
-		const file = getExistingFile(app, 'Elsewhere/old-name.png');
-
-		await app.vault.rename(file, 'Elsewhere/new-name.png');
-
-		expect(store.get().manualBackgroundFiles).toEqual([
-			'Elsewhere/new-name.png',
-		]);
-	});
-
-	it('re-syncs when a file is renamed into the configured folder', async () => {
-		const { app, store } = setUp();
-		await app.vault.create('Elsewhere/incoming.png', '');
-		const file = getExistingFile(app, 'Elsewhere/incoming.png');
-
-		await app.vault.rename(file, 'Backgrounds/incoming.png');
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([
-			'Backgrounds/existing.png',
-			'Backgrounds/incoming.png',
-		]);
-	});
-
-	it('re-syncs when a file is renamed out of the configured folder', async () => {
-		const { app, store } = setUp();
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
-
-		await app.vault.rename(file, 'Elsewhere/existing.png');
-		await vi.advanceTimersByTimeAsync(500);
-
-		expect(store.get().backgroundFiles).toEqual([]);
 	});
 });

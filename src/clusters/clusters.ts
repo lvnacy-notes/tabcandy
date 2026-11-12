@@ -1,10 +1,6 @@
-import {
-	App,
-	EventRef
-} from 'obsidian';
-import SettingsStore from '../settings/SettingsStore';
 import { isHexColor, isRecord } from '../utils/typeGuards';
 import {
+	NewClusterInput,
 	TabCandyCluster,
 	TabCandyClusters,
 	UNTITLED_CLUSTER_NAME
@@ -12,42 +8,35 @@ import {
 
 /*
  * Cluster operations are pure: each takes the current `clusters` record and
- * returns the next one, never mutating its input. When an operation has
- * nothing to change (unknown id, member already present, ...) it returns the
- * same record it was given, so a caller can tell "nothing happened" by
- * reference and skip a pointless save:
- *
- *   const next = addMember(clusters, id, path);
- *   if (next !== clusters) {
- *       await settingsStore.update({ clusters: next });
- *   }
+ * returns the next one without mutating its input. An operation with nothing
+ * to change returns the record it was given.
  */
 
-/** What a new Cluster is created from. */
-export interface NewClusterInput {
-	name: string;
-	/** Dropped unless it is a valid hex color. */
-	flavor?: string;
-	/** Initial members, in order. Duplicates are collapsed. */
-	members?: string[];
-}
-
-/** True when `clusters` has an own entry for `id`. */
+/**
+ * Tests whether a Cluster exists.
+ *
+ * @param clusters - The current Clusters.
+ * @param id - Id to look up.
+ * @returns True when `clusters` has an own entry for `id`.
+ */
 function hasCluster(clusters: TabCandyClusters, id: string): boolean {
 	return Boolean(Object.prototype.hasOwnProperty.call(clusters, id));
 }
 
-/** `paths` with repeats removed, keeping the first of each. */
+/**
+ * Removes repeated paths, keeping the first of each.
+ *
+ * @param paths - Paths to deduplicate.
+ * @returns The paths without repeats, in their original order.
+ */
 function uniquePaths(paths: string[]): string[] {
 	return paths.filter((path, index) => paths.indexOf(path) === index);
 }
 
 /**
- * A new random Cluster id: 128 random bits as 32 hex characters.
+ * Generates a random Cluster id.
  *
- * Built on `crypto.getRandomValues()` rather than `crypto.randomUUID()`,
- * because the latter is only exposed in secure contexts and the plugin has
- * to behave the same on Obsidian mobile.
+ * @returns 32 lowercase hex characters (128 random bits).
  */
 export function generateClusterId(): string {
 	const bytes = new Uint8Array(16);
@@ -56,12 +45,12 @@ export function generateClusterId(): string {
 }
 
 /**
- * Adds a new Cluster. An empty `members` list is a normal state; a blank
- * name falls back to the untitled name.
+ * Adds a new Cluster. A blank name becomes `UNTITLED_CLUSTER_NAME`, a Flavor
+ * that isn't a valid hex color is dropped, and repeated members are removed.
  *
  * @param clusters - The current Clusters.
  * @param input - Name, optional Flavor, optional starting members.
- * @param now - Timestamp for `lastTouchedAt`.
+ * @param now - Value for `lastTouchedAt`.
  * @param id - Id for the new Cluster; generated unless given.
  * @returns The next record and the Cluster that was added.
  */
@@ -89,8 +78,11 @@ export function createCluster(
 }
 
 /**
- * Clears every Pairing that points at `id`, and `id`'s own. Scans the
- * whole record rather than trusting that the partner points back.
+ * Clears the Pairing of `id` and every Pairing that points at `id`.
+ *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @returns The next record.
  */
 function clearPairingsTo(clusters: TabCandyClusters, id: string): TabCandyClusters {
 	const next: TabCandyClusters = {};
@@ -103,8 +95,10 @@ function clearPairingsTo(clusters: TabCandyClusters, id: string): TabCandyCluste
 }
 
 /**
- * Deletes a Cluster and decouples whichever Cluster was paired with it.
+ * Deletes a Cluster and unpairs whichever Cluster was paired with it.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster to delete.
  * @returns The next record, or `clusters` itself when `id` doesn't exist.
  */
 export function deleteCluster(
@@ -120,9 +114,12 @@ export function deleteCluster(
 }
 
 /**
- * Appends a path to a Cluster's members and bumps `lastTouchedAt`. Adding a
- * path that is already a member changes nothing.
+ * Appends a path to a Cluster's members and sets `lastTouchedAt`.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param path - Path to add.
+ * @param now - Value for `lastTouchedAt`.
  * @returns The next record, or `clusters` itself when `id` doesn't exist or
  * `path` is already a member.
  */
@@ -148,9 +145,13 @@ export function addMember(
 }
 
 /**
- * Removes a path from a Cluster's members and bumps `lastTouchedAt`. Works
- * the same on a path that no longer resolves to a file.
+ * Removes a path from a Cluster's members and sets `lastTouchedAt`. The path
+ * need not resolve to a file.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param path - Path to remove.
+ * @param now - Value for `lastTouchedAt`.
  * @returns The next record, or `clusters` itself when `id` doesn't exist or
  * `path` isn't a member.
  */
@@ -176,11 +177,15 @@ export function removeMember(
 }
 
 /**
- * Moves the member at `fromIndex` so it ends up at `toIndex`. Doesn't bump
- * `lastTouchedAt`: reordering isn't one of the things that counts as touching.
+ * Moves the member at `fromIndex` to `toIndex`. Doesn't change
+ * `lastTouchedAt`.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param fromIndex - Current position of the member.
+ * @param toIndex - Position the member ends up at.
  * @returns The next record, or `clusters` itself when `id` doesn't exist,
- * either index is not a valid position, or the move is a no-op.
+ * either index isn't a valid position, or the move changes nothing.
  */
 export function reorderMember(
 	clusters: TabCandyClusters,
@@ -214,8 +219,11 @@ export function reorderMember(
 }
 
 /**
- * Sets a Cluster's `lastTouchedAt`, for events like a Tray being opened.
+ * Sets a Cluster's `lastTouchedAt`.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param now - The new value.
  * @returns The next record, or `clusters` itself when `id` doesn't exist.
  */
 export function touchCluster(
@@ -234,13 +242,14 @@ export function touchCluster(
 }
 
 /**
- * Pairs two Clusters with each other. Pairing is strictly 1:1, so any
- * other Cluster either side was already paired with is unpaired first.
- * Doesn't touch `lastTouchedAt`: a Pairing affects two Clusters at once,
- * and bumping both would tie.
+ * Pairs two Clusters with each other. Any other Cluster either one was
+ * already paired with is unpaired. Doesn't change `lastTouchedAt`.
  *
+ * @param clusters - The current Clusters.
+ * @param idA - Id of the first Cluster.
+ * @param idB - Id of the second Cluster.
  * @returns The next record, or `clusters` itself when either id doesn't
- * exist, the ids are the same, or the two are already paired.
+ * exist, the ids are equal, or the two are already paired.
  */
 export function pairClusters(
 	clusters: TabCandyClusters,
@@ -276,6 +285,8 @@ export function pairClusters(
 /**
  * Unpairs a Cluster and its partner.
  *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
  * @returns The next record, or `clusters` itself when `id` doesn't exist or
  * isn't paired.
  */
@@ -291,10 +302,10 @@ export function unpairCluster(
 }
 
 /**
- * The Cluster with the highest `lastTouchedAt`, which is what the "most
- * recent Cluster" fast paths act on. A tie goes to the Cluster that comes
- * first in the record.
+ * Finds the Cluster with the highest `lastTouchedAt`. The first in record
+ * order wins a tie.
  *
+ * @param clusters - The current Clusters.
  * @returns The Cluster, or null when there are none.
  */
 export function getMostRecentCluster(
@@ -309,7 +320,13 @@ export function getMostRecentCluster(
 	return mostRecent;
 }
 
-/** Every Cluster that lists `path` as a member, in record order. */
+/**
+ * Finds every Cluster that lists a path as a member.
+ *
+ * @param clusters - The current Clusters.
+ * @param path - Path to look for.
+ * @returns The matching Clusters, in record order.
+ */
 export function getClustersContainingPath(
 	clusters: TabCandyClusters,
 	path: string
@@ -318,9 +335,13 @@ export function getClustersContainingPath(
 }
 
 /**
- * `members` with `oldPath` replaced by `newPath` in place. If `newPath` was
- * already a member, the repeat is dropped rather than leaving the list
- * with the same file twice.
+ * Replaces a path in a member list, in place. A repeat of `newPath` created
+ * by the replacement is dropped.
+ *
+ * @param members - Member paths.
+ * @param oldPath - Path to replace.
+ * @param newPath - Replacement path.
+ * @returns The new list, or `members` itself when `oldPath` isn't in it.
  */
 function replacePathInMembers(
 	members: string[],
@@ -347,9 +368,13 @@ function replacePathInMembers(
 }
 
 /**
- * Walks a captured layout and replaces `oldPath` with `newPath` in the file
- * path of every leaf node (`state.state.file`), copying only the branches
- * that change. Returns the node it was given when nothing under it matched.
+ * Replaces a path in the `state.state.file` of every leaf node of a layout,
+ * copying only the branches that change.
+ *
+ * @param node - A layout node, or any value inside one.
+ * @param oldPath - Path to replace.
+ * @param newPath - Replacement path.
+ * @returns The new node, or `node` itself when nothing under it matched.
  */
 function replacePathInLayout(
 	node: unknown,
@@ -398,17 +423,14 @@ function replacePathInLayout(
 }
 
 /**
- * Replaces a file path everywhere a Cluster stores one: in `members`, at the
- * same position, and in every matching leaf node of `layoutSnapshot`. Every
- * Cluster is searched. This is the one path-patch operation behind both
- * triggers: the vault's rename event, and resolving a missing member by
- * hand.
+ * Replaces a file path in every Cluster: in `members`, at the same position,
+ * and in every matching leaf node of `layoutSnapshot`.
  *
  * @param clusters - The current Clusters.
- * @param oldPath - The path to find.
- * @param newPath - The path to put in its place.
- * @returns The next record, or `clusters` itself when `oldPath` isn't
- * stored anywhere (or the two paths are equal).
+ * @param oldPath - Path to replace.
+ * @param newPath - Replacement path.
+ * @returns The next record, or `clusters` itself when `oldPath` isn't stored
+ * anywhere or the two paths are equal.
  */
 export function replaceMemberPath(
 	clusters: TabCandyClusters,
@@ -447,33 +469,4 @@ export function replaceMemberPath(
 		}
 	}
 	return changed ? next : clusters;
-}
-
-/**
- * Keeps Cluster membership current when Obsidian renames or moves a file.
- * Missing members are deliberately not pruned anywhere: a path that stops
- * resolving (a rename Obsidian didn't see, a deletion) stays in `members`
- * until the user removes or resolves it.
- *
- * `registerEvent` is passed in, as in `registerBackgroundVaultWatchers()`,
- * so the caller's own `Component.registerEvent()` owns the `EventRef`.
- */
-export function registerClusterRenameWatcher(
-	app: App,
-	settingsStore: SettingsStore,
-	registerEvent: (eventRef: EventRef) => void
-): void {
-	registerEvent(
-		app.vault.on('rename', (file, oldPath) => {
-			const { clusters } = settingsStore.get();
-			const next = replaceMemberPath(
-				clusters,
-				oldPath,
-				file.path
-			);
-			if (next !== clusters) {
-				void settingsStore.update({ clusters: next });
-			}
-		})
-	);
 }
