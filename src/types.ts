@@ -1,13 +1,14 @@
-import { ViewState, WorkspaceLeaf } from 'obsidian';
+/** @file Shared types and constants. */
+import {
+	App,
+	ViewState,
+	WorkspaceLeaf
+} from 'obsidian';
+import type SettingsStore from './settings/SettingsStore';
 
 /**
- * Image file extensions (without the leading dot, lowercase) that Tab Candy
- * treats as valid background images.
- *
- * This is deliberately the single source of truth for that list. Both the
- * vault-folder sync (`src/services/backgrounds.ts`) and the manual vault
- * image picker (`src/ui/ChooseImageSuggestModal.ts`) import from here
- * instead of hardcoding their own list, so the two paths can't drift apart.
+ * Lowercase image file extensions, without the dot, accepted as
+ * background images.
  */
 export const BACKGROUND_IMAGE_EXTENSIONS = [
 	'jpg',
@@ -20,6 +21,9 @@ export const BACKGROUND_IMAGE_EXTENSIONS = [
 /** Maximum closed tabs remembered and shown in the dashboard list. */
 export const CLOSED_TABS_LIMIT = 5;
 
+/** View type the Cluster sidebar is registered under. */
+export const CLUSTER_SIDEBAR_VIEW_TYPE = 'tabcandy-clusters';
+
 /** Ids of the plugins offered as search providers. */
 export const SEARCH_PROVIDER = [
 	'switcher',
@@ -30,6 +34,9 @@ export const SEARCH_PROVIDER = [
 
 /** View type the Tab Candy view is registered under. */
 export const TAB_CANDY_VIEW_TYPE = 'tabcandy-react-view';
+
+/** `source` Obsidian passes to `file-menu` for a tab header's context menu. */
+export const TAB_HEADER_SOURCE = 'tab-header';
 
 /** Name of a Cluster whose stored name is missing or not a string. */
 export const UNTITLED_CLUSTER_NAME = 'Untitled Cluster';
@@ -61,6 +68,18 @@ export type OverlayContrastCache = Record<string, OverlayContrastCacheEntry>;
 /** Asks the user for Cluster details; calls `onSubmit` once with them, or never if cancelled. */
 export type PromptForCluster = (onSubmit: (draft: ClusterDraft) => void) => void;
 
+/** Asks the user to pick one of `clusters`; calls `onSubmit` once with its id, or never if cancelled. */
+export type PromptForClusterChoice = (
+	clusters: TabCandyCluster[],
+	onSubmit: (id: string) => void
+) => void;
+
+/** Asks the user to pick any of `clusters`; calls `onSubmit` once with their ids, or never if cancelled. */
+export type PromptForClusterRemoval = (
+	clusters: TabCandyCluster[],
+	onSubmit: (ids: string[]) => void
+) => void;
+
 /** Clusters keyed by `id`. */
 export type TabCandyClusters = Record<string, TabCandyCluster>;
 
@@ -78,6 +97,20 @@ export interface ClusterDraft {
 	name: string;
 	/** Hex color. Unset means no Flavor. */
 	flavor?: string;
+}
+
+/** What the commands need from the plugin. */
+export interface CommandDependencies {
+	/** The Obsidian app. */
+	app: App;
+	/** Store holding the settings. */
+	settingsStore: SettingsStore;
+	/** Collects the details of a new Cluster. */
+	promptForCluster: PromptForCluster;
+	/** Collects the choice of Cluster to add a file to. */
+	promptForClusterChoice: PromptForClusterChoice;
+	/** Collects the choice of Clusters to remove a file from. */
+	promptForClusterRemoval: PromptForClusterRemoval;
 }
 
 /** A user-supplied quote with its author. */

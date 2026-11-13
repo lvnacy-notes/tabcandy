@@ -1,3 +1,4 @@
+/** @file Creating Clusters from tabs, panes and drafts. */
 import {
 	App,
 	Notice,

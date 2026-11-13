@@ -1,3 +1,4 @@
+/** @file Test data builders and fake app helpers. */
 import { App, TAbstractFile } from 'obsidian';
 import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import { DEFAULT_SETTINGS } from '../settings/defaultSettings';
@@ -8,19 +9,10 @@ import {
 } from '../types';
 
 /**
- * Builds a fully-wired in-memory vault via obsidian-test-mocks'
- * `App.createConfigured__()`, then converts it to the real `obsidian`
- * package's `App` type via its own `asOriginalType__()` bridge method.
+ * Builds an in-memory app and converts it to the `obsidian` package's `App` type.
  *
- * obsidian-test-mocks' own `App` mock class doesn't structurally match
- * the real `obsidian` package's published `App` interface (e.g. its
- * `WorkspaceLeaf.view` is typed `View | null`, where the real `obsidian`
- * package types it as non-null `View`) - passing the mock class straight
- * into production code typed against the real `App` fails `tsc`, even
- * though it's the same object at runtime. `asOriginalType__()` is
- * obsidian-test-mocks' own sanctioned answer to exactly this mismatch, so
- * every test builds its app through this one helper rather than each
- * file reaching for `App.createConfigured__` (and the mismatch) directly.
+ * @param options - Options for the mock app.
+ * @returns The app.
  */
 export function createConfiguredApp(
 	options: Parameters<typeof AppMock.createConfigured__>[0] = {}
@@ -29,10 +21,10 @@ export function createConfiguredApp(
 }
 
 /**
- * Settings test-data builder (Testing Specification, "Settings test-data
- * builder"): spreads overrides over DEFAULT_SETTINGS so a new settings
- * field requires updating this one factory, not every test file that
- * constructs settings.
+ * Builds settings from the defaults with `overrides` applied.
+ *
+ * @param overrides - Settings to replace.
+ * @returns The settings.
  */
 export function buildSettings(
 	overrides: Partial<TabCandySettings> = {}
@@ -41,10 +33,10 @@ export function buildSettings(
 }
 
 /**
- * Cluster test-data builder, in the same spirit as `buildSettings()`:
- * every field has a valid default, so a test only spells out the fields it
- * cares about, and a new `TabCandyCluster` field means updating this one
- * factory rather than every test that constructs a Cluster.
+ * Builds a Cluster with valid defaults and `overrides` applied.
+ *
+ * @param overrides - Fields to replace.
+ * @returns The Cluster.
  */
 export function buildCluster(
 	overrides: Partial<TabCandyCluster> = {}
@@ -60,8 +52,10 @@ export function buildCluster(
 }
 
 /**
- * Keys the given Clusters by their own `id`, so a test can't build a record
- * that breaks the `clusters[id].id === id` invariant by accident.
+ * Keys Clusters by their ids.
+ *
+ * @param clusters - The Clusters.
+ * @returns The record.
  */
 export function buildClusters(
 	...clusters: TabCandyCluster[]
@@ -74,14 +68,12 @@ export function buildClusters(
 }
 
 /**
- * `Vault.getAbstractFileByPath()` returns `TAbstractFile | null`. Call
- * sites in `backgrounds.test.ts`/`quotes.test.ts` that just seeded or
- * created the file at `path` know it's already there, but the return type
- * doesn't reflect that. This narrows to non-null via an actual runtime
- * check rather than a `!` assertion, so there's nothing for
- * `@typescript-eslint/no-non-null-assertion` to flag - no eslint-disable
- * comment needed, and it fails with a clear message if a test's own setup
- * was ever wrong, rather than a bare `null`-dereference TypeError.
+ * Reads a vault file that the test knows exists.
+ *
+ * @param app - The app.
+ * @param path - Vault-relative path.
+ * @returns The file.
+ * @throws When nothing exists at `path`.
  */
 export function getExistingFile(app: App, path: string): TAbstractFile {
 	const file = app.vault.getAbstractFileByPath(path);
@@ -90,30 +82,6 @@ export function getExistingFile(app: App, path: string): TAbstractFile {
 	}
 	return file;
 }
-
-/**
- * `commands.ts`/`bookmarks.ts` private-registry fixtures (Testing
- * Specification, "commands.ts/bookmarks.ts private-registry fixtures").
- *
- * Both files touch the same undocumented private `App` surface
- * (`commands.commands`, `plugins.plugins`, `internalPlugins.plugins`) and
- * share the "fails closed, not open" requirement from the load-bearing
- * list, so the malformed-shape fixtures live here once rather than
- * duplicated per test file.
- *
- * obsidian-test-mocks wraps `App` in a strict proxy: reading any property
- * that was never explicitly assigned throws a descriptive error rather
- * than returning `undefined` (obsidian-test-mocks' own "Strict Mocks"
- * design). Real Obsidian's `App` always has `commands`/`plugins`/
- * `internalPlugins` present, even when empty, so every setter below
- * assigns something - `undefined` included - and never leaves a property
- * truly untouched. Passing `undefined` models the realistic "this
- * specific registry didn't come back the shape we expected" case that
- * `commands.ts`/`bookmarks.ts`'s own optional chaining is meant to catch;
- * the strict proxy's throw-on-unassigned-access is reserved for
- * `withEmptyPrivateRegistries()` not having been called at all, which
- * isn't a case either file's production code claims to survive.
- */
 
 export interface FakeBookmarksPlugin {
 	enabled?: boolean;
@@ -130,6 +98,12 @@ export interface FakeRegisteredCommand {
 	name: string;
 }
 
+/**
+ * Assigns the app's `commands` registry.
+ *
+ * @param app - The app.
+ * @param registry - The registry, or undefined.
+ */
 export function setCommandsRegistry(
 	app: App,
 	registry: FakeCommandsRegistry | undefined
@@ -139,6 +113,12 @@ export function setCommandsRegistry(
 	).commands = registry;
 }
 
+/**
+ * Assigns the app's `internalPlugins` registry.
+ *
+ * @param app - The app.
+ * @param plugins - The internal plugins, or undefined.
+ */
 export function setInternalPluginsRegistry(
 	app: App,
 	plugins: Record<string, FakeBookmarksPlugin | undefined> | undefined
@@ -152,6 +132,12 @@ export function setInternalPluginsRegistry(
 	).internalPlugins = plugins === undefined ? undefined : { plugins };
 }
 
+/**
+ * Assigns the app's `plugins` registry.
+ *
+ * @param app - The app.
+ * @param plugins - The plugins, or undefined.
+ */
 export function setPluginsRegistry(
 	app: App,
 	plugins: Record<string, unknown> | undefined
@@ -164,10 +150,10 @@ export function setPluginsRegistry(
 }
 
 /**
- * Assigns empty-but-present `commands`/`plugins`/`internalPlugins`
- * registries to `app`, so a test can then override just the one registry
- * relevant to it via the setters above without also having to hand-build
- * the other two just to satisfy the strict proxy.
+ * Assigns empty `commands`, `plugins` and `internalPlugins` registries.
+ *
+ * @param app - The app.
+ * @returns The same app.
  */
 export function withEmptyPrivateRegistries(app: App): App {
 	setCommandsRegistry(app, { commands: {}, executeCommandById: () => true });

@@ -1,3 +1,4 @@
+/** @file Tests for the app components. */
 import {
 	afterEach,
 	describe,
@@ -13,18 +14,26 @@ import {
 	cleanup
 } from '@testing-library/react';
 import { addIcon, TFile } from 'obsidian';
-import { ClosedTabEntry } from '../types';
-import { createConfiguredApp } from '../test/fakes';
+import { ClosedTabEntry, TabCandyCluster } from '../types';
+import { buildCluster, createConfiguredApp } from '../test/fakes';
 import {
 	BackgroundSurface,
 	Bookmarks,
+	ClusterRow,
 	Icon,
+	MemberRow,
 	QuoteDisplay,
 	RecentFiles,
 	RecentlyClosedTabs,
 	SearchButton
 } from './components';
 
+/**
+ * Builds a vault file.
+ *
+ * @param path - Vault-relative path.
+ * @returns The file.
+ */
 function buildFile(path: string): TFile {
 	const app = createConfiguredApp({ files: { [path]: '' } });
 	const file = app.vault.getAbstractFileByPath(path);
@@ -34,12 +43,160 @@ function buildFile(path: string): TFile {
 	return file;
 }
 
-// testing-library's own auto-cleanup registers itself against a global
-// `afterEach`, which this project doesn't enable (tests import their
-// hooks explicitly from `vitest` rather than relying on globals) - without
-// this, each render() in this file would keep piling onto the same
-// jsdom `document.body` across tests.
 afterEach(cleanup);
+
+/**
+ * Renders a row with inert handlers unless overridden.
+ *
+ * @param cluster - The Cluster.
+ * @param overrides - Props to replace.
+ * @returns The render result.
+ */
+function renderRow(
+	cluster: TabCandyCluster,
+	overrides: Partial<Parameters<typeof ClusterRow>[0]> = {}
+): ReturnType<typeof render> {
+	return render(
+		<ClusterRow
+			cluster = { cluster }
+			expanded = { false }
+			isFilePresent = { () => true }
+			onOpenMember = { () => {} }
+			onRemoveMember = { () => {} }
+			onToggle = { () => {} }
+			{ ...overrides }
+		/>
+	);
+}
+
+describe('ClusterRow', () => {
+	it('shows the Cluster\'s name and member count', () => {
+		renderRow(buildCluster({ name: 'Reading', members: ['a.md', 'b.md'] }));
+
+		expect([screen.getByText('Reading').textContent, screen.getByText('2').textContent]).toEqual(['Reading', '2']);
+	});
+
+	it('hides the members while collapsed', () => {
+		renderRow(buildCluster({ members: ['a.md'] }));
+
+		expect(screen.queryByText('a')).toBeNull();
+	});
+
+	it('lists the members in order while expanded', () => {
+		const { container } = renderRow(
+			buildCluster({ members: ['b.md', 'a.md'] }),
+			{ expanded: true }
+		);
+
+		const titles = Array.from(container.querySelectorAll('.tabcandy-member-title'))
+			.map((title) => title.textContent);
+
+		expect(titles).toEqual(['b', 'a']);
+	});
+
+	it('says there are no tabs when an expanded Cluster is empty', () => {
+		renderRow(buildCluster(), { expanded: true });
+
+		expect(screen.getByText('No tabs yet.')).toBeTruthy();
+	});
+
+	it('marks only the members whose files are missing', () => {
+		const { container } = renderRow(
+			buildCluster({ members: ['here.md', 'gone.md'] }),
+			{
+				expanded: true,
+				isFilePresent: (path) => path === 'here.md',
+			}
+		);
+
+		const unresolved = Array.from(container.querySelectorAll('.is-unresolved'))
+			.map((row) => row.textContent);
+
+		expect(unresolved).toEqual(['gone−']);
+	});
+
+	it('reports the expanded state to assistive technology', () => {
+		renderRow(buildCluster(), { expanded: true });
+
+		expect(screen.getByRole('button', { name: /Cluster A/ }).getAttribute('aria-expanded')).toBe('true');
+	});
+
+	it('toggles when the header is clicked', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.click(screen.getByText('Cluster A'));
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('toggles when Enter is pressed on the header', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'Enter' });
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('toggles when Space is pressed on the header', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: ' ' });
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not toggle on other keys', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'a' });
+
+		expect(onToggle).not.toHaveBeenCalled();
+	});
+
+	it('exposes the Flavor to CSS', () => {
+		renderRow(buildCluster({ flavor: '#ff0000' }));
+
+		const header = screen.getByRole('button', { name: /Cluster A/ });
+
+		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('#ff0000');
+	});
+
+	it('sets no Flavor variable for a Cluster without one', () => {
+		renderRow(buildCluster());
+
+		const header = screen.getByRole('button', { name: /Cluster A/ });
+
+		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('');
+	});
+
+	it('opens the clicked member by path', () => {
+		const onOpenMember = vi.fn();
+		renderRow(
+			buildCluster({ members: ['Notes/a.md'] }),
+			{ expanded: true, onOpenMember }
+		);
+
+		fireEvent.click(screen.getByText('a'));
+
+		expect(onOpenMember).toHaveBeenCalledWith('Notes/a.md');
+	});
+
+	it('removes the clicked member by path', () => {
+		const onRemoveMember = vi.fn();
+		renderRow(
+			buildCluster({ members: ['Notes/a.md'] }),
+			{ expanded: true, onRemoveMember }
+		);
+
+		fireEvent.click(screen.getByLabelText('Remove from cluster'));
+
+		expect(onRemoveMember).toHaveBeenCalledWith('Notes/a.md');
+	});
+});
 
 describe('SearchButton', () => {
 	it('renders the icon before the label when iconFirst is set', () => {
@@ -210,6 +367,12 @@ describe('QuoteDisplay', () => {
 });
 
 describe('BackgroundSurface', () => {
+	/**
+	 * Renders a `BackgroundSurface` with defaults unless overridden.
+	 *
+	 * @param props - Props to replace.
+	 * @returns The render result.
+	 */
 	function renderSurface(props: Partial<Parameters<typeof BackgroundSurface>[0]> = {}) {
 		return render(
 			<BackgroundSurface
@@ -328,5 +491,253 @@ describe('Icon', () => {
 
 		const span = container.querySelector('span.tabcandy-icon');
 		expect(span?.childElementCount).toBe(1);
+	});
+});
+
+describe('MemberRow', () => {
+	it('labels the row with the file name without its extension', () => {
+		render(
+			<MemberRow
+				path = 'Notes/Reading list.md'
+				exists = { true }
+				onOpen = { () => {} }
+				onRemove = { () => {} }
+			/>
+		);
+
+		expect(screen.getByText('Reading list')).toBeTruthy();
+	});
+
+	it('keeps the whole name when the file has no extension', () => {
+		render(
+			<MemberRow
+				path = 'Notes/README'
+				exists = { true }
+				onOpen = { () => {} }
+				onRemove = { () => {} }
+			/>
+		);
+
+		expect(screen.getByText('README')).toBeTruthy();
+	});
+
+	it('shows the full path as the title of a present file', () => {
+		render(
+			<MemberRow
+				path = 'Notes/a.md'
+				exists = { true }
+				onOpen = { () => {} }
+				onRemove = { () => {} }
+			/>
+		);
+
+		expect(screen.getByText('a').getAttribute('title')).toBe('Notes/a.md');
+	});
+
+	it('marks a missing file as unresolved and says so in its title', () => {
+		const { container } = render(
+			<MemberRow
+				path = 'Notes/a.md'
+				exists = { false }
+				onOpen = { () => {} }
+				onRemove = { () => {} }
+			/>
+		);
+
+		expect([
+			container.querySelector('.is-unresolved') !== null,
+			screen.getByText('a').getAttribute('title'),
+		]).toEqual([true, 'Notes/a.md (file not found)']);
+	});
+
+	it('does not mark a present file as unresolved', () => {
+		const { container } = render(
+			<MemberRow
+				path = 'a.md'
+				exists = { true }
+				onOpen = { () => {} }
+				onRemove = { () => {} }
+			/>
+		);
+
+		expect(container.querySelector('.is-unresolved')).toBeNull();
+	});
+
+	it('opens the member when the title is clicked', () => {
+		const onOpen = vi.fn();
+		render(
+			<MemberRow
+				path = 'a.md'
+				exists = { true }
+				onOpen = { onOpen }
+				onRemove = { () => {} }
+			/>
+		);
+
+		fireEvent.click(screen.getByText('a'));
+
+		expect(onOpen).toHaveBeenCalledTimes(1);
+	});
+
+	it('removes the member when the minus button is clicked, without opening it', () => {
+		const onOpen = vi.fn();
+		const onRemove = vi.fn();
+		render(
+			<MemberRow
+				path = 'a.md'
+				exists = { true }
+				onOpen = { onOpen }
+				onRemove = { onRemove }
+			/>
+		);
+
+		fireEvent.click(screen.getByLabelText('Remove from cluster'));
+
+		expect([onRemove.mock.calls.length, onOpen.mock.calls.length]).toEqual([1, 0]);
+	});
+
+	it('removes a missing member the same way', () => {
+		const onRemove = vi.fn();
+		render(
+			<MemberRow
+				path = 'a.md'
+				exists = { false }
+				onOpen = { () => {} }
+				onRemove = { onRemove }
+			/>
+		);
+
+		fireEvent.click(screen.getByLabelText('Remove from cluster'));
+
+		expect(onRemove).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('ClusterRow', () => {
+	it('shows the Cluster\'s name and member count', () => {
+		renderRow(buildCluster({ name: 'Reading', members: ['a.md', 'b.md'] }));
+
+		expect([screen.getByText('Reading').textContent, screen.getByText('2').textContent]).toEqual(['Reading', '2']);
+	});
+
+	it('hides the members while collapsed', () => {
+		renderRow(buildCluster({ members: ['a.md'] }));
+
+		expect(screen.queryByText('a')).toBeNull();
+	});
+
+	it('lists the members in order while expanded', () => {
+		const { container } = renderRow(
+			buildCluster({ members: ['b.md', 'a.md'] }),
+			{ expanded: true }
+		);
+
+		const titles = Array.from(container.querySelectorAll('.tabcandy-member-title'))
+			.map((title) => title.textContent);
+
+		expect(titles).toEqual(['b', 'a']);
+	});
+
+	it('says there are no tabs when an expanded Cluster is empty', () => {
+		renderRow(buildCluster(), { expanded: true });
+
+		expect(screen.getByText('No tabs yet.')).toBeTruthy();
+	});
+
+	it('marks only the members whose files are missing', () => {
+		const { container } = renderRow(
+			buildCluster({ members: ['here.md', 'gone.md'] }),
+			{
+				expanded: true,
+				isFilePresent: (path) => path === 'here.md',
+			}
+		);
+
+		const unresolved = Array.from(container.querySelectorAll('.is-unresolved'))
+			.map((row) => row.textContent);
+
+		expect(unresolved).toEqual(['gone−']);
+	});
+
+	it('reports the expanded state to assistive technology', () => {
+		renderRow(buildCluster(), { expanded: true });
+
+		expect(screen.getByRole('button', { name: /Cluster A/ }).getAttribute('aria-expanded')).toBe('true');
+	});
+
+	it('toggles when the header is clicked', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.click(screen.getByText('Cluster A'));
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('toggles when Enter is pressed on the header', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'Enter' });
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('toggles when Space is pressed on the header', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: ' ' });
+
+		expect(onToggle).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not toggle on other keys', () => {
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onToggle });
+
+		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'a' });
+
+		expect(onToggle).not.toHaveBeenCalled();
+	});
+
+	it('exposes the Flavor to CSS', () => {
+		renderRow(buildCluster({ flavor: '#ff0000' }));
+
+		const header = screen.getByRole('button', { name: /Cluster A/ });
+
+		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('#ff0000');
+	});
+
+	it('sets no Flavor variable for a Cluster without one', () => {
+		renderRow(buildCluster());
+
+		const header = screen.getByRole('button', { name: /Cluster A/ });
+
+		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('');
+	});
+
+	it('opens the clicked member by path', () => {
+		const onOpenMember = vi.fn();
+		renderRow(
+			buildCluster({ members: ['Notes/a.md'] }),
+			{ expanded: true, onOpenMember }
+		);
+
+		fireEvent.click(screen.getByText('a'));
+
+		expect(onOpenMember).toHaveBeenCalledWith('Notes/a.md');
+	});
+
+	it('removes the clicked member by path', () => {
+		const onRemoveMember = vi.fn();
+		renderRow(
+			buildCluster({ members: ['Notes/a.md'] }),
+			{ expanded: true, onRemoveMember }
+		);
+
+		fireEvent.click(screen.getByLabelText('Remove from cluster'));
+
+		expect(onRemoveMember).toHaveBeenCalledWith('Notes/a.md');
 	});
 });

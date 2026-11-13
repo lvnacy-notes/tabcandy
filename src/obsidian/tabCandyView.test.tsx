@@ -1,3 +1,4 @@
+/** @file Tests for the Tab Candy view. */
 import { App, WorkspaceLeaf } from 'obsidian';
 import { act } from 'react';
 import {
@@ -9,32 +10,30 @@ import {
 import SettingsStore from '../settings/SettingsStore';
 import { buildSettings, createConfiguredApp } from '../test/fakes';
 
-// Tells React it's safe to batch/flush effects synchronously inside act()
-// in this non-testing-library environment - without this, act() still
-// works but warns on every call that the environment "is not configured
-// to support act(...)".
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-// TabCandyView's job for this file is its own mount/unmount lifecycle, not
-// what App.tsx renders - App.tsx has its own data-fetching, network, and
-// private-registry concerns that belong to its own tests (Testing
-// Specification, "Trust boundaries": we test our code, not React itself).
-// Substituting a minimal marker component keeps this file scoped to the
-// view's own contract: does onOpen() mount something into contentEl, does
-// onClose() actually unmount it, and does that hold up across repeated
-// open/close and multiple leaves.
 vi.mock('../app/App', () => ({
 	default: () => <div data-testid = 'tabcandy-app-marker' />,
 }));
 
-// Imported after the mock so the mocked module is what TabCandyView's own
-// import resolves to.
 const { TabCandyView } = await import('./TabCandyView');
 
+/**
+ * Builds a leaf.
+ *
+ * @param app - The app.
+ * @returns The leaf.
+ */
 function buildLeaf(app: App): WorkspaceLeaf {
 	return app.workspace.getLeaf(true);
 }
 
+/**
+ * Builds a view over a fresh leaf.
+ *
+ * @param app - The app.
+ * @returns The view.
+ */
 function buildView(app: App) {
 	const settingsStore = new SettingsStore(buildSettings(), async () => {});
 	const leaf = buildLeaf(app);
@@ -42,15 +41,22 @@ function buildView(app: App) {
 	return new TabCandyView(settingsStore, leaf);
 }
 
-// createRoot()'s render is scheduled, not synchronous, under React 18's
-// concurrent root - act() is what flushes it within a test so assertions
-// against contentEl see the result immediately rather than racing it.
+/**
+ * Opens a view inside `act()`.
+ *
+ * @param view - The view.
+ */
 async function open(view: InstanceType<typeof TabCandyView>): Promise<void> {
 	await act(async () => {
 		await view.onOpen();
 	});
 }
 
+/**
+ * Closes a view inside `act()`.
+ *
+ * @param view - The view.
+ */
 async function close(view: InstanceType<typeof TabCandyView>): Promise<void> {
 	await act(async () => {
 		await view.onClose();

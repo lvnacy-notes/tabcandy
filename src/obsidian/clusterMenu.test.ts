@@ -9,7 +9,6 @@ import {
 	it,
 	vi
 } from 'vitest';
-import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 import { registerClusterCreationMenu } from './clusterMenu';
 import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import {
@@ -19,36 +18,9 @@ import {
 	cancelling,
 	submitting
 } from '../test/clusterHelpers';
+import { openFileMenu } from '../test/menuHelpers';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForCluster } from '../types';
-
-/** A menu item as the mock `Menu` records it. */
-interface RecordedItem {
-	title: string;
-	click: () => void;
-}
-
-/**
- * Reads the items a mock `Menu` recorded.
- *
- * @param menu - The mock menu.
- * @returns The items, in the order they were added.
- */
-function recordedItems(menu: MenuMock): RecordedItem[] {
-	return menu.menuItems__.map((item) => {
-		const title = item.title__;
-		if (typeof title !== 'string') {
-			throw new TypeError('Expected the menu item title to be a string');
-		}
-
-		return {
-			title,
-			click: () => {
-				item.onClick__?.(new MouseEvent('click'));
-			},
-		};
-	});
-}
 
 describe('registerClusterCreationMenu', () => {
 	/**
@@ -67,22 +39,18 @@ describe('registerClusterCreationMenu', () => {
 		prompt: PromptForCluster,
 		source: string,
 		leaf: WorkspaceLeaf | undefined
-	): RecordedItem[] {
+	): ReturnType<typeof openFileMenu> {
 		registerClusterCreationMenu(
 			app,
 			store,
 			() => {},
 			prompt
 		);
-		const menu = MenuMock.create2__();
-		app.workspace.trigger(
-			'file-menu',
-			menu.asOriginalType2__(),
-			{ path: 'irrelevant.md' },
+		return openFileMenu(
+			app,
 			source,
 			leaf
 		);
-		return recordedItems(menu);
 	}
 
 	it('registers one listener', () => {

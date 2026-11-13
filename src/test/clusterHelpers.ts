@@ -1,18 +1,20 @@
+/** @file Helpers shared by the Cluster tests. */
 import {
 	App,
 	Command,
 	WorkspaceLeaf
 } from 'obsidian';
 import { vi } from 'vitest';
-import {
-	addRootLeaf
-} from './FakeWorkspace';
+import { addRootLeaf } from './FakeWorkspace';
 import { createFakeLeaf } from './FakeWorkspaceLeaf';
-import { buildSettings } from './fakes';
+import { buildClusters, buildSettings } from './fakes';
 import SettingsStore from '../settings/SettingsStore';
 import {
 	ClusterDraft,
-	PromptForCluster
+	PromptForCluster,
+	PromptForClusterChoice,
+	PromptForClusterRemoval,
+	TabCandyCluster
 } from '../types';
 
 /**
@@ -68,6 +70,16 @@ export function buildStore(): SettingsStore {
 }
 
 /**
+ * Builds a store holding the given Clusters.
+ *
+ * @param clusters - The Clusters to hold.
+ * @returns The store.
+ */
+export function buildStoreWith(...clusters: TabCandyCluster[]): SettingsStore {
+	return new SettingsStore(buildSettings({ clusters: buildClusters(...clusters) }), async () => {});
+}
+
+/**
  * A prompt that is cancelled: it never submits.
  *
  * @returns The prompt and a spy on it.
@@ -76,8 +88,35 @@ export function cancelling(): {
 	prompt: PromptForCluster;
 	spy: ReturnType<typeof vi.fn>;
 } {
-	const spy = vi.fn();
-	return { prompt: spy as PromptForCluster, spy };
+	const spy = vi.fn<PromptForCluster>();
+	return { prompt: spy, spy };
+}
+
+/**
+ * A prompt that chooses the Cluster `id` immediately.
+ *
+ * @param id - The id to submit.
+ * @returns The prompt and a spy on it.
+ */
+export function choosing(id: string): {
+	prompt: PromptForClusterChoice;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (id: string) => void) => onSubmit(id));
+	return { prompt: spy, spy };
+}
+
+/**
+ * A prompt for adding that is cancelled: it never submits.
+ *
+ * @returns The prompt and a spy on it.
+ */
+export function choosingNothing(): {
+	prompt: PromptForClusterChoice;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn<PromptForClusterChoice>();
+	return { prompt: spy, spy };
 }
 
 /**
@@ -88,6 +127,33 @@ export function cancelling(): {
  */
 export function isAvailable(command: Command): boolean {
 	return command.checkCallback?.(true) === true;
+}
+
+/**
+ * A prompt that selects the Clusters `ids` immediately.
+ *
+ * @param ids - The ids to submit.
+ * @returns The prompt and a spy on it.
+ */
+export function selecting(ids: string[]): {
+	prompt: PromptForClusterRemoval;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (ids: string[]) => void) => onSubmit(ids));
+	return { prompt: spy, spy };
+}
+
+/**
+ * A prompt for removing that is cancelled: it never submits.
+ *
+ * @returns The prompt and a spy on it.
+ */
+export function selectingNothing(): {
+	prompt: PromptForClusterRemoval;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn<PromptForClusterRemoval>();
+	return { prompt: spy, spy };
 }
 
 /**

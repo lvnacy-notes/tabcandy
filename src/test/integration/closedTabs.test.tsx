@@ -1,3 +1,4 @@
+/** @file Integration tests for closing, tracking and reopening tabs through the dashboard. */
 import { App as ObsidianApp } from 'obsidian';
 import { act } from 'react';
 import {
@@ -27,10 +28,20 @@ import SettingsStore from '../../settings/SettingsStore';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+/**
+ * Builds a fake app whose vault holds `A.md`.
+ *
+ * @returns The app.
+ */
 function buildApp(): ObsidianApp {
 	return withEmptyPrivateRegistries(createFakeWorkspaceApp({ files: { 'A.md': '' } }));
 }
 
+/**
+ * Opens a view inside `act()`.
+ *
+ * @param view - The view.
+ */
 async function open(view: TabCandyView): Promise<void> {
 	await act(async () => {
 		await view.onOpen();
@@ -74,10 +85,6 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		expect(entryButton).not.toBeNull();
 
 		fireEvent.click(entryButton as Element);
-		// The click handler fires reopenClosedTab() without awaiting it -
-		// same as the dashboard's other click handlers - so its two
-		// sequential internal awaits (setViewState, then revealLeaf) need
-		// flushing before the leaf's resulting state can be asserted on.
 		await vi.runOnlyPendingTimersAsync();
 
 		expect(getClosedTabs()).toEqual([]);
@@ -101,8 +108,6 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		app.workspace.trigger('layout-change');
 		expect(getClosedTabs()).toHaveLength(1);
 
-		// The same note is already open in another tab by the time the
-		// dashboard entry is clicked.
 		const alreadyOpen = createFakeLeaf(app);
 		await alreadyOpen.setViewState({ type: 'markdown', state: { file: 'A.md' } });
 		addRootLeaf(app, alreadyOpen);
@@ -161,10 +166,6 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		expect(entryButton).not.toBeNull();
 
 		fireEvent.click(entryButton as Element);
-		// Same rationale as the plain reopen test above: reopenClosedTab()
-		// isn't awaited by the click handler, so its own sequential awaits
-		// need flushing before the hosting leaf's resulting state can be
-		// asserted on.
 		await vi.runOnlyPendingTimersAsync();
 
 		expect(getClosedTabs()).toEqual([]);

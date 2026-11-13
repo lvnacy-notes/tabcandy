@@ -1,3 +1,4 @@
+/** @file Tests for replacing empty tabs with Tab Candy. */
 import {
 	describe,
 	expect,
@@ -27,7 +28,7 @@ describe('activateView', () => {
 		expect(revealLeaf).toHaveBeenCalledTimes(1);
 	});
 
-	it('reuses an existing Tab Candy leaf rather than creating a second one', async () => {
+	it('does not create a second Tab Candy leaf when one is already open', async () => {
 		const app = createConfiguredApp({ files: {} });
 		await activateView(app);
 
@@ -37,7 +38,7 @@ describe('activateView', () => {
 		expect(leaves).toHaveLength(1);
 	});
 
-	it('reveals the existing leaf on reuse rather than skipping activation entirely', async () => {
+	it('reveals the existing Tab Candy leaf when one is already open', async () => {
 		const app = createConfiguredApp({ files: {} });
 		await activateView(app);
 		const revealLeaf = vi.spyOn(app.workspace, 'revealLeaf');
@@ -47,7 +48,7 @@ describe('activateView', () => {
 		expect(revealLeaf).toHaveBeenCalledTimes(1);
 	});
 
-	it('does not disturb an unrelated existing leaf when creating the Tab Candy one', async () => {
+	it('leaves an unrelated leaf unchanged when creating the Tab Candy leaf', async () => {
 		const app = createConfiguredApp({ files: { 'A.md': '' } });
 		const otherLeaf = app.workspace.getLeaf(true);
 		await otherLeaf.setViewState({

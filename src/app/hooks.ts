@@ -1,3 +1,4 @@
+/** @file React hooks for the new tab and the Cluster sidebar. */
 import {
 	App,
 	TFile,
@@ -22,8 +23,10 @@ import {
 } from '../types';
 
 /**
- * Subscribes to a SettingsStore and keeps a piece of React state in sync
- * with it, unsubscribing on unmount.
+ * Tracks a SettingsStore's current settings, subscribing on mount and unsubscribing on unmount.
+ *
+ * @param settingsStore - The store to track.
+ * @returns The current settings.
  */
 export const useSettings = (settingsStore: SettingsStore): TabCandySettings => {
 	const [settings, setSettings] = useState<TabCandySettings>(
@@ -36,9 +39,10 @@ export const useSettings = (settingsStore: SettingsStore): TabCandySettings => {
 };
 
 /**
- * Ticks once a second, returning the current time formatted per
- * `timeFormat`. The interval only restarts when `timeFormat` itself
- * changes, not on every unrelated settings update.
+ * Tracks the current time, formatted per `timeFormat` and refreshed every second. Restarts only when `timeFormat` changes.
+ *
+ * @param timeFormat - The display format.
+ * @returns The formatted time.
  */
 export const useClock = (timeFormat: TabCandySettings['timeFormat']): string => {
 	const [time, setTime] = useState(() => getTime(timeFormat));
@@ -57,10 +61,11 @@ export const useClock = (timeFormat: TabCandySettings['timeFormat']): string => 
 };
 
 /**
- * Recomputes the displayed quote whenever either quote source changes.
- * customQuotes (hand-entered in the settings modal) and fileQuotes
- * (synced from the configured markdown file) are additive, not
- * either/or - both pools are merged before a quote is drawn.
+ * Draws one quote from `customQuotes` and `fileQuotes` combined, redrawing only when either changes.
+ *
+ * @param customQuotes - Quotes entered in settings.
+ * @param fileQuotes - Quotes synced from the quotes file.
+ * @returns The quote, or null when there are none.
  */
 export const useQuote = (
 	customQuotes: TabCandySettings['customQuotes'],
@@ -72,10 +77,11 @@ export const useQuote = (
 	);
 
 /**
- * Resolves the active background URL for the current theme, merging
- * folder-synced (`backgroundFiles`) and individually-added
- * (`manualBackgroundFiles`) vault backgrounds into the pool
- * `BackgroundTheme.LOCAL` picks from.
+ * Resolves the background URL for the current theme. `BackgroundTheme.LOCAL` draws from the folder-synced and manually added vault backgrounds combined.
+ *
+ * @param app - The Obsidian app.
+ * @param settings - Tab Candy settings.
+ * @returns The background URL, or null when the theme has none.
  */
 export const useBackground = (app: App, settings: TabCandySettings) => {
 	const combinedLocalBackgrounds = useMemo(
@@ -115,18 +121,12 @@ export const useBackground = (app: App, settings: TabCandySettings) => {
 };
 
 /**
- * Recovers the vault-relative path of whichever background is actually
- * being displayed, given the already-resolved resource URL useBackground()
- * returned - rather than re-deriving "the active background" from
- * scratch, which for BackgroundTheme.LOCAL would mean re-running its
- * `Math.random()` pick a second time and risking a *different* file than
- * what's actually on screen. Matching backward against the same
- * candidate paths useBackground() drew from guarantees this can never
- * disagree with what's rendered.
+ * Finds the vault-relative path of the displayed background by matching its resolved URL against the candidate paths for the current theme.
  *
- * Returns null when there's no active background to key a cache entry
- * against at all: the transparent themes, or a background that didn't
- * resolve to anything (customBackground unset/deleted, no local files).
+ * @param app - The Obsidian app.
+ * @param settings - Tab Candy settings.
+ * @param background - The resolved background URL.
+ * @returns The path, or null when there is no active background.
  */
 export function resolveActiveBackgroundPath(
 	app: App,
@@ -157,20 +157,13 @@ export function resolveActiveBackgroundPath(
 }
 
 /**
- * Auto-contrast overlay text: resolves the contrast-adjusted overlay text
- * color for whichever background image is currently active, computing it
- * fresh (via overlayContrast.ts) only when there's no cache entry for the
- * current file, or the file's mtime has moved past what was cached - a cache
- * hit returns synchronously, a miss triggers an async recompute and persists
- * the result for next time.
+ * Resolves the overlay text color for the active background. A cache entry that is current for the file's mtime is returned synchronously. Otherwise the color is recomputed and cached.
  *
- * Returns null (meaning: use the fixed default, not an override) when
- * autoContrastOverlayText is off, there's no active background to compute
- * against, or the active path doesn't actually resolve to a TFile (no
- * mtime to key a cache entry against - shouldn't normally happen, since
- * resolveActiveBackgroundPath() only ever returns a path useBackground()
- * has already confirmed exists, but this fails closed rather than
- * computing against something uncacheable).
+ * @param app - The Obsidian app.
+ * @param settingsStore - Store holding the contrast cache.
+ * @param settings - Tab Candy settings.
+ * @param background - The resolved background URL.
+ * @returns The color, or null when auto-contrast is off, there is no active background, or the background's file cannot be resolved.
  */
 export const useOverlayContrast = (
 	app: App,
@@ -215,8 +208,6 @@ export const useOverlayContrast = (
 		}
 
 		let cancelled = false;
-		// Load via a same-origin blob: URL instead of the app://<hash>/ resource
-		// URL, which Chromium treats as cross-origin and uses to taint the canvas.
 		let blobUrl: string | null = null;
 		void app.vault
 			.readBinary(file)
@@ -228,7 +219,6 @@ export const useOverlayContrast = (
 				if (blobUrl) {URL.revokeObjectURL(blobUrl);}
 			})
 			.catch((error: unknown) => {
-				// File deleted/unreadable between the existence check and the read.
 				console.warn(`Tab Candy: could not read ${activePath} for overlay contrast`, error);
 				return null;
 			})
@@ -260,10 +250,10 @@ export const useOverlayContrast = (
 };
 
 /**
- * The five most recently modified markdown files in the vault. Recomputed
- * on every render rather than memoized: `app.vault.getAllLoadedFiles()`
- * has no stable reference to memoize against, and there's no vault-event
- * subscription driving a real cache invalidation here.
+ * Lists the five most recently modified markdown files, recomputed on every render.
+ *
+ * @param app - The Obsidian app.
+ * @returns Up to five files, newest first.
  */
 export const useRecentFiles = (app: App): TFile[] => {
 	const files = app.vault
@@ -279,9 +269,12 @@ export const useRecentFiles = (app: App): TFile[] => {
 };
 
 /**
- * The first five bookmarked files, per settings (all bookmarks, or scoped
- * to one group), via the guarded Bookmarks adapter in
- * `src/services/bookmarks.ts`.
+ * Reads the first five bookmarked files, from all bookmarks or from one
+ * group per settings.
+ *
+ * @param app - The Obsidian app.
+ * @param settings - Tab Candy settings.
+ * @returns Up to five bookmarked files.
  */
 export const useBookmarks = (
 	app: App,
@@ -291,4 +284,36 @@ export const useBookmarks = (
 		() => getBookmarks(app, settings).slice(0, 5),
 		[app, settings]
 	);
+};
+
+/**
+ * Counts vault `create`, `delete` and `rename` events, so a component
+ * re-renders when whether a file exists may have changed. Unsubscribes on
+ * unmount.
+ *
+ * @param app - The Obsidian app.
+ * @returns The number of events seen since mount.
+ */
+export const useVaultRevision = (app: App): number => {
+	const [revision, setRevision] = useState(0);
+
+	useEffect(() => {
+		/** Counts one vault event. */
+		const bump = (): void => {
+			setRevision((current) => current + 1);
+		};
+		const refs = [
+			app.vault.on('create', bump),
+			app.vault.on('delete', bump),
+			app.vault.on('rename', bump),
+		];
+
+		return () => {
+			for (const ref of refs) {
+				app.vault.offref(ref);
+			}
+		};
+	}, [app]);
+
+	return revision;
 };

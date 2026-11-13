@@ -1,3 +1,4 @@
+/** @file A fake workspace leaf for tests. */
 import {
 	App,
 	ViewState,
@@ -8,35 +9,41 @@ import {
 	WorkspaceLeaf as WorkspaceLeafMock,
 } from 'obsidian-test-mocks/obsidian';
 
-/**
- * A leaf whose getViewState() can be made to throw, reports the `active`,
- * `group` and `pinned` fields it was last given, and reports itself as empty - `{ type: 'empty', state: {} }` from getViewState(),
- * `"New tab"` from getDisplayText() - until it's given real content, and
- * again after detach() is called.
- */
+/** A leaf that reports the `active`, `group` and `pinned` fields it was last given, can be made to throw from `getViewState()`, and reports `{ type: 'empty', state: {} }` and "New tab" until given content and again after `detach()`. */
 export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 	private extraState: Partial<ViewState> = {};
 	private unreadable = false;
 	private hasContent = false;
 	private displayText: string | null = null;
 
+	/**
+	 * @param app - The mock app.
+	 * @param id - The leaf's id.
+	 */
 	constructor(app: AppMock, id?: string) {
 		super(app, id);
 	}
 
+	/** Makes `getViewState()` throw from now on. */
 	makeUnreadable(): void {
 		this.unreadable = true;
 	}
 
 	/**
-	 * Sets what getDisplayText() returns while this leaf has content.
-	 * There's no view object behind a fake leaf for getDisplayText() to
-	 * read a real title from, so a test provides one directly.
+	 * Sets what `getDisplayText()` returns while the leaf has content.
+	 *
+	 * @param text - The display text.
 	 */
 	setDisplayText(text: string): void {
 		this.displayText = text;
 	}
 
+	/**
+	 * Sets the view state and records its `active`, `group` and `pinned` fields.
+	 *
+	 * @param viewState - The view state.
+	 * @param eState - The ephemeral state.
+	 */
 	override async setViewState(
 		viewState: ViewState,
 		eState?: Record<string, unknown>
@@ -55,6 +62,7 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		}
 	}
 
+	/** Detaches the leaf and resets it to empty. */
 	override detach(): void {
 		super.detach();
 		this.extraState = {};
@@ -62,6 +70,11 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		this.displayText = null;
 	}
 
+	/**
+	 * Reports the view state, or an empty one when the leaf has no content.
+	 *
+	 * @returns The view state.
+	 */
 	override getViewState(): ViewState {
 		if (this.unreadable) {
 			throw new Error(
@@ -74,6 +87,11 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		return { ...super.getViewState(), ...this.extraState };
 	}
 
+	/**
+	 * Reports the display text, or "New tab" when the leaf has no content.
+	 *
+	 * @returns The display text.
+	 */
 	override getDisplayText(): string {
 		if (!this.hasContent) {
 			return 'New tab';
@@ -83,7 +101,11 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 }
 
 /**
- * Builds a fake leaf.
+ * Builds a `FakeWorkspaceLeaf`.
+ *
+ * @param app - The app.
+ * @param id - The leaf's id.
+ * @returns The leaf.
  */
 export function createFakeLeaf(app: App, id?: string): WorkspaceLeaf {
 	const leaf = new FakeWorkspaceLeaf(app as unknown as AppMock, id);
@@ -91,16 +113,19 @@ export function createFakeLeaf(app: App, id?: string): WorkspaceLeaf {
 }
 
 /**
- * Makes a leaf built by createFakeLeaf() throw from getViewState() from
- * this point on.
+ * Makes a leaf from `createFakeLeaf()` throw from `getViewState()`.
+ *
+ * @param leaf - The leaf.
  */
 export function makeUnreadable(leaf: WorkspaceLeaf): void {
 	(leaf as unknown as FakeWorkspaceLeaf).makeUnreadable();
 }
 
 /**
- * Sets what a leaf built by createFakeLeaf() returns from getDisplayText()
- * while it has content.
+ * Sets what a leaf from `createFakeLeaf()` returns from `getDisplayText()` while it has content.
+ *
+ * @param leaf - The leaf.
+ * @param text - The display text.
  */
 export function setDisplayText(leaf: WorkspaceLeaf, text: string): void {
 	(leaf as unknown as FakeWorkspaceLeaf).setDisplayText(text);

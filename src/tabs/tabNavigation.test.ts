@@ -1,3 +1,4 @@
+/** @file Tests for tab tracking, closing and navigation. */
 import { ViewState, WorkspaceLeaf } from 'obsidian';
 import {
 	beforeEach,
@@ -80,12 +81,24 @@ function buildApp(): ReturnType<typeof createFakeWorkspaceApp> {
 	return createFakeWorkspaceApp({ files: { ...NOTE_FILES } });
 }
 
+/**
+ * Collects the workspace's root leaves.
+ *
+ * @param app - The app.
+ * @returns The leaves.
+ */
 function collectRootLeaves(app: ReturnType<typeof createFakeWorkspaceApp>): WorkspaceLeaf[] {
 	const leaves: WorkspaceLeaf[] = [];
 	app.workspace.iterateRootLeaves((leaf) => leaves.push(leaf));
 	return leaves;
 }
 
+/**
+ * Collects every workspace leaf.
+ *
+ * @param app - The app.
+ * @returns The leaves.
+ */
 function collectAllLeaves(app: ReturnType<typeof createFakeWorkspaceApp>): WorkspaceLeaf[] {
 	const leaves: WorkspaceLeaf[] = [];
 	app.workspace.iterateAllLeaves((leaf) => leaves.push(leaf));
@@ -456,6 +469,12 @@ describe('closeTabsInFolder', () => {
 });
 
 describe('planDuplicateClosures', () => {
+	/**
+	 * Builds a tab record with `overrides` applied.
+	 *
+	 * @param overrides - Fields to replace.
+	 * @returns The record.
+	 */
 	function record(overrides: Partial<TabRecord> = {}): TabRecord {
 		return {
 			leaf: {} as unknown as WorkspaceLeaf,
@@ -565,9 +584,6 @@ describe('toTabRecord', () => {
 	it('does not protect a leaf whose group is explicitly null', async () => {
 		const app = buildApp();
 		const leaf = createFakeLeaf(app);
-		// Real obsidian's ViewState.group is typed `WorkspaceLeaf | undefined`,
-		// with no `null`, even though a leaf can report `null` for it at
-		// runtime. The cast lets this test construct that state anyway.
 		await leaf.setViewState({
 			type: 'markdown',
 			state: { file: 'A.md' },
@@ -631,6 +647,12 @@ describe('closeDuplicateTabs', () => {
 });
 
 describe('pushClosedTab', () => {
+	/**
+	 * Builds a closed-tab entry.
+	 *
+	 * @param title - The tab's title.
+	 * @returns The entry.
+	 */
 	function entry(title: string): ClosedTabEntry {
 		return {
 			viewState: { type: 'markdown', state: { file: `${title}.md` } },

@@ -11,7 +11,7 @@ src/
   types.ts              every exported type and interface
   app/                  React new-tab UI
   clusters/             Cluster domain
-  commands/             one file per command
+  commands/             one file per command, plus commandRegistry.ts
   newtab/               what the new-tab view shows
   obsidian/             Obsidian-facing layer: views, menus, watchers, hijacks
   settings/             store, defaults, normalization
@@ -22,7 +22,7 @@ src/
 ```
 
 - `main.ts` holds the plugin class, its settings, and `onload()` calling `startRuntime()`. Nothing else.
-- `runtime.ts` is the only place that registers events, views, menus and commands.
+- `runtime.ts` is the only place that registers events, views, menus and commands. It registers every command by looping over `buildCommands()` in `commands/commandRegistry.ts`.
 - Logic modules do not register anything. A `register*` function lives in `obsidian/` and calls the logic.
 - A module belongs in the folder of its feature.
 

@@ -1,3 +1,4 @@
+/** @file The new tab page component. */
 import {
 	App as ObsidianApp,
 	TFile,
@@ -37,7 +38,15 @@ import SettingsStore from '../settings/SettingsStore';
 import { getTimeOfDayGreeting } from './utils/time';
 import { BackgroundTheme, ClosedTabEntry } from '../types';
 
-const App = ({
+/**
+ * The new tab page: a greeting, clock, search buttons, recent files,
+ * bookmarks, recently closed tabs and a quote, each shown per settings.
+ *
+ * @param props.app - The Obsidian app.
+ * @param props.settingsStore - Store holding the settings.
+ * @param props.leaf - The leaf hosting this page.
+ */
+export default function App({
 	app,
 	settingsStore,
 	leaf,
@@ -45,7 +54,7 @@ const App = ({
 	app: ObsidianApp;
 	settingsStore: SettingsStore;
 	leaf: WorkspaceLeaf;
-}) => {
+}) {
 	const settings = useSettings(settingsStore);
 	const time = useClock(settings.timeFormat);
 	const quote = useQuote(settings.customQuotes, settings.fileQuotes);
@@ -56,15 +65,10 @@ const App = ({
 	const mainDivRef = useRef<HTMLDivElement>(null);
 
 	/**
-	 * Opens directly on the leaf hosting *this* Tab Candy instance, rather
-	 * than asking Obsidian to resolve "the right leaf" itself (e.g. via
-	 * workspace.getLeaf(false)). Clicking something in Recent Files or
-	 * Bookmarks should always land in the exact new tab you're looking at
-	 * - using the leaf reference we already hold is simply the most direct
-	 * way to guarantee that, regardless of whatever heuristics Obsidian's
-	 * own leaf-resolution might apply. This stays true whenever
-	 * dashboardFocusesOpenTab is off, or the file has no other open tab to
-	 * switch to instead.
+	 * Opens `file` in the hosting leaf, or switches to a leaf that already
+	 * has it open when dashboardFocusesOpenTab is on.
+	 *
+	 * @param file - The file to open.
 	 */ 
 	const openFile = (file: TFile) => {
 		if (
@@ -77,11 +81,11 @@ const App = ({
 	};
 
 	/**
-	 * Same rationale as openFile() above: always reopens into the leaf hosting
-	 * this Tab Candy instance, unless dashboardFocusesOpenTab is on and the
-	 * closed note is already open somewhere else - in which case switching to
-	 * it, rather than reopening a second copy, is itself the "use" that
-	 * removes the entry from the ring.
+	 * Reopens a closed tab in the hosting leaf. When dashboardFocusesOpenTab
+	 * is on and its file is open elsewhere, switches there and removes the
+	 * entry instead.
+	 *
+	 * @param entry - The closed tab.
 	 */
 	const reopenTab = (entry: ClosedTabEntry) => {
 		const path = getViewStateFilePath(entry.viewState);
@@ -96,18 +100,22 @@ const App = ({
 		void reopenClosedTab(app, entry, leaf);
 	};
 
+	/** Runs the inline search provider's command. */
 	const runInlineSearch = () =>
 		executeEnabledPluginCommand(app, settings.inlineSearchProvider.command);
 
+	/**
+	 * Runs the inline search when a plain letter or digit key is pressed.
+	 *
+	 * @param event - The key event.
+	 */
 	const handleContainerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
 		if (!event.ctrlKey && !event.altKey && /^[A-Za-z0-9]$/.test(event.key)) {
 			runInlineSearch();
 		}
 	};
 
-	/**
-	 * Auto focus so key presses launch search
-	 */
+	/** Focuses the container on mount. */
 	useEffect(() => {
 		mainDivRef.current?.focus();
 	}, []);
@@ -181,6 +189,4 @@ const App = ({
 			</div>
 		</BackgroundSurface>
 	);
-};
-
-export default App;
+}

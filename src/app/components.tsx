@@ -1,20 +1,24 @@
+/** @file React components for the new tab and the Cluster sidebar. */
 import { TFile, getIcon } from 'obsidian';
 import {
+	CSSProperties,
 	KeyboardEvent,
 	ReactNode,
 	RefObject,
 	useEffect,
 	useRef
 } from 'react';
-import { ClosedTabEntry, Quote } from '../types';
+import {
+	ClosedTabEntry,
+	Quote,
+	TabCandyCluster
+} from '../types';
 
 interface BackgroundSurfaceProps {
 	background: string | null | undefined;
 	transparent: boolean;
 	transparentWithShadows: boolean;
-	// Contrast-adjusted overlay text color from useOverlayContrast()
-	// or null/undefined to use the CSS default 
-	// (var(--tabcandy-overlay-text, #dadada) in App.css) unchanged.
+	/** Text color override. Null or undefined keeps the CSS default. */
 	overlayTextColor?: string | null;
 	onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
 	containerRef: RefObject<HTMLDivElement>;
@@ -24,6 +28,22 @@ interface BackgroundSurfaceProps {
 interface BookmarksProps {
 	files: TFile[];
 	onOpen: (file: TFile) => void;
+}
+
+interface ClusterRowProps {
+	cluster: TabCandyCluster;
+	expanded: boolean;
+	isFilePresent: (path: string) => boolean;
+	onOpenMember: (path: string) => void;
+	onRemoveMember: (path: string) => void;
+	onToggle: () => void;
+}
+
+interface MemberRowProps {
+	path: string;
+	exists: boolean;
+	onOpen: () => void;
+	onRemove: () => void;
 }
 
 interface QuoteDisplayProps {
@@ -51,11 +71,17 @@ interface SearchButtonProps {
 }
 
 /**
- * The full-bleed background container: applies the resolved background
- * image (or the transparent-theme classes when there isn't one) and hosts
- * the keyboard listener that lets any key press launch search.
+ * Full-bleed container. Applies the background image and text color, adds the transparent-theme classes when set, and forwards key presses.
+ *
+ * @param props.background - Background image URL, or none.
+ * @param props.transparent - Whether to use the transparent theme class.
+ * @param props.transparentWithShadows - Whether to use the transparent-with-shadows class.
+ * @param props.overlayTextColor - Text color override.
+ * @param props.onKeyDown - Called on key presses inside the container.
+ * @param props.containerRef - Ref to the container element.
+ * @param props.children - Content to render inside.
  */
-export const BackgroundSurface = ({
+export function BackgroundSurface({
 	background,
 	transparent,
 	transparentWithShadows,
@@ -63,39 +89,141 @@ export const BackgroundSurface = ({
 	onKeyDown,
 	containerRef,
 	children,
-}: BackgroundSurfaceProps) => (
-	<div
-		className = { `tabcandy-root ${
-			transparent ? 'tabcandy-root--transparent' : ''
-		} ${
-			transparentWithShadows ? 'tabcandy-root--transparentWithShadows' : ''
-		}`}
-		style = {{
-			...(background ? { backgroundImage: `url('${ background }')` } : undefined),
-			...(overlayTextColor ? { color: overlayTextColor } : undefined),
-		}}
-		onKeyDown = { onKeyDown }
-		tabIndex = { 0 } // Make the div focusable so we can capture key strokes
-		ref = { containerRef }
-	>
-		{ children }
-	</div>
-);
+}: BackgroundSurfaceProps) {
+	return (
+		<div
+			className = { `tabcandy-root ${
+				transparent ? 'tabcandy-root--transparent' : ''
+			} ${
+				transparentWithShadows ? 'tabcandy-root--transparentWithShadows' : ''
+			}`}
+			style = {{
+				...(background ? { backgroundImage: `url('${ background }')` } : undefined),
+				...(overlayTextColor ? { color: overlayTextColor } : undefined),
+			}}
+			onKeyDown = { onKeyDown }
+			tabIndex = { 0 }
+			ref = { containerRef }
+		>
+			{ children }
+		</div>
+	);
+}
 
 /**
- * Renders an Obsidian icon by name. `getIcon()` returns a real
- * `SVGElement`, so this appends and clears the actual DOM node directly
- * rather than serializing it to a string and reinjecting it via
- * `dangerouslySetInnerHTML` - no icon markup passes through an HTML
- * string at all.
+ * Lists files as buttons labeled with their names. Clicking one calls `onOpen` with its file.
  *
- * Every current call site pairs this icon with an adjacent text label
- * (a filename, or a `SearchButton` label) that already carries the
- * accessible name, so the icon itself is purely decorative. `aria-hidden`
- * keeps screen readers from announcing the raw SVG (or its absence, on
- * an unrecognized `name`) as a second, redundant, unlabeled element.
+ * @param props.files - The files to list.
+ * @param props.onOpen - Called with the clicked file.
  */
-export const Icon = ({ name }: { name: string }) => {
+export function Bookmarks({ files, onOpen }: BookmarksProps) {
+	return (
+		<div className = 'tabcandy-dashboard-centeredrow'>
+			{ files.map((file) => (
+				<button
+					type = 'button'
+					key = { file.path }
+					className = 'tabcandy-dashboard-fileicon'
+					data-path = { file.path }
+					onClick = { () => onOpen(file) }
+				>
+					<Icon name = 'bookmark' />
+					<span className = 'tabcandy-dashboard-filelabel'>
+						{ file.basename }
+					</span>
+				</button>
+			))}
+		</div>
+	);
+}
+
+/**
+ * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor`.
+ *
+ * @param props.cluster - The Cluster.
+ * @param props.expanded - Whether the member list is shown.
+ * @param props.isFilePresent - Whether a member's file exists.
+ * @param props.onOpenMember - Called with the path of a clicked member.
+ * @param props.onRemoveMember - Called with the path of a member whose minus button is clicked.
+ * @param props.onToggle - Called when the row is activated.
+ */
+export function ClusterRow({
+	cluster,
+	expanded,
+	isFilePresent,
+	onOpenMember,
+	onRemoveMember,
+	onToggle,
+}: ClusterRowProps) {
+	return (
+		<div className = 'tabcandy-cluster' >
+			<div
+				className = 'workspace-tab-header tabcandy-cluster-header'
+				role = 'button'
+				tabIndex = { 0 }
+				aria-expanded = { expanded }
+				style = { getFlavorStyle(cluster.flavor) }
+				onClick = { onToggle }
+				onKeyDown = { (event: KeyboardEvent<HTMLDivElement>) => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						onToggle();
+					}
+				} }
+			>
+				<div className = 'workspace-tab-header-inner' >
+					<div className = 'workspace-tab-header-inner-title' >{ cluster.name }</div>
+					<span className = 'tabcandy-cluster-count' >{ cluster.members.length }</span>
+				</div>
+			</div>
+			{ expanded && (
+				<div className = 'tabcandy-cluster-drawer' >
+					{ cluster.members.length === 0 && (
+						<div className = 'tabcandy-empty' >No tabs yet.</div>
+					) }
+					{ cluster.members.map((path) => (
+						<MemberRow
+							key = { path }
+							path = { path }
+							exists = { isFilePresent(path) }
+							onOpen = { () => onOpenMember(path) }
+							onRemove = { () => onRemoveMember(path) }
+						/>
+					)) }
+				</div>
+			) }
+		</div>
+	);
+}
+
+/**
+ * Exposes a Flavor to CSS.
+ *
+ * @param flavor - Hex color, or undefined for none.
+ * @returns The inline style, or undefined when there is no Flavor.
+ */
+function getFlavorStyle(flavor: string | undefined): CSSProperties | undefined {
+	return flavor === undefined ? undefined : ({ '--tabcandy-flavor': flavor } as CSSProperties);
+}
+
+/**
+ * Names a member by its file name without the extension.
+ *
+ * @param path - Vault-relative file path.
+ * @returns The label.
+ */
+function getMemberLabel(path: string): string {
+	const name = path.slice(path.lastIndexOf('/') + 1);
+	const dot = name.lastIndexOf('.');
+	return dot > 0 ? name.slice(0, dot) : name;
+}
+
+/**
+ * Renders the Obsidian icon `name` in an `aria-hidden` span. The span stays empty when the name is unknown.
+ *
+ * @param props.name - Obsidian icon id.
+ */
+export function Icon({ name }: { name: string }) {
 	const spanRef = useRef<HTMLSpanElement>(null);
 
 	useEffect(() => {
@@ -119,147 +247,147 @@ export const Icon = ({ name }: { name: string }) => {
 			aria-hidden = 'true'
 		/>
 	);
-};
+}
 
 /**
- * Bookmarked files (all, or scoped to one group per settings), each
- * opening in the most recently used leaf when clicked.
+ * One member of a Cluster, styled as a tab header. A missing member is marked unresolved. Clicking the title calls `onOpen`; clicking the minus button calls `onRemove`.
  *
- * Rendered as `<button type="button">` rather than an `<a>` with no
- * `href` - see `SearchButton` below for why a hrefless anchor is a
- * click-only dead end for keyboard and AT users. The filename text
- * inside is left as ordinary (non-hidden) content, so it doubles as
- * the button's accessible name with no extra `aria-label` needed.
+ * @param props.path - Vault-relative file path.
+ * @param props.exists - Whether the file exists.
+ * @param props.onOpen - Called when the title is clicked.
+ * @param props.onRemove - Called when the minus button is clicked.
  */
-export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
-	<div className = 'tabcandy-dashboard-centeredrow'>
-		{ files.map((file) => (
-			<button
-				type = 'button'
-				key = { file.path }
-				className = 'tabcandy-dashboard-fileicon'
-				data-path = { file.path }
-				onClick = { () => onOpen(file) }
-			>
-				<Icon name = 'bookmark' />
-				<span className = 'tabcandy-dashboard-filelabel'>
-					{ file.basename }
-				</span>
-			</button>
-		))}
-	</div>
-);
+export function MemberRow({
+	path,
+	exists,
+	onOpen,
+	onRemove,
+}: MemberRowProps) {
+	return (
+		<div className = { exists ? 'workspace-tab-header tabcandy-member-row' : 'workspace-tab-header tabcandy-member-row is-unresolved' } >
+			<div className = 'workspace-tab-header-inner' >
+				<button
+					className = 'workspace-tab-header-inner-title tabcandy-member-title'
+					title = { exists ? path : `${ path } (file not found)` }
+					onClick = { onOpen }
+				>
+					{ getMemberLabel(path) }
+				</button>
+				<button
+					className = 'tabcandy-member-remove'
+					aria-label = 'Remove from cluster'
+					onClick = { onRemove }
+				>
+					−
+				</button>
+			</div>
+		</div>
+	);
+}
 
 /**
- * A quote and its author, rendered only once a quote has loaded and the
- * setting is enabled.
- */
-export const QuoteDisplay = ({ quote, show }: QuoteDisplayProps) => (
-	<div className = 'tabcandy-quote'>
-		{ quote && show && (
-			<>
-				<div className = 'tabcandy-quote-content'>
-					&quot;{ quote.content }&quot;
-				</div>
-				<div className = 'tabcandy-quote-author'>{ quote.author }</div>
-			</>
-		)}
-	</div>
-);
-
-/**
- * The most recently modified markdown files, each opening in the most
- * recently used leaf when clicked.
+ * Renders a quote and its author when `show` is true and a quote is set.
  *
- * Rendered as `<button type="button">` rather than an `<a>` with no
- * `href` - see `SearchButton` below for why a hrefless anchor is a
- * click-only dead end for keyboard and AT users. The filename text
- * inside is left as ordinary (non-hidden) content, so it doubles as
- * the button's accessible name with no extra `aria-label` needed.
+ * @param props.quote - The quote, or null.
+ * @param props.show - Whether to render it.
  */
-export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
-	<div className = 'tabcandy-dashboard-centeredrow'>
-		{ files.map((file) => (
-			<button
-				type = 'button'
-				key = { file.path }
-				className = 'tabcandy-dashboard-fileicon'
-				data-path = { file.path }
-				onClick = { () => onOpen(file) }
-			>
-				<Icon name = 'file' />
-				<span className = 'tabcandy-dashboard-filelabel'>
-					{ file.basename }
-				</span>
-			</button>
-		))}
-	</div>
-);
+export function QuoteDisplay({ quote, show }: QuoteDisplayProps) {
+	return (
+		<div className = 'tabcandy-quote'>
+			{ quote && show && (
+				<>
+					<div className = 'tabcandy-quote-content'>
+						&quot;{ quote.content }&quot;
+					</div>
+					<div className = 'tabcandy-quote-author'>{ quote.author }</div>
+				</>
+			)}
+		</div>
+	);
+}
 
 /**
- * Recently closed tabs, newest first, each reopening into the dashboard's
- * hosting leaf when clicked.
+ * Lists files as buttons labeled with their names. Clicking one calls `onOpen` with its file.
  *
- * Rendered as `<button type="button">` rather than an `<a>` with no
- * `href` - see `SearchButton` below for why a hrefless anchor is a
- * click-only dead end for keyboard and AT users. Unlike `RecentFiles` and
- * `Bookmarks`, an entry has no file path to key on, so entries are keyed
- * by their position in the list; and `title` is set explicitly to show
- * the full title on hover, since a closed tab's title isn't a filename a
- * person will already recognize when truncated.
+ * @param props.files - The files to list.
+ * @param props.onOpen - Called with the clicked file.
  */
-export const RecentlyClosedTabs = ({ entries, onOpen }: RecentlyClosedTabsProps) => (
-	<div className = 'tabcandy-dashboard-centeredrow'>
-		{ entries.map((entry, index) => (
-			<button
-				type = 'button'
-				key = { `${index}:${entry.title}` }
-				className = 'tabcandy-dashboard-fileicon'
-				title = { entry.title }
-				onClick = { () => onOpen(entry) }
-			>
-				<Icon name = 'history' />
-				<span className = 'tabcandy-dashboard-filelabel'>
-					{ entry.title }
-				</span>
-			</button>
-		))}
-	</div>
-);
+export function RecentFiles({ files, onOpen }: RecentFilesProps) {
+	return (
+		<div className = 'tabcandy-dashboard-centeredrow'>
+			{ files.map((file) => (
+				<button
+					type = 'button'
+					key = { file.path }
+					className = 'tabcandy-dashboard-fileicon'
+					data-path = { file.path }
+					onClick = { () => onOpen(file) }
+				>
+					<Icon name = 'file' />
+					<span className = 'tabcandy-dashboard-filelabel'>
+						{ file.basename }
+					</span>
+				</button>
+			))}
+		</div>
+	);
+}
 
 /**
- * A clickable search trigger: an icon and a label, in either order,
- * wired to run a search-provider command on click.
+ * Lists closed tabs as buttons, each titled with the tab's full title. Clicking one calls `onOpen` with its entry.
  *
- * Rendered as a real `<button>` rather than an `<a>` with no `href`:
- * a hrefless anchor isn't a hyperlink at all, so browsers don't give it
- * a place in the tab order or wire up Enter/Space activation for free -
- * it was a click target only, completely unreachable from the keyboard.
- * `<button type="button">` gets focusability, `role="button"`, and
- * Enter/Space activation from the browser for free, with no hand-rolled
- * `tabIndex`/`onKeyDown`/`role` needed. `aria-label` is set explicitly
- * (rather than relying on the visible/visually-hidden label text alone)
- * so the accessible name is guaranteed correct even where `textClassName`
- * visually hides the label off-screen - it doesn't depend on that CSS
- * technique never regressing into a real `display: none`, which would
- * silently strip the accessible name too.
+ * @param props.entries - The closed tabs, in display order.
+ * @param props.onOpen - Called with the clicked entry.
  */
-export const SearchButton = ({
+export function RecentlyClosedTabs({ entries, onOpen }: RecentlyClosedTabsProps) {
+	return (
+		<div className = 'tabcandy-dashboard-centeredrow'>
+			{ entries.map((entry, index) => (
+				<button
+					type = 'button'
+					key = { `${index}:${entry.title}` }
+					className = 'tabcandy-dashboard-fileicon'
+					title = { entry.title }
+					onClick = { () => onOpen(entry) }
+				>
+					<Icon name = 'history' />
+					<span className = 'tabcandy-dashboard-filelabel'>
+						{ entry.title }
+					</span>
+				</button>
+			))}
+		</div>
+	);
+}
+
+/**
+ * A button with an icon and a label, in either order. `label` is its accessible name. Clicking it calls `onClick`.
+ *
+ * @param props.label - Button label.
+ * @param props.iconName - Obsidian icon id.
+ * @param props.iconFirst - Whether the icon precedes the label.
+ * @param props.className - Class for the button.
+ * @param props.textClassName - Class for the label.
+ * @param props.onClick - Called when the button is clicked.
+ */
+export function SearchButton({
 	label,
 	iconName,
 	iconFirst,
 	className,
 	textClassName,
 	onClick,
-}: SearchButtonProps) => (
-	<button
-		type = 'button'
-		className = { className }
-		aria-label = { label }
-		onClick = { onClick }
-	>
-		{ iconFirst && <Icon name = { iconName } /> }
-		<span className = { textClassName }>{ label }</span>
-		{ !iconFirst && <Icon name = { iconName } />}
-	</button>
-);
+}: SearchButtonProps) {
+	return (
+		<button
+			type = 'button'
+			className = { className }
+			aria-label = { label }
+			onClick = { onClick }
+		>
+			{ iconFirst && <Icon name = { iconName } /> }
+			<span className = { textClassName }>{ label }</span>
+			{ !iconFirst && <Icon name = { iconName } />}
+		</button>
+	);
+}

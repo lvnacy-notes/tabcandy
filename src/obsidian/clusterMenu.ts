@@ -1,3 +1,4 @@
+/** @file Tab-header context menu items that create a Cluster. */
 import {
 	App,
 	EventRef
@@ -8,10 +9,7 @@ import {
 	promptAndCreate
 } from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';
-import type { PromptForCluster } from '../types';
-
-/** `source` Obsidian passes to `file-menu` for a tab header's context menu. */
-const TAB_HEADER_SOURCE = 'tab-header';
+import { TAB_HEADER_SOURCE, type PromptForCluster } from '../types';
 
 /**
  * Adds "Create cluster from tab" and "Create cluster from pane" to a tab

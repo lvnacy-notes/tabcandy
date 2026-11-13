@@ -1,3 +1,4 @@
+/** @file Replaces empty tabs with Tab Candy. */
 import {
 	App,
 	EventRef,
@@ -7,19 +8,10 @@ import SettingsStore from '../settings/SettingsStore';
 import { TAB_CANDY_VIEW_TYPE } from '../types';
 
 /**
- * Points `leaf` at the Tab Candy view, replacing whatever it currently
- * shows. Shared by activateView() (creating/reusing a leaf on demand) and
- * registerNewTabHijack() (converting a leaf that already exists) so both
- * paths funnel through one place that knows how to turn a leaf into Tab
- * Candy, rather than each constructing the same setViewState() call
- * separately.
+ * Replaces what `leaf` shows with the Tab Candy view, then reveals the leaf.
  *
- * Awaits `revealLeaf()` after `setViewState()` - Obsidian's own docs
- * recommend this to guarantee the view has actually finished loading
- * (rather than sitting behind an internal placeholder while backgrounded)
- * before anything else touches the leaf. Cheap, and effectively a no-op
- * when the leaf is already the one on screen, which is the common case
- * for both callers here.
+ * @param app - The Obsidian app.
+ * @param leaf - The leaf to convert.
  */
 async function setLeafToTabCandy(app: App, leaf: WorkspaceLeaf): Promise<void> {
 	await leaf.setViewState({
@@ -30,11 +22,10 @@ async function setLeafToTabCandy(app: App, leaf: WorkspaceLeaf): Promise<void> {
 }
 
 /**
- * The one supported way to summon Tab Candy on demand - backs the "Open
- * Tab Candy" command. Checks `workspace.getLeavesOfType()` first and
- * reuses an existing Tab Candy leaf if one is already open anywhere in the
- * workspace, rather than spawning a duplicate; only creates a new leaf as
- * a fallback when none exists yet.
+ * Reveals the open Tab Candy leaf when there is one. Otherwise creates a
+ * leaf and converts it to Tab Candy.
+ *
+ * @param app - The Obsidian app.
  */
 export async function activateView(app: App): Promise<void> {
 	const { workspace } = app;
@@ -49,26 +40,12 @@ export async function activateView(app: App): Promise<void> {
 }
 
 /**
- * Registers the opt-in "replace new empty tabs automatically" behavior
- * (settings.replaceEmptyTabsWithTabCandy, defaulted on). Runs on every
- * workspace `layout-change` event; when the most-recently-used leaf is an
- * empty pane, converts that specific leaf via the same setLeafToTabCandy()
- * helper activateView() uses, rather than duplicating the setViewState()
- * call inline.
+ * Converts the most recent leaf to Tab Candy on each `layout-change` when it
+ * is empty and `replaceEmptyTabsWithTabCandy` is on.
  *
- * Deliberately does NOT route through activateView()'s "reuse an existing
- * Tab Candy leaf" check - this handler's job is specifically to fill the
- * empty leaf that just appeared, and revealing a different, already-open
- * Tab Candy tab instead would leave that new empty tab empty, which
- * undermines the whole point of the setting. See REFACTOR-DECISIONS.md's
- * activation-vs-hijacking entry for the full reasoning and the open
- * question flagged there about this trade-off.
- *
- * `registerEvent` is passed in rather than this function registering
- * directly on `app.workspace`, matching `registerBackgroundVaultWatchers()`'s
- * convention in `src/services/backgrounds.ts` - the caller's own
- * `Component.registerEvent()` (auto-cleaned up on unload) is what actually
- * owns the returned `EventRef`, not this function.
+ * @param app - The Obsidian app.
+ * @param settingsStore - Store holding the settings.
+ * @param registerEvent - Registers the listener with the owning component.
  */
 export function registerNewTabHijack(
 	app: App,

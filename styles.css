@@ -31,6 +31,7 @@ settings:
 @import "src/app/App.css";
 @import "src/ui/CustomQuotesModal.css";
 @import "src/settings/Settings.css";
+@import "src/app/sidebar.css";
 
 .setting-item.search-provider .setting-item-control input {
 	width: 100%;

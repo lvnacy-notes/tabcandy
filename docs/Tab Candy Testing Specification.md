@@ -65,7 +65,7 @@ The `obsidian` npm package is types-only — zero runtime implementation. Rather
 
 ### Test file placement: hybrid
 
-- **Co-located** (`backgrounds.ts` + `backgrounds.test.ts`, same folder) is the default for the large majority of test files — pure functions, services tested against `obsidian-test-mocks` in isolation, hooks, component tests.
+- **Co-located** (`backgrounds.ts` + `backgrounds.test.ts`, same folder) is the default for the large majority of test files — pure functions, modules tested against `obsidian-test-mocks` in isolation, hooks, component tests.
 - **Centralized** in `src/test/integration/` for the small number of tests that genuinely exercise more than one collaborating piece and assert on the *combined* behavior — `TabCandyView` open/close/reopen across multiple leaves, a full settings-save-then-reload-then-render round trip.
 - **The discriminator**: a test belongs in `src/test/integration/` if it wires together fakes for more than one service/hook *and* the assertion is about the emergent behavior of that combination, regardless of which single source file it's nominally "about." Everything else stays co-located, even for a file that happens to import several modules, if the fakes and the assertion stay scoped to that one file's own contract.
 - `src/test/fakes.ts` is shared by both co-located tests and the integration folder.
@@ -92,7 +92,7 @@ A helper used by one test file stays in that file, above its `describe()`, with 
 
 ### Command modules
 
-Each module in `src/commands/` exports one `buildInvokeCommand()` and gets a co-located test with one `describe()` named after the command id. The test covers the command's id and name, its availability check when it has one, and the observable effect of its callback on the fake workspace or store. The effect is asserted through real fakes, never by mocking the module the command calls. The logic behind a command is tested where that logic lives (`tabNavigation.test.ts`, `clusterCreation.test.ts`), so a command test stays a wiring check, not a second copy of that suite.
+Each module in `src/commands/` exports one `buildInvokeCommand()` and gets a co-located test with one `describe()` named after the command id. The test covers the command's id and name, its availability check when it has one, and the observable effect of its callback on the fake workspace or store. The effect is asserted through real fakes, never by mocking the module the command calls. The logic behind a command is tested where that logic lives (`tabNavigation.test.ts`, `clusterCreation.test.ts`), so a command test stays a wiring check, not a second copy of that suite. `commandRegistry.test.ts` pins the full list of command ids, because an id is the key users bind hotkeys to.
 
 A command that opens a modal is tested by stubbing the modal class's `open()` on its prototype and asserting it was called on an instance of that class. Where the command passes a callback to the modal (`close-tabs-in-folder`), the test invokes that callback through the instance to prove the wiring.
 

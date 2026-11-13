@@ -1,3 +1,4 @@
+/** @file Tests for the app hooks. */
 import { TFile } from 'obsidian';
 import {
 	afterEach,
@@ -13,6 +14,7 @@ import {
 	useBackground,
 	useClock,
 	useOverlayContrast,
+	useVaultRevision,
 } from './hooks';
 import { DEFAULT_OVERLAY_COLOR } from '../newtab/overlayContrast';
 import {
@@ -20,20 +22,16 @@ import {
 	renderHook,
 	waitFor
 } from '@testing-library/react';
-import { buildSettings, createConfiguredApp } from '../test/fakes';
+import {
+	buildSettings,
+	createConfiguredApp,
+	getExistingFile
+} from '../test/fakes';
 import SettingsStore from '../settings/SettingsStore';
 import { BackgroundTheme, TIME_FORMAT } from '../types';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-// useClock starts a real `window.setInterval(..., 1000)` - previously
-// only exercised incidentally by tests that mount the full App, where
-// whether the 1-second tick ever actually fires depends on real
-// wall-clock timing during the test run. That's what caused the Coverage
-// Ratchet's branch-coverage numbers to swing between runs with zero
-// source changes (see REFACTOR-DECISIONS.md). Fake timers make the tick
-// deterministic instead of a race, and let it actually be tested rather
-// than just occasionally covered by accident.
 
 describe('useClock', () => {
 	beforeEach(() => {
@@ -116,14 +114,6 @@ describe('useClock', () => {
 	});
 });
 
-// customBackground scope-tightening: it moved from an unvalidated raw
-// string (a literal URL, potentially remote) to a vault-relative path
-// resolved the same defensive way as manualBackgroundFiles/
-// backgroundFiles - filtered against the vault before being turned into
-// a resource URL, so a since-deleted/renamed/never-existed file falls
-// back to "no background" (Testing Specification's "Background
-// resolution degrades gracefully" load-bearing behavior) instead of a
-// broken image with no signal anything's wrong.
 describe('useBackground', () => {
 	afterEach(() => {
 		cleanup();
@@ -248,10 +238,23 @@ describe('useOverlayContrast', () => {
 		cleanup();
 	});
 
+	/**
+	 * Builds a store over default settings with `overrides` applied.
+	 *
+	 * @param overrides - Settings to replace.
+	 * @returns The store.
+	 */
 	function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
 		return new SettingsStore(buildSettings(overrides), async () => {});
 	}
 
+	/**
+	 * Reads a vault file's mtime.
+	 *
+	 * @param app - The app.
+	 * @param path - Vault-relative path.
+	 * @returns The mtime.
+	 */
 	function getMtime(app: ReturnType<typeof createConfiguredApp>, path: string): number {
 		const file = app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) {
@@ -260,8 +263,11 @@ describe('useOverlayContrast', () => {
 		return file.stat.mtime;
 	}
 
-	// The in-memory vault only serves seeded text files through readBinary(),
-	// and jsdom has no URL.createObjectURL - stub both so the blob: path runs.
+	/**
+	 * Stubs binary reads and blob URLs on the app.
+	 *
+	 * @param app - The app.
+	 */
 	function stubBinaryRead(app: ReturnType<typeof createConfiguredApp>) {
 		vi.spyOn(app.vault, 'readBinary').mockResolvedValue(new ArrayBuffer(8));
 		URL.createObjectURL = vi.fn(() => 'blob:tabcandy-test');
@@ -351,11 +357,6 @@ describe('useOverlayContrast', () => {
 			)
 		);
 
-		// This environment has no real Canvas 2D implementation, so a
-		// genuine recompute always resolves to the default overlay color
-		// (see overlayContrast.test.ts) - which is exactly what makes this
-		// a useful assertion here: it can only be this value if a fresh
-		// computation actually ran, not a cache hit.
 		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
 		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png']).toEqual({
 			mtime,
@@ -390,10 +391,64 @@ describe('useOverlayContrast', () => {
 			)
 		);
 
-		// A stale cache entry ('#123456') would return synchronously; seeing
-		// the fresh-recompute default confirms the mismatch triggered a
-		// real recompute rather than trusting the stale entry.
 		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
 		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png'].mtime).toBe(mtime);
+	});
+});
+
+describe('useVaultRevision', () => {
+	it('starts at zero', () => {
+		const app = createConfiguredApp();
+
+		const { result } = renderHook(() => useVaultRevision(app));
+
+		expect(result.current).toBe(0);
+	});
+
+	it('increases when a file is created', async () => {
+		const app = createConfiguredApp();
+		const { result } = renderHook(() => useVaultRevision(app));
+
+		await act(async () => {
+			await app.vault.create('a.md', '');
+		});
+
+		expect(result.current).toBe(1);
+	});
+
+	it('increases when a file is deleted', async () => {
+		const app = createConfiguredApp({ files: { 'a.md': '' } });
+		const file = getExistingFile(app, 'a.md');
+		const { result } = renderHook(() => useVaultRevision(app));
+
+		await act(async () => {
+			await app.fileManager.trashFile(file);
+		});
+
+		expect(result.current).toBe(1);
+	});
+
+	it('increases when a file is renamed', async () => {
+		const app = createConfiguredApp({ files: { 'a.md': '' } });
+		const file = getExistingFile(app, 'a.md');
+		const { result } = renderHook(() => useVaultRevision(app));
+
+		await act(async () => {
+			if (file instanceof TFile) {
+				await app.vault.rename(file, 'b.md');
+			}
+		});
+
+		expect(result.current).toBe(1);
+	});
+
+	it('stops listening when unmounted', () => {
+		const app = createConfiguredApp();
+		const offref = vi.spyOn(app.vault, 'offref');
+		const { unmount } = renderHook(() => useVaultRevision(app));
+
+		unmount();
+
+		expect(offref).toHaveBeenCalledTimes(3);
 	});
 });

@@ -78,7 +78,6 @@ describe('registerBackgroundVaultWatchers', () => {
 
 	it('does not re-sync when a file is created outside the configured folder', async () => {
 		const { app, store } = setUp();
-		// Registering watchers doesn't sync, so backgroundFiles stays at its default.
 		expect(store.get().backgroundFiles).toEqual([]);
 
 		await app.vault.createFolder('Elsewhere');
@@ -127,7 +126,6 @@ describe('registerBackgroundVaultWatchers', () => {
 		await app.vault.create('Elsewhere/picture.png', '');
 		const file = getExistingFile(app, 'Elsewhere/picture.png');
 
-		// Vault.delete() fires the 'delete' event.
 		await app.fileManager.trashFile(file);
 
 		expect(store.get().manualBackgroundFiles).toEqual([]);
@@ -141,7 +139,6 @@ describe('registerBackgroundVaultWatchers', () => {
 		await app.vault.create('Elsewhere/other.png', '');
 		const file = getExistingFile(app, 'Elsewhere/other.png');
 
-		// Vault.delete() fires the 'delete' event.
 		await app.fileManager.trashFile(file);
 
 		expect(store.get().manualBackgroundFiles).toEqual(['Elsewhere/keep.png']);
@@ -151,7 +148,6 @@ describe('registerBackgroundVaultWatchers', () => {
 		const { app, store } = setUp();
 		const file = getExistingFile(app, 'Backgrounds/existing.png');
 
-		// Vault.delete() fires the 'delete' event.
 		await app.fileManager.trashFile(file);
 		await vi.advanceTimersByTimeAsync(500);
 
