@@ -1,4 +1,4 @@
-/** @file Adding a file to Clusters and removing it from them. */
+/** @file Adding files to Clusters, removing them, reordering members and resolving missing ones. */
 import {
 	App,
 	Notice,
@@ -9,7 +9,9 @@ import {
 	addMember,
 	getClustersContainingPath,
 	getMostRecentCluster,
-	removeMember
+	removeMember,
+	reorderMember,
+	replaceMemberPath
 } from './clusters';
 import SettingsStore from '../settings/SettingsStore';
 import type {
@@ -185,6 +187,37 @@ export function promptAndRemove(
 }
 
 /**
+ * Removes the given paths from a Cluster in one save. Saves nothing when the
+ * Cluster holds none of them.
+ *
+ * @param settingsStore - Store holding the Clusters.
+ * @param clusterId - Id of the Cluster.
+ * @param paths - Member paths to remove.
+ * @returns Whether anything was removed.
+ */
+export async function removeMissingMembers(
+	settingsStore: SettingsStore,
+	clusterId: string,
+	paths: string[]
+): Promise<boolean> {
+	const { clusters } = settingsStore.get();
+	const next = paths.reduce(
+		(current, path) => removeMember(
+			current,
+			clusterId,
+			path
+		),
+		clusters
+	);
+	if (next === clusters) {
+		return false;
+	}
+
+	await settingsStore.update({ clusters: next });
+	return true;
+}
+
+/**
  * Removes a file from each listed Cluster in one save. Saves nothing when
  * no listed Cluster holds the file.
  *
@@ -216,4 +249,63 @@ export async function removePathFromClusters(
 		await settingsStore.update({ clusters: next });
 	}
 	return count;
+}
+
+/**
+ * Moves a member to a new position in a Cluster and saves. Saves nothing
+ * when the move changes nothing.
+ *
+ * @param settingsStore - Store holding the Clusters.
+ * @param clusterId - Id of the Cluster.
+ * @param fromIndex - Current position of the member.
+ * @param toIndex - Position the member ends up at.
+ * @returns Whether the order changed.
+ */
+export async function reorderClusterMember(
+	settingsStore: SettingsStore,
+	clusterId: string,
+	fromIndex: number,
+	toIndex: number
+): Promise<boolean> {
+	const { clusters } = settingsStore.get();
+	const next = reorderMember(
+		clusters,
+		clusterId,
+		fromIndex,
+		toIndex
+	);
+	if (next === clusters) {
+		return false;
+	}
+
+	await settingsStore.update({ clusters: next });
+	return true;
+}
+
+/**
+ * Replaces a missing path with another file in every Cluster and saves.
+ * Saves nothing when no Cluster holds the stale path.
+ *
+ * @param settingsStore - Store holding the Clusters.
+ * @param stalePath - The missing member path.
+ * @param newPath - Vault-relative path of the file to use instead.
+ * @returns Whether anything was replaced.
+ */
+export async function resolveMissingMember(
+	settingsStore: SettingsStore,
+	stalePath: string,
+	newPath: string
+): Promise<boolean> {
+	const { clusters } = settingsStore.get();
+	const next = replaceMemberPath(
+		clusters,
+		stalePath,
+		newPath
+	);
+	if (next === clusters) {
+		return false;
+	}
+
+	await settingsStore.update({ clusters: next });
+	return true;
 }

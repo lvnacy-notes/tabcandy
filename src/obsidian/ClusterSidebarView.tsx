@@ -1,12 +1,7 @@
-import {
-	ItemView,
-	WorkspaceLeaf
-} from 'obsidian';
-import {
-	Root,
-	createRoot
-} from 'react-dom/client';
-import ClusterSidebar from '../app/clusterSidebar';
+/** @file The Obsidian view that hosts the Cluster sidebar. */
+import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { Root, createRoot } from 'react-dom/client';
+import ClusterSidebar from '../app/ClusterSidebar';
 import SettingsStore from '../settings/SettingsStore';
 import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
 
@@ -46,6 +41,14 @@ export class ClusterSidebarView extends ItemView {
 		return CLUSTER_SIDEBAR_VIEW_TYPE;
 	}
 
+	/** Unmounts the React root. */
+	onClose(): Promise<void> {
+		this.root?.unmount();
+		this.root = null;
+
+		return Promise.resolve();
+	}
+
 	/** Replaces any existing content with a fresh React root. */
 	onOpen(): Promise<void> {
 		this.contentEl.empty();
@@ -59,14 +62,6 @@ export class ClusterSidebarView extends ItemView {
 			/>
 		);
 		this.containerEl.addClass('tabcandy-sidebar');
-
-		return Promise.resolve();
-	}
-
-	/** Unmounts the React root. */
-	onClose(): Promise<void> {
-		this.root?.unmount();
-		this.root = null;
 
 		return Promise.resolve();
 	}

@@ -1,3 +1,4 @@
+/** @file Vault watchers that keep backgrounds, quotes and Cluster members in step with file changes. */
 import {
 	App,
 	EventRef,

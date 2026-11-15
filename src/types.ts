@@ -24,6 +24,9 @@ export const CLOSED_TABS_LIMIT = 5;
 /** View type the Cluster sidebar is registered under. */
 export const CLUSTER_SIDEBAR_VIEW_TYPE = 'tabcandy-clusters';
 
+/** View type the Cluster Tray is registered under. */
+export const CLUSTER_TRAY_VIEW_TYPE = 'tabcandy-cluster-tray';
+
 /** Ids of the plugins offered as search providers. */
 export const SEARCH_PROVIDER = [
 	'switcher',
@@ -68,10 +71,11 @@ export type OverlayContrastCache = Record<string, OverlayContrastCacheEntry>;
 /** Asks the user for Cluster details; calls `onSubmit` once with them, or never if cancelled. */
 export type PromptForCluster = (onSubmit: (draft: ClusterDraft) => void) => void;
 
-/** Asks the user to pick one of `clusters`; calls `onSubmit` once with its id, or never if cancelled. */
+/** Asks the user to pick one of `clusters`; calls `onSubmit` once with its id, or never if cancelled. `labels` replaces the default wording. */
 export type PromptForClusterChoice = (
 	clusters: TabCandyCluster[],
-	onSubmit: (id: string) => void
+	onSubmit: (id: string) => void,
+	labels?: ChooseClusterLabels
 ) => void;
 
 /** Asks the user to pick any of `clusters`; calls `onSubmit` once with their ids, or never if cancelled. */
@@ -82,6 +86,14 @@ export type PromptForClusterRemoval = (
 
 /** Clusters keyed by `id`. */
 export type TabCandyClusters = Record<string, TabCandyCluster>;
+
+/** Wording for the modal that picks a Cluster. */
+export interface ChooseClusterLabels {
+	/** Text of the confirm button. */
+	action: string;
+	/** Heading of the modal. */
+	title: string;
+}
 
 /** A closed tab: the state to reopen it from and its title at close time. */
 export interface ClosedTabEntry {
@@ -97,6 +109,20 @@ export interface ClusterDraft {
 	name: string;
 	/** Hex color. Unset means no Flavor. */
 	flavor?: string;
+}
+
+/** What can be done to the members of one Cluster from a list of them. */
+export interface ClusterMemberActions {
+	/** Starts dragging a member so that dropping it on a pane opens it there. */
+	dragMember: (path: string, event: DragEvent) => void;
+	/** Moves a member from one position to another. */
+	moveMember: (fromIndex: number, toIndex: number) => void;
+	/** Opens a member in the active pane. */
+	openMember: (path: string) => void;
+	/** Removes a member. */
+	removeMember: (path: string) => void;
+	/** Opens the resolve modal, focused on `focusPath` when given. */
+	resolveMissing: (focusPath?: string) => void;
 }
 
 /** What the commands need from the plugin. */

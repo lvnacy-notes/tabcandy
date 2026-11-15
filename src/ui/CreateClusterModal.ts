@@ -1,3 +1,4 @@
+/** @file The modal that collects a new Cluster's name and Flavor. */
 import {
 	App,
 	ColorComponent,

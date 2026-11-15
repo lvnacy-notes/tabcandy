@@ -1,3 +1,4 @@
+/** @file The command that creates an empty Cluster. */
 import { Command } from 'obsidian';
 import { promptAndCreate } from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';

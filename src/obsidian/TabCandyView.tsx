@@ -1,3 +1,4 @@
+/** @file The Obsidian view that hosts the new-tab app. */
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { Root, createRoot } from 'react-dom/client';
 import ReactApp from '../app/App';

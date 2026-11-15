@@ -18,6 +18,7 @@ import {
 	deleteCluster,
 	generateClusterId,
 	getClustersContainingPath,
+	getMissingMembers,
 	getMostRecentCluster,
 	pairClusters,
 	removeMember,
@@ -748,5 +749,21 @@ describe('replaceMemberPath', () => {
 		);
 
 		expect(result).toBe(clusters);
+	});
+});
+
+describe('getMissingMembers', () => {
+	it('lists the members whose files are absent, in member order', () => {
+		const cluster = buildCluster({ members: ['a.md', 'gone.md', 'b.md', 'also-gone.md'] });
+
+		const missing = getMissingMembers(cluster, (path) => path === 'a.md' || path === 'b.md');
+
+		expect(missing).toEqual(['gone.md', 'also-gone.md']);
+	});
+
+	it('is empty when every member exists', () => {
+		const cluster = buildCluster({ members: ['a.md'] });
+
+		expect(getMissingMembers(cluster, () => true)).toEqual([]);
 	});
 });

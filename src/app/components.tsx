@@ -1,18 +1,27 @@
 /** @file React components for the new tab and the Cluster sidebar. */
-import { TFile, getIcon } from 'obsidian';
+import {
+	Menu,
+	TFile,
+	getIcon
+} from 'obsidian';
 import {
 	CSSProperties,
+	DragEvent as ReactDragEvent,
 	KeyboardEvent,
+	MouseEvent as ReactMouseEvent,
 	ReactNode,
 	RefObject,
 	useEffect,
-	useRef
+	useRef,
+	useState
 } from 'react';
 import {
 	ClosedTabEntry,
 	Quote,
 	TabCandyCluster
 } from '../types';
+
+const MEMBER_DRAG_TYPE = 'application/x-tabcandy-member';
 
 interface BackgroundSurfaceProps {
 	background: string | null | undefined;
@@ -33,17 +42,40 @@ interface BookmarksProps {
 interface ClusterRowProps {
 	cluster: TabCandyCluster;
 	expanded: boolean;
+	getDraggedPath: () => string | null;
 	isFilePresent: (path: string) => boolean;
+	onDragCluster: (target: Element | null) => void;
+	onDragMember: (path: string, event: DragEvent) => void;
+	onDropPath: (path: string) => void;
+	onMoveMember: (fromIndex: number, toIndex: number) => void;
 	onOpenMember: (path: string) => void;
+	onOpenTray: () => void;
 	onRemoveMember: (path: string) => void;
+	onResolveMissing: (focusPath?: string) => void;
 	onToggle: () => void;
 }
 
+interface MemberListProps {
+	cluster: TabCandyCluster;
+	isFilePresent: (path: string) => boolean;
+	onDragMember: (path: string, event: DragEvent) => void;
+	onMoveMember: (fromIndex: number, toIndex: number) => void;
+	onOpenMember: (path: string) => void;
+	onRemoveMember: (path: string) => void;
+	onResolveMissing: (focusPath?: string) => void;
+}
+
 interface MemberRowProps {
+	clusterId: string;
+	count: number;
+	index: number;
 	path: string;
 	exists: boolean;
+	onDragOut: (event: DragEvent) => void;
+	onMove: (fromIndex: number, toIndex: number) => void;
 	onOpen: () => void;
 	onRemove: () => void;
+	onResolve: () => void;
 }
 
 interface QuoteDisplayProps {
@@ -69,6 +101,10 @@ interface SearchButtonProps {
 	textClassName: string;
 	onClick: () => void;
 }
+
+/******************************************************************************
+ * Components
+ *****************************************************************************/
 
 /**
  * Full-bleed container. Applies the background image and text color, adds the transparent-theme classes when set, and forwards key presses.
@@ -138,32 +174,84 @@ export function Bookmarks({ files, onOpen }: BookmarksProps) {
 }
 
 /**
- * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor`.
+ * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
  *
  * @param props.cluster - The Cluster.
  * @param props.expanded - Whether the member list is shown.
+ * @param props.getDraggedPath - Reads the path of the file or tab being dragged, or null when there is none.
  * @param props.isFilePresent - Whether a member's file exists.
+ * @param props.onDragCluster - Called with the element under the pointer when a drag of the Cluster's row ends.
+ * @param props.onDragMember - Called with a member's path and the drag start event when a member row starts to drag.
+ * @param props.onDropPath - Called with the path of a file or tab dropped on the Cluster's row.
+ * @param props.onMoveMember - Called with a member's current and new positions when it is reordered.
  * @param props.onOpenMember - Called with the path of a clicked member.
+ * @param props.onOpenTray - Called when Open tray is chosen from the row's context menu.
  * @param props.onRemoveMember - Called with the path of a member whose minus button is clicked.
+ * @param props.onResolveMissing - Called to resolve missing members, with the path of a single missing member to focus or none for all.
  * @param props.onToggle - Called when the row is activated.
  */
 export function ClusterRow({
 	cluster,
 	expanded,
+	getDraggedPath,
 	isFilePresent,
+	onDragCluster,
+	onDragMember,
+	onDropPath,
+	onMoveMember,
 	onOpenMember,
+	onOpenTray,
 	onRemoveMember,
+	onResolveMissing,
 	onToggle,
 }: ClusterRowProps) {
+	const [dragOver, setDragOver] = useState(false);
+
+	const headerClasses = ['workspace-tab-header', 'tabcandy-cluster-header'];
+	if (cluster.flavor !== undefined) {
+		headerClasses.push('tabcandy-cluster-header--flavored');
+	}
+	if (dragOver) {
+		headerClasses.push('is-drag-over');
+	}
+
 	return (
 		<div className = 'tabcandy-cluster' >
 			<div
-				className = 'workspace-tab-header tabcandy-cluster-header'
+				className = { headerClasses.join(' ') }
 				role = 'button'
 				tabIndex = { 0 }
 				aria-expanded = { expanded }
 				style = { getFlavorStyle(cluster.flavor) }
 				onClick = { onToggle }
+				draggable
+				onContextMenu = { (event: ReactMouseEvent<HTMLDivElement>) => {
+					event.preventDefault();
+					openClusterMenu(event.nativeEvent, onOpenTray);
+				} }
+				onDragEnd = { (event: ReactDragEvent<HTMLDivElement>) => {
+					onDragCluster(event.currentTarget.ownerDocument.elementFromPoint(event.clientX, event.clientY));
+				} }
+				onDragLeave = { () => setDragOver(false) }
+				onDragOver = { (event: ReactDragEvent<HTMLDivElement>) => {
+					if (getDraggedPath() !== null) {
+						event.preventDefault();
+						event.dataTransfer.dropEffect = 'copy';
+						setDragOver(true);
+					}
+				} }
+				onDragStart = { (event: ReactDragEvent<HTMLDivElement>) => {
+					event.dataTransfer.setData('text/plain', cluster.name);
+					event.dataTransfer.effectAllowed = 'copy';
+				} }
+				onDrop = { (event: ReactDragEvent<HTMLDivElement>) => {
+					setDragOver(false);
+					const path = getDraggedPath();
+					if (path !== null) {
+						event.preventDefault();
+						onDropPath(path);
+					}
+				} }
 				onKeyDown = { (event: KeyboardEvent<HTMLDivElement>) => {
 					if (event.key === 'Enter' || event.key === ' ') {
 						event.preventDefault();
@@ -178,44 +266,19 @@ export function ClusterRow({
 			</div>
 			{ expanded && (
 				<div className = 'tabcandy-cluster-drawer' >
-					{ cluster.members.length === 0 && (
-						<div className = 'tabcandy-empty' >No tabs yet.</div>
-					) }
-					{ cluster.members.map((path) => (
-						<MemberRow
-							key = { path }
-							path = { path }
-							exists = { isFilePresent(path) }
-							onOpen = { () => onOpenMember(path) }
-							onRemove = { () => onRemoveMember(path) }
-						/>
-					)) }
+					<MemberList
+						cluster = { cluster }
+						isFilePresent = { isFilePresent }
+						onDragMember = { onDragMember }
+						onMoveMember = { onMoveMember }
+						onOpenMember = { onOpenMember }
+						onRemoveMember = { onRemoveMember }
+						onResolveMissing = { onResolveMissing }
+					/>
 				</div>
 			) }
 		</div>
 	);
-}
-
-/**
- * Exposes a Flavor to CSS.
- *
- * @param flavor - Hex color, or undefined for none.
- * @returns The inline style, or undefined when there is no Flavor.
- */
-function getFlavorStyle(flavor: string | undefined): CSSProperties | undefined {
-	return flavor === undefined ? undefined : ({ '--tabcandy-flavor': flavor } as CSSProperties);
-}
-
-/**
- * Names a member by its file name without the extension.
- *
- * @param path - Vault-relative file path.
- * @returns The label.
- */
-function getMemberLabel(path: string): string {
-	const name = path.slice(path.lastIndexOf('/') + 1);
-	const dot = name.lastIndexOf('.');
-	return dot > 0 ? name.slice(0, dot) : name;
 }
 
 /**
@@ -250,21 +313,133 @@ export function Icon({ name }: { name: string }) {
 }
 
 /**
- * One member of a Cluster, styled as a tab header. A missing member is marked unresolved. Clicking the title calls `onOpen`; clicking the minus button calls `onRemove`.
+ * A Cluster's members as rows. Shows a note when there are none, and a button that resolves missing members when any file is missing.
  *
+ * @param props.cluster - The Cluster.
+ * @param props.isFilePresent - Whether a member's file exists.
+ * @param props.onDragMember - Called with a member's path and the drag start event when a row starts to drag.
+ * @param props.onMoveMember - Called with a member's current and new positions when it is reordered.
+ * @param props.onOpenMember - Called with the path of a clicked member.
+ * @param props.onRemoveMember - Called with the path of a member whose minus button is clicked.
+ * @param props.onResolveMissing - Called to resolve missing members, with the path of a single missing member to focus or none for all.
+ */
+export function MemberList({
+	cluster,
+	isFilePresent,
+	onDragMember,
+	onMoveMember,
+	onOpenMember,
+	onRemoveMember,
+	onResolveMissing,
+}: MemberListProps) {
+	const missingCount = cluster.members.filter((path) => !isFilePresent(path)).length;
+
+	return (
+		<div className = 'tabcandy-member-list' >
+			{ cluster.members.length === 0 && (
+				<div className = 'tabcandy-empty' >No tabs yet.</div>
+			) }
+			{ missingCount > 0 && (
+				<button
+					className = 'tabcandy-resolve-missing'
+					onClick = { () => onResolveMissing() }
+				>
+					{ `Resolve missing (${ missingCount })` }
+				</button>
+			) }
+			{ cluster.members.map((path, index) => (
+				<MemberRow
+					key = { path }
+					clusterId = { cluster.id }
+					count = { cluster.members.length }
+					index = { index }
+					path = { path }
+					exists = { isFilePresent(path) }
+					onDragOut = { (event) => onDragMember(path, event) }
+					onMove = { onMoveMember }
+					onOpen = { () => onOpenMember(path) }
+					onRemove = { () => onRemoveMember(path) }
+					onResolve = { () => onResolveMissing(path) }
+				/>
+			)) }
+		</div>
+	);
+}
+
+/**
+ * One member of a Cluster, styled as a tab header. A missing member is marked unresolved. Clicking the title calls `onOpen`; clicking the minus button calls `onRemove`. The row can be dragged onto another member of the same Cluster to reorder, or onto a pane to open it, and its context menu offers Move up and Move down, plus Resolve missing member when the file is missing.
+ *
+ * @param props.clusterId - Id of the Cluster the row belongs to.
+ * @param props.count - Number of members in the Cluster.
+ * @param props.index - Position of the member in the Cluster.
  * @param props.path - Vault-relative file path.
  * @param props.exists - Whether the file exists.
+ * @param props.onDragOut - Called with the drag start event, so the row can also be dropped on a pane to open it.
+ * @param props.onMove - Called with the member's current and new positions.
  * @param props.onOpen - Called when the title is clicked.
  * @param props.onRemove - Called when the minus button is clicked.
+ * @param props.onResolve - Called when Resolve missing member is chosen from the context menu.
  */
 export function MemberRow({
+	clusterId,
+	count,
+	index,
 	path,
 	exists,
+	onDragOut,
+	onMove,
 	onOpen,
 	onRemove,
+	onResolve,
 }: MemberRowProps) {
+	const [dragOver, setDragOver] = useState(false);
+
+	const classes = ['workspace-tab-header', 'tabcandy-member-row'];
+	if (!exists) {
+		classes.push('is-unresolved');
+	}
+	if (dragOver) {
+		classes.push('is-drag-over');
+	}
+
 	return (
-		<div className = { exists ? 'workspace-tab-header tabcandy-member-row' : 'workspace-tab-header tabcandy-member-row is-unresolved' } >
+		<div
+			className = { classes.join(' ') }
+			draggable = { true }
+			onContextMenu = { (event: ReactMouseEvent<HTMLDivElement>) => {
+				event.preventDefault();
+				openMemberMenu(
+					event.nativeEvent,
+					index,
+					count,
+					exists,
+					onMove,
+					onResolve
+				);
+			} }
+			onDragEnd = { () => setDragOver(false) }
+			onDragLeave = { () => setDragOver(false) }
+			onDragOver = { (event: ReactDragEvent<HTMLDivElement>) => {
+				if (event.dataTransfer.types.includes(MEMBER_DRAG_TYPE)) {
+					event.preventDefault();
+					event.dataTransfer.dropEffect = 'move';
+					setDragOver(true);
+				}
+			} }
+			onDragStart = { (event: ReactDragEvent<HTMLDivElement>) => {
+				event.dataTransfer.effectAllowed = 'move';
+				event.dataTransfer.setData(MEMBER_DRAG_TYPE, JSON.stringify({ clusterId, index }));
+				onDragOut(event.nativeEvent);
+			} }
+			onDrop = { (event: ReactDragEvent<HTMLDivElement>) => {
+				setDragOver(false);
+				const dragged = parseMemberDrag(event.dataTransfer.getData(MEMBER_DRAG_TYPE));
+				if (dragged?.clusterId === clusterId) {
+					event.preventDefault();
+					onMove(dragged.index, index);
+				}
+			} }
+		>
 			<div className = 'workspace-tab-header-inner' >
 				<button
 					className = 'workspace-tab-header-inner-title tabcandy-member-title'
@@ -390,4 +565,106 @@ export function SearchButton({
 			{ !iconFirst && <Icon name = { iconName } />}
 		</button>
 	);
+}
+
+/******************************************************************************
+ * Helper functions
+ *****************************************************************************/
+
+/**
+ * Exposes a Flavor to CSS.
+ *
+ * @param flavor - Hex color, or undefined for none.
+ * @returns The inline style, or undefined when there is no Flavor.
+ */
+function getFlavorStyle(flavor: string | undefined): CSSProperties | undefined {
+	return flavor === undefined ? undefined : ({ '--tabcandy-flavor': flavor } as CSSProperties);
+}
+
+/**
+ * Names a member by its file name without the extension.
+ *
+ * @param path - Vault-relative file path.
+ * @returns The label.
+ */
+function getMemberLabel(path: string): string {
+	const name = path.slice(path.lastIndexOf('/') + 1);
+	const dot = name.lastIndexOf('.');
+	return dot > 0 ? name.slice(0, dot) : name;
+}
+
+/**
+ * Opens a Cluster row's context menu, which offers Open tray.
+ *
+ * @param event - The context menu event.
+ * @param onOpenTray - Called when Open tray is chosen.
+ */
+function openClusterMenu(event: MouseEvent, onOpenTray: () => void): void {
+	const menu = new Menu();
+	menu.addItem((item) => {
+		item.setTitle('Open tray').setIcon('layers').onClick(onOpenTray);
+	});
+	menu.showAtMouseEvent(event);
+}
+
+/**
+ * Opens a member row's context menu: Move up and Move down, each left out where the member can't move that way, and Resolve missing member when the file is missing.
+ *
+ * @param event - The context menu event.
+ * @param index - Position of the member.
+ * @param count - Number of members in the Cluster.
+ * @param exists - Whether the member's file exists.
+ * @param onMove - Called with the member's current and new positions.
+ * @param onResolve - Called when Resolve missing member is chosen.
+ */
+function openMemberMenu(
+	event: MouseEvent,
+	index: number,
+	count: number,
+	exists: boolean,
+	onMove: (fromIndex: number, toIndex: number) => void,
+	onResolve: () => void
+): void {
+	const menu = new Menu();
+	if (index > 0) {
+		menu.addItem((item) => {
+			item.setTitle('Move up').setIcon('arrow-up').onClick(() => onMove(index, index - 1));
+		});
+	}
+	if (index < count - 1) {
+		menu.addItem((item) => {
+			item.setTitle('Move down').setIcon('arrow-down').onClick(() => onMove(index, index + 1));
+		});
+	}
+	if (!exists) {
+		menu.addItem((item) => {
+			item.setTitle('Resolve missing member').setIcon('search').onClick(onResolve);
+		});
+	}
+	menu.showAtMouseEvent(event);
+}
+
+/**
+ * Reads the payload a member row sets when a drag starts.
+ *
+ * @param raw - The payload text.
+ * @returns The Cluster id and position, or null when the payload isn't one.
+ */
+function parseMemberDrag(raw: string): { clusterId: string; index: number } | null {
+	try {
+		const value: unknown = JSON.parse(raw);
+		if (
+			typeof value === 'object'
+			&& value !== null
+			&& 'clusterId' in value
+			&& 'index' in value
+			&& typeof value.clusterId === 'string'
+			&& typeof value.index === 'number'
+		) {
+			return { clusterId: value.clusterId, index: value.index };
+		}
+	} catch {
+		return null;
+	}
+	return null;
 }

@@ -1,0 +1,108 @@
+/** @file The Obsidian view that hosts a Cluster Tray. */
+import {
+	ItemView,
+	ViewStateResult,
+	WorkspaceLeaf
+} from 'obsidian';
+import { Root, createRoot } from 'react-dom/client';
+import ClusterTray from '../app/ClusterTray';
+import TrayReturnTracker from './TrayReturnTracker';
+import SettingsStore from '../settings/SettingsStore';
+import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
+
+/** A tab showing one Cluster. Renders the React Tray into its content element. */
+export class ClusterTrayView extends ItemView {
+	clusterId: string | null = null;
+	root: Root | null = null;
+	settingsStore: SettingsStore;
+	trayReturn: TrayReturnTracker;
+
+	/**
+	 * @param settingsStore - Store holding the Clusters.
+	 * @param trayReturn - Puts the Tray back when a member opened from it is closed.
+	 * @param leaf - The leaf hosting the view.
+	 */
+	constructor(
+		settingsStore: SettingsStore,
+		trayReturn: TrayReturnTracker,
+		leaf: WorkspaceLeaf
+	) {
+		super(leaf);
+		this.settingsStore = settingsStore;
+		this.trayReturn = trayReturn;
+	}
+
+	/** @returns The Cluster's name, or a generic title when the Cluster is unknown. */
+	getDisplayText() {
+		const cluster = this.clusterId === null ? undefined : this.settingsStore.get().clusters[this.clusterId];
+		return cluster?.name ?? 'Cluster tray';
+	}
+
+	/** @returns The view's icon id. */
+	getIcon() {
+		return 'layers';
+	}
+
+	/** @returns The state saved with the layout: the Cluster the Tray shows. */
+	getState(): Record<string, unknown> {
+		return { clusterId: this.clusterId };
+	}
+
+	/** @returns The view type id. */
+	getViewType() {
+		return CLUSTER_TRAY_VIEW_TYPE;
+	}
+
+	/** Unmounts the React root. */
+	onClose(): Promise<void> {
+		this.root?.unmount();
+		this.root = null;
+
+		return Promise.resolve();
+	}
+
+	/** Replaces any existing content with a fresh React root. */
+	onOpen(): Promise<void> {
+		this.contentEl.empty();
+
+		this.root = createRoot(this.contentEl);
+		this.render();
+		this.containerEl.addClass('tabcandy-tray');
+
+		return Promise.resolve();
+	}
+
+	/** Renders the Tray for the current Cluster id. */
+	render(): void {
+		this.root?.render(
+			<ClusterTray
+				app = { this.app }
+				settingsStore = { this.settingsStore }
+				clusterId = { this.clusterId }
+				onOpenMember = { (path) => {
+					if (this.clusterId !== null) {
+						void this.trayReturn.openMember(
+							this.leaf,
+							this.clusterId,
+							path
+						);
+					}
+				} }
+			/>
+		);
+	}
+
+	/**
+	 * Restores the Cluster the Tray shows and renders it.
+	 *
+	 * @param state - The saved state.
+	 * @param result - Obsidian's view state result.
+	 */
+	async setState(state: unknown, result: ViewStateResult): Promise<void> {
+		if (typeof state === 'object' && state !== null && 'clusterId' in state) {
+			this.clusterId = typeof state.clusterId === 'string' ? state.clusterId : null;
+			this.render();
+		}
+		await super.setState(state, result);
+	}
+}

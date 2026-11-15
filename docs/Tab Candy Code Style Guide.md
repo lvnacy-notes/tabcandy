@@ -28,8 +28,8 @@ src/
 
 ## File names
 
-- PascalCase for modules exporting a class.
-- camelCase for every other module.
+- PascalCase for modules exporting a class or a default React component.
+- camelCase for every other module, including shared React modules (`components`, `hooks`), tests and CSS files.
 
 ## Comments
 

@@ -1,3 +1,4 @@
+/** @file The command that creates a Cluster from the active pane's tabs. */
 import { App, Command } from 'obsidian';
 import { getPanePaths, promptAndCreate } from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';

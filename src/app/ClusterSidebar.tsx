@@ -3,7 +3,10 @@ import { App, TFile } from 'obsidian';
 import { useState } from 'react';
 import { ClusterRow } from './components';
 import { useSettings, useVaultRevision } from './hooks';
-import { openMemberFile, removePathFromClusters } from '../clusters/clusterMembership';
+import { addPathToCluster } from '../clusters/clusterMembership';
+import { buildMemberActions } from '../obsidian/clusterMemberActions';
+import { openClusterTray, openClusterTrayAt } from '../obsidian/trayLeaves';
+import { getDraggedFilePath } from '../obsidian/fileDrag';
 import SettingsStore from '../settings/SettingsStore';
 
 interface ClusterSidebarProps {
@@ -64,25 +67,51 @@ export default function ClusterSidebar({
 			{ list.length === 0 && (
 				<div className = 'tabcandy-empty' >No clusters yet.</div>
 			) }
-			{ list.map((cluster) => (
-				<ClusterRow
-					key = { cluster.id }
-					cluster = { cluster }
-					expanded = { expandedIds.has(cluster.id) }
-					isFilePresent = { (path) => app.vault.getAbstractFileByPath(path) instanceof TFile }
-					onOpenMember = { (path) => {
-						void openMemberFile(app, path);
-					} }
-					onRemoveMember = { (path) => {
-						void removePathFromClusters(
-							settingsStore,
-							[cluster.id],
-							path
-						);
-					} }
-					onToggle = { () => toggle(cluster.id) }
-				/>
-			)) }
+			{ list.map((cluster) => {
+				const actions = buildMemberActions(
+					app,
+					settingsStore,
+					cluster.id
+				);
+
+				return (
+					<ClusterRow
+						key = { cluster.id }
+						cluster = { cluster }
+						expanded = { expandedIds.has(cluster.id) }
+						getDraggedPath = { () => getDraggedFilePath(app) }
+						isFilePresent = { (path) => app.vault.getAbstractFileByPath(path) instanceof TFile }
+						onDragCluster = { (target) => {
+							void openClusterTrayAt(
+								app,
+								settingsStore,
+								cluster.id,
+								target
+							);
+						} }
+						onDragMember = { actions.dragMember }
+						onDropPath = { (path) => {
+							void addPathToCluster(
+								settingsStore,
+								cluster.id,
+								path
+							);
+						} }
+						onMoveMember = { actions.moveMember }
+						onOpenMember = { actions.openMember }
+						onOpenTray = { () => {
+							void openClusterTray(
+								app,
+								settingsStore,
+								cluster.id
+							);
+						} }
+						onRemoveMember = { actions.removeMember }
+						onResolveMissing = { actions.resolveMissing }
+						onToggle = { () => toggle(cluster.id) }
+					/>
+				);
+			}) }
 		</div>
 	);
 }

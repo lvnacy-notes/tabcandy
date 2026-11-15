@@ -1,3 +1,4 @@
+/** @file The default plugin settings. */
 import {
 	BOOKMARK_SOURCE,
 	BackgroundTheme,

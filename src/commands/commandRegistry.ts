@@ -9,6 +9,9 @@ import { buildInvokeCommand as buildCreateClusterCommand } from './createCluster
 import { buildInvokeCommand as buildCreateClusterFromActivePaneCommand } from './createClusterFromActivePane';
 import { buildInvokeCommand as buildCreateClusterFromActiveTabCommand } from './createClusterFromActiveTab';
 import { buildInvokeCommand as buildNextTabAcrossGroupsCommand } from './nextTabAcrossGroups';
+import { buildInvokeCommand as buildOpenClusterSidebarCommand } from './openClusterSidebar';
+import { buildInvokeCommand as buildOpenClusterTrayCommand } from './openClusterTray';
+import { buildInvokeCommand as buildOpenRecentClusterTrayCommand } from './openRecentClusterTray';
 import { buildInvokeCommand as buildOpenTabCandyCommand } from './openTabCandy';
 import { buildInvokeCommand as buildPreviousTabAcrossGroupsCommand } from './previousTabAcrossGroups';
 import { buildInvokeCommand as buildRemoveFromClusterCommand } from './removeFromCluster';
@@ -53,6 +56,13 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 			promptForCluster
 		),
 		buildNextTabAcrossGroupsCommand(app),
+		buildOpenClusterSidebarCommand(app),
+		buildOpenClusterTrayCommand(
+			app,
+			settingsStore,
+			promptForClusterChoice
+		),
+		buildOpenRecentClusterTrayCommand(app, settingsStore),
 		buildOpenTabCandyCommand(app),
 		buildPreviousTabAcrossGroupsCommand(app),
 		buildRemoveFromClusterCommand(

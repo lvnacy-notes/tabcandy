@@ -14,7 +14,10 @@ import {
 	openMemberFile,
 	promptAndAdd,
 	promptAndRemove,
-	removePathFromClusters
+	removeMissingMembers,
+	removePathFromClusters,
+	reorderClusterMember,
+	resolveMissingMember
 } from './clusterMembership';
 import {
 	createFakeWorkspaceApp,
@@ -480,6 +483,105 @@ describe('removePathFromClusters', () => {
 			'a.md'
 		);
 
+		expect(save).not.toHaveBeenCalled();
+	});
+});
+
+describe('reorderClusterMember', () => {
+	it('moves the member and saves', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md', 'c.md'] }));
+
+		const moved = await reorderClusterMember(
+			store,
+			'one',
+			0,
+			2
+		);
+
+		expect([moved, store.get().clusters['one'].members]).toEqual([true, ['b.md', 'c.md', 'a.md']]);
+		expect(save).toHaveBeenCalledTimes(1);
+	});
+
+	it('saves nothing when the move changes nothing', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+
+		const moved = await reorderClusterMember(
+			store,
+			'one',
+			1,
+			1
+		);
+
+		expect(moved).toBe(false);
+		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('saves nothing for a Cluster that does not exist', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+
+		const moved = await reorderClusterMember(
+			store,
+			'missing',
+			0,
+			1
+		);
+
+		expect(moved).toBe(false);
+		expect(save).not.toHaveBeenCalled();
+	});
+});
+
+describe('removeMissingMembers', () => {
+	it('removes the given paths in one save', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'gone.md', 'also-gone.md'] }));
+
+		const removed = await removeMissingMembers(
+			store,
+			'one',
+			['gone.md', 'also-gone.md']
+		);
+
+		expect([removed, store.get().clusters['one'].members]).toEqual([true, ['a.md']]);
+		expect(save).toHaveBeenCalledTimes(1);
+	});
+
+	it('saves nothing when the Cluster holds none of the paths', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md'] }));
+
+		const removed = await removeMissingMembers(
+			store,
+			'one',
+			['gone.md']
+		);
+
+		expect(removed).toBe(false);
+		expect(save).not.toHaveBeenCalled();
+	});
+});
+
+describe('resolveMissingMember', () => {
+	it('replaces the stale path at its position', async () => {
+		const { store } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'gone.md', 'c.md'] }));
+
+		const replaced = await resolveMissingMember(
+			store,
+			'gone.md',
+			'b.md'
+		);
+
+		expect([replaced, store.get().clusters['one'].members]).toEqual([true, ['a.md', 'b.md', 'c.md']]);
+	});
+
+	it('saves nothing when no Cluster holds the stale path', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md'] }));
+
+		const replaced = await resolveMissingMember(
+			store,
+			'gone.md',
+			'b.md'
+		);
+
+		expect(replaced).toBe(false);
 		expect(save).not.toHaveBeenCalled();
 	});
 });

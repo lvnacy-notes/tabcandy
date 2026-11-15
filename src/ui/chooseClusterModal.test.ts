@@ -117,4 +117,18 @@ describe('ChooseClusterModal', () => {
 
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});
+
+	it('uses the wording it is given', () => {
+		const modal = new ChooseClusterModal(
+			createConfiguredApp(),
+			[buildCluster({ id: 'one', name: 'One' })],
+			vi.fn(),
+			{ action: 'Open', title: 'Open a cluster tray' }
+		);
+
+		modal.open();
+
+		expect(modal.contentEl.textContent).toContain('Open a cluster tray');
+		expect(findButton(modal, 'Open')).toBeDefined();
+	});
 });

@@ -9,12 +9,14 @@ import {
 } from './newtab/backgrounds';
 import { syncQuotesFile } from './newtab/quotes';
 import { ClusterSidebarView } from './obsidian/ClusterSidebarView';
+import { ClusterTrayView } from './obsidian/ClusterTrayView';
 import { registerClusterMembershipMenu } from './obsidian/clusterMembershipMenu';
 import { registerClusterCreationMenu } from './obsidian/clusterMenu';
 import { registerNewTabHijack } from './obsidian/newTabHijack';
 import TabCandySettingTab from './obsidian/SettingsTab';
 import { registerStackedTabPanes } from './obsidian/stackedTabPanes';
 import { TabCandyView } from './obsidian/TabCandyView';
+import TrayReturnTracker from './obsidian/TrayReturnTracker';
 import {
 	registerBackgroundVaultWatchers,
 	registerClusterRenameWatcher,
@@ -28,6 +30,7 @@ import RemoveFromClustersModal from './ui/RemoveFromClustersModal';
 import type TabCandyPlugin from '../main';
 import {
 	CLUSTER_SIDEBAR_VIEW_TYPE,
+	CLUSTER_TRAY_VIEW_TYPE,
 	PromptForCluster,
 	PromptForClusterChoice,
 	PromptForClusterRemoval,
@@ -102,8 +105,13 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		new CreateClusterModal(app, onSubmit).open();
 	};
 
-	const promptForClusterChoice: PromptForClusterChoice = (clusters, onSubmit) => {
-		new ChooseClusterModal(app, clusters, onSubmit).open();
+	const promptForClusterChoice: PromptForClusterChoice = (clusters, onSubmit, labels) => {
+		new ChooseClusterModal(
+			app,
+			clusters,
+			onSubmit,
+			labels
+		).open();
 	};
 
 	const promptForClusterRemoval: PromptForClusterRemoval = (clusters, onSubmit) => {
@@ -121,6 +129,20 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 					[]
 				);
 			},
+			leaf
+		)
+	);
+
+	const trayReturn = new TrayReturnTracker(app, settingsStore);
+	registerEvent(app.workspace.on('layout-change', () => {
+		void trayReturn.handleLayoutChange();
+	}));
+
+	plugin.registerView(
+		CLUSTER_TRAY_VIEW_TYPE,
+		(leaf) => new ClusterTrayView(
+			settingsStore,
+			trayReturn,
 			leaf
 		)
 	);

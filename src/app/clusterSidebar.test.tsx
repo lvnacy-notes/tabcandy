@@ -1,5 +1,6 @@
 /** @file Tests for the Cluster sidebar. */
-import { App } from 'obsidian';
+import { App, Menu } from 'obsidian';
+import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 import { act } from 'react';
 import {
 	afterEach,
@@ -15,10 +16,34 @@ import {
 	screen,
 	waitFor
 } from '@testing-library/react';
-import ClusterSidebar from './clusterSidebar';
+import ClusterSidebar from './ClusterSidebar';
 import { buildStoreWith } from '../test/clusterHelpers';
+import { buildDataTransfer, setDragManager } from '../test/dragHelpers';
 import { buildCluster, createConfiguredApp } from '../test/fakes';
 import SettingsStore from '../settings/SettingsStore';
+
+const opened = vi.hoisted((): unknown[][] => []);
+const openedTrays = vi.hoisted((): unknown[][] => []);
+const openedTraysAt = vi.hoisted((): unknown[][] => []);
+
+vi.mock('../obsidian/trayLeaves', () => ({
+	openClusterTray: (...args: unknown[]) => {
+		openedTrays.push(args);
+	},
+	openClusterTrayAt: (...args: unknown[]) => {
+		openedTraysAt.push(args);
+	},
+}));
+
+vi.mock('../ui/ResolveMissingModal', () => ({
+	default: class {
+		constructor(...args: unknown[]) {
+			opened.push(args);
+		}
+
+		open(): void {}
+	},
+}));
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -208,5 +233,83 @@ describe('ClusterSidebar', () => {
 		});
 
 		expect(screen.getByText('Later')).toBeTruthy();
+	});
+
+	it('reorders members when a row is dropped on another', async () => {
+		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md', 'c.md'] }));
+		const app = createConfiguredApp({ files: { 'a.md': '', 'b.md': '', 'c.md': '' } });
+		setDragManager(app, {});
+		renderSidebar(app, store);
+		fireEvent.click(screen.getByText('Cluster A'));
+		const dataTransfer = buildDataTransfer();
+		const rows = document.querySelectorAll('.tabcandy-member-row');
+
+		fireEvent.dragStart(rows[0], { dataTransfer });
+		fireEvent.drop(rows[2], { dataTransfer });
+
+		await waitFor(() => {
+			expect(store.get().clusters['one'].members).toEqual(['b.md', 'c.md', 'a.md']);
+		});
+	});
+
+	it('adds a dropped file to the Cluster it is dropped on', async () => {
+		const app = createConfiguredApp({ files: { 'a.md': '', 'x.md': '' } });
+		const file = app.vault.getAbstractFileByPath('x.md');
+		setDragManager(app, { draggable: { file } });
+		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }));
+		renderSidebar(app, store);
+
+		fireEvent.drop(screen.getByText('Cluster A'), { dataTransfer: buildDataTransfer() });
+
+		await waitFor(() => {
+			expect(store.get().clusters['one'].members).toEqual(['a.md', 'x.md']);
+		});
+	});
+
+	it('opens the resolve modal for the Cluster when its drawer has missing members', () => {
+		opened.length = 0;
+		const store = buildStoreWith(buildCluster({ id: 'one', members: ['gone.md'] }));
+		const app = createConfiguredApp();
+		renderSidebar(app, store);
+		fireEvent.click(screen.getByText('Cluster A'));
+
+		fireEvent.click(screen.getByRole('button', { name: 'Resolve missing (1)' }));
+
+		expect(opened).toEqual([[app, store, 'one', undefined]]);
+	});
+
+	it('opens the Cluster\'s Tray from its context menu', () => {
+		openedTrays.length = 0;
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		const store = buildStoreWith(buildCluster({ id: 'one' }));
+		const app = createConfiguredApp();
+		renderSidebar(app, store);
+
+		fireEvent.contextMenu(screen.getByText('Cluster A'));
+		menus[0].menuItems__[0].onClick__?.(new MouseEvent('click'));
+
+		expect(openedTrays).toEqual([[app, store, 'one']]);
+	});
+
+	it('opens the Cluster\'s Tray where its heading is dropped', () => {
+		openedTraysAt.length = 0;
+		const target = createDiv();
+		Object.defineProperty(document, 'elementFromPoint', { value: () => target, configurable: true });
+		const store = buildStoreWith(buildCluster({ id: 'one' }));
+		const app = createConfiguredApp();
+		renderSidebar(app, store);
+
+		fireEvent.dragEnd(screen.getByRole('button', { name: /Cluster A/ }), {
+			clientX: 5,
+			clientY: 6,
+			dataTransfer: buildDataTransfer(),
+		});
+		Reflect.deleteProperty(document, 'elementFromPoint');
+
+		expect(openedTraysAt).toEqual([[app, store, 'one', target]]);
 	});
 });

@@ -20,15 +20,29 @@
 	.tabcandy-member-row {
 		display: flex;
 		width: 100%;
-		border-left: 3px solid var(--tabcandy-flavor, transparent);
 		border-radius: var(--radius-s);
 		cursor: pointer;
+	}
+
+	.tabcandy-cluster-header--flavored {
+		background-color: var(--tabcandy-flavor);
 	}
 
     .tabcandy-empty {
 		color: var(--text-faint);
 		font-size: var(--font-ui-smaller);
 		padding: var(--size-2-2) var(--size-4-2);
+	}
+
+	.tabcandy-cluster-header.is-drag-over,
+	.tabcandy-member-row.is-drag-over {
+		outline: 1px solid var(--interactive-accent);
+	}
+
+	.tabcandy-cluster-header .workspace-tab-header-inner-title,
+	.tabcandy-member-title {
+		display: block;
+		color: var(--text-normal);
 	}
 
     .tabcandy-member-title {
@@ -55,8 +69,9 @@
 		font-size: var(--font-ui-small);
 	}
 
-	.tabcandy-sidebar-create,
-	.tabcandy-member-remove {
+	.tabcandy-member-remove,
+	.tabcandy-resolve-missing,
+	.tabcandy-sidebar-create {
 		background: transparent;
 		box-shadow: none;
 		cursor: pointer;

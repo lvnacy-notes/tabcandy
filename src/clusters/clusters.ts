@@ -1,3 +1,4 @@
+/** @file Pure operations on the Cluster record: create, delete, membership, ordering, pairing and path replacement. */
 import { isHexColor, isRecord } from '../utils/typeGuards';
 import {
 	NewClusterInput,
@@ -299,6 +300,20 @@ export function unpairCluster(
 	}
 
 	return clearPairingsTo(clusters, id);
+}
+
+/**
+ * Lists the members of a Cluster whose files don't exist.
+ *
+ * @param cluster - The Cluster.
+ * @param isFilePresent - Whether a path resolves to a file.
+ * @returns The missing paths, in member order.
+ */
+export function getMissingMembers(
+	cluster: TabCandyCluster,
+	isFilePresent: (path: string) => boolean
+): string[] {
+	return cluster.members.filter((path) => !isFilePresent(path));
 }
 
 /**

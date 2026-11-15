@@ -1,3 +1,4 @@
+/** @file A typed store for the plugin settings, with persistence and subscriptions. */
 import { TabCandySettings } from '../types';
 
 type Subscriber = (settings: TabCandySettings) => void;

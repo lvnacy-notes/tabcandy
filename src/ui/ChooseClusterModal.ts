@@ -4,11 +4,12 @@ import {
 	Modal,
 	Setting
 } from 'obsidian';
-import type { TabCandyCluster } from '../types';
+import type { ChooseClusterLabels, TabCandyCluster } from '../types';
 
 /** Asks which of a set of Clusters to use. */
 export default class ChooseClusterModal extends Modal {
 	_clusters: TabCandyCluster[];
+	_labels: ChooseClusterLabels;
 	_onSubmit: (id: string) => void;
 	_selectedId: string;
 
@@ -16,14 +17,17 @@ export default class ChooseClusterModal extends Modal {
 	 * @param app - The Obsidian app.
 	 * @param clusters - The Clusters to choose from; the first is selected.
 	 * @param onSubmit - Called with the chosen Cluster's id when the user confirms.
+	 * @param labels - The heading and confirm button text. Defaults to the wording for adding to a Cluster.
 	 */
 	constructor(
 		app: App,
 		clusters: TabCandyCluster[],
-		onSubmit: (id: string) => void
+		onSubmit: (id: string) => void,
+		labels: ChooseClusterLabels = { action: 'Add', title: 'Add to cluster' }
 	) {
 		super(app);
 		this._clusters = clusters;
+		this._labels = labels;
 		this._onSubmit = onSubmit;
 		this._selectedId = clusters[0]?.id ?? '';
 	}
@@ -32,7 +36,7 @@ export default class ChooseClusterModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl('h2', { text: 'Add to cluster' });
+		contentEl.createEl('h2', { text: this._labels.title });
 
 		new Setting(contentEl)
 			.setName('Cluster')
@@ -48,7 +52,7 @@ export default class ChooseClusterModal extends Modal {
 
 		new Setting(contentEl)
 			.addButton((button) => {
-				button.setButtonText('Add');
+				button.setButtonText(this._labels.action);
 				button.setCta();
 				button.onClick(() => {
 					this.submit();

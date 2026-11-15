@@ -1,3 +1,4 @@
+/** @file Validates raw saved data into plugin settings. */
 import { DEFAULT_SETTINGS } from './defaultSettings';
 import {
 	isEnumValue,
