@@ -9,13 +9,12 @@ import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace
 import {
 	addFileTab,
 	addNonFileTab,
-	buildStore,
 	buildStoreWith,
 	choosing,
 	choosingNothing,
 	isAvailable
 } from '../test/clusterHelpers';
-import { buildCluster } from '../test/fakes';
+import { buildCluster, buildStore } from '../test/fakes';
 
 describe('add-to-cluster command', () => {
 	it('has its id and name', () => {

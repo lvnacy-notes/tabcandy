@@ -14,9 +14,24 @@ import {
 	screen,
 	waitFor
 } from '@testing-library/react';
+import { Menu } from 'obsidian';
+import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 import ClusterTray from './ClusterTray';
 import { buildStoreWith } from '../test/clusterHelpers';
 import { buildCluster, createConfiguredApp } from '../test/fakes';
+
+const openMembers = vi.hoisted(() => ({ size: 0 }));
+const calls = vi.hoisted((): { opened: unknown[][]; closed: unknown[][] } => ({ opened: [], closed: [] }));
+
+vi.mock('../obsidian/clusterOpenClose', () => ({
+	closeCluster: (...args: unknown[]) => {
+		calls.closed.push(args);
+	},
+	getOpenMembers: () => ({ size: openMembers.size }),
+	openCluster: (...args: unknown[]) => {
+		calls.opened.push(args);
+	},
+}));
 
 vi.mock('../ui/ResolveMissingModal', () => ({
 	default: class {
@@ -36,6 +51,8 @@ describe('ClusterTray', () => {
 				app = { createConfiguredApp({ files: { 'Notes/a.md': '', 'b.md': '' } }) }
 				settingsStore = { store }
 				clusterId = 'one'
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
@@ -51,6 +68,8 @@ describe('ClusterTray', () => {
 				app = { createConfiguredApp() }
 				settingsStore = { store }
 				clusterId = 'one'
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
@@ -64,6 +83,8 @@ describe('ClusterTray', () => {
 				app = { createConfiguredApp() }
 				settingsStore = { buildStoreWith() }
 				clusterId = { null }
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
@@ -77,6 +98,8 @@ describe('ClusterTray', () => {
 				app = { createConfiguredApp() }
 				settingsStore = { store }
 				clusterId = 'one'
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
@@ -97,6 +120,8 @@ describe('ClusterTray', () => {
 				app = { createConfiguredApp() }
 				settingsStore = { store }
 				clusterId = 'one'
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
@@ -118,11 +143,150 @@ describe('ClusterTray', () => {
 				settingsStore = { store }
 				clusterId = 'one'
 				onOpenMember = { onOpenMember }
+				onConfirmUnlink = { () => {} }
+				onPair = { () => {} }
 			/>
 		);
 
 		fireEvent.click(screen.getByText('b'));
 
 		expect(onOpenMember).toHaveBeenCalledWith('b.md');
+	});
+
+	describe('options menu', () => {
+		/**
+		 * Captures the menus the Tray opens.
+		 *
+		 * @returns The captured menus.
+		 */
+		function captureMenus(): MenuMock[] {
+			const menus: MenuMock[] = [];
+			vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+				menus.push(this as unknown as MenuMock);
+				return this;
+			});
+			return menus;
+		}
+
+		it('offers Open cluster and Pair with… from the options button, and no Open tray', () => {
+			const menus = captureMenus();
+			render(
+				<ClusterTray
+					app = { createConfiguredApp() }
+					settingsStore = { buildStoreWith(buildCluster({ id: 'one' })) }
+					clusterId = 'one'
+					onConfirmUnlink = { () => {} }
+					onPair = { () => {} }
+				/>
+			);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+
+			expect(menus[0].menuItems__.map((item) => item.title__)).toEqual(['Open cluster', 'Pair with…']);
+		});
+
+		it('opens the same menu from a right-click on the title', () => {
+			const menus = captureMenus();
+			render(
+				<ClusterTray
+					app = { createConfiguredApp() }
+					settingsStore = { buildStoreWith(buildCluster({ id: 'one', name: 'Reading' })) }
+					clusterId = 'one'
+					onConfirmUnlink = { () => {} }
+					onPair = { () => {} }
+				/>
+			);
+
+			fireEvent.contextMenu(screen.getByRole('heading', { name: 'Reading' }));
+
+			expect(menus[0].menuItems__.map((item) => item.title__)).toEqual(['Open cluster', 'Pair with…']);
+		});
+
+		it('opens the Cluster when Open cluster is chosen', () => {
+			calls.opened.length = 0;
+			const menus = captureMenus();
+			const app = createConfiguredApp();
+			const store = buildStoreWith(buildCluster({ id: 'one' }));
+			render(
+				<ClusterTray
+					app = { app }
+					settingsStore = { store }
+					clusterId = 'one'
+					onConfirmUnlink = { () => {} }
+					onPair = { () => {} }
+				/>
+			);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+			menus[0].menuItems__[0].onClick__?.(new MouseEvent('click'));
+
+			expect(calls.opened).toEqual([[app, store, 'one']]);
+		});
+
+		it('offers Close cluster while a member is open and closes the Cluster when chosen', () => {
+			calls.closed.length = 0;
+			openMembers.size = 1;
+			const menus = captureMenus();
+			const app = createConfiguredApp();
+			const store = buildStoreWith(buildCluster({ id: 'one' }));
+			render(
+				<ClusterTray
+					app = { app }
+					settingsStore = { store }
+					clusterId = 'one'
+					onConfirmUnlink = { () => {} }
+					onPair = { () => {} }
+				/>
+			);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+			const items = menus[0].menuItems__;
+			items[1].onClick__?.(new MouseEvent('click'));
+			openMembers.size = 0;
+
+			expect([items.map((item) => item.title__), calls.closed]).toEqual([
+				['Open cluster', 'Close cluster', 'Pair with…'],
+				[[app, store, 'one']],
+			]);
+		});
+
+		it('starts pairing the Cluster when Pair with… is chosen', () => {
+			const onPair = vi.fn();
+			const menus = captureMenus();
+			render(
+				<ClusterTray
+					app = { createConfiguredApp() }
+					settingsStore = { buildStoreWith(buildCluster({ id: 'one' })) }
+					clusterId = 'one'
+					onConfirmUnlink = { () => {} }
+					onPair = { onPair }
+				/>
+			);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+			menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+
+			expect(onPair).toHaveBeenCalledWith('one');
+		});
+
+		it('offers Unlink, not Pair with…, when the Cluster is paired', () => {
+			const onConfirmUnlink = vi.fn();
+			const menus = captureMenus();
+			render(
+				<ClusterTray
+					app = { createConfiguredApp() }
+					settingsStore = { buildStoreWith(buildCluster({ id: 'one', pairedWith: 'two' }), buildCluster({ id: 'two', pairedWith: 'one' })) }
+					clusterId = 'one'
+					onConfirmUnlink = { onConfirmUnlink }
+					onPair = { () => {} }
+				/>
+			);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+			const items = menus[0].menuItems__;
+			items[1].onClick__?.(new MouseEvent('click'));
+
+			expect([items.map((item) => item.title__), onConfirmUnlink.mock.calls]).toEqual([['Open cluster', 'Unlink'], [['one']]]);
+		});
 	});
 });

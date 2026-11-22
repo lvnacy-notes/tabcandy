@@ -113,7 +113,7 @@ export default class ResolveMissingModal extends Modal {
 	}
 
 	/**
-	 * Replaces a missing path with the picked file, then rebuilds the list.
+	 * Replaces a missing path of this modal's Cluster with the picked file, then rebuilds the list.
 	 *
 	 * @param stalePath - The missing member path.
 	 * @param file - The file to use instead.
@@ -121,6 +121,7 @@ export default class ResolveMissingModal extends Modal {
 	async resolve(stalePath: string, file: TFile): Promise<void> {
 		await resolveMissingMember(
 			this._settingsStore,
+			this._clusterId,
 			stalePath,
 			file.path
 		);

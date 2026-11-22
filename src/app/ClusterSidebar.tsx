@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { ClusterRow } from './components';
 import { useSettings, useVaultRevision } from './hooks';
 import { addPathToCluster } from '../clusters/clusterMembership';
+import { unlinkCluster } from '../clusters/clusterPairing';
 import { buildMemberActions } from '../obsidian/clusterMemberActions';
+import {
+	closeCluster,
+	getOpenMembers,
+	openCluster
+} from '../obsidian/clusterOpenClose';
 import { openClusterTray, openClusterTrayAt } from '../obsidian/trayLeaves';
 import { getDraggedFilePath } from '../obsidian/fileDrag';
 import SettingsStore from '../settings/SettingsStore';
@@ -12,7 +18,9 @@ import SettingsStore from '../settings/SettingsStore';
 interface ClusterSidebarProps {
 	app: App;
 	settingsStore: SettingsStore;
+	onConfirmUnlink: (id: string) => void;
 	onCreateCluster: () => void;
+	onPair: (id: string) => void;
 }
 
 /**
@@ -22,12 +30,16 @@ interface ClusterSidebarProps {
  *
  * @param props.app - The Obsidian app.
  * @param props.settingsStore - Store holding the Clusters.
+ * @param props.onConfirmUnlink - Called with a Cluster's id when Unlink is chosen from its menu.
  * @param props.onCreateCluster - Called when the create button is clicked.
+ * @param props.onPair - Called with a Cluster's id when it is to be paired with another.
  */
 export default function ClusterSidebar({
 	app,
 	settingsStore,
+	onConfirmUnlink,
 	onCreateCluster,
+	onPair,
 }: ClusterSidebarProps) {
 	const { clusters } = useSettings(settingsStore);
 	useVaultRevision(app);
@@ -80,7 +92,16 @@ export default function ClusterSidebar({
 						cluster = { cluster }
 						expanded = { expandedIds.has(cluster.id) }
 						getDraggedPath = { () => getDraggedFilePath(app) }
+						hasOpenMember = { () => getOpenMembers(app, cluster).size > 0 }
 						isFilePresent = { (path) => app.vault.getAbstractFileByPath(path) instanceof TFile }
+						onCloseCluster = { () => {
+							void closeCluster(
+								app,
+								settingsStore,
+								cluster.id
+							);
+						} }
+						onConfirmUnlink = { () => onConfirmUnlink(cluster.id) }
 						onDragCluster = { (target) => {
 							void openClusterTrayAt(
 								app,
@@ -98,6 +119,13 @@ export default function ClusterSidebar({
 							);
 						} }
 						onMoveMember = { actions.moveMember }
+						onOpenCluster = { () => {
+							void openCluster(
+								app,
+								settingsStore,
+								cluster.id
+							);
+						} }
 						onOpenMember = { actions.openMember }
 						onOpenTray = { () => {
 							void openClusterTray(
@@ -106,9 +134,14 @@ export default function ClusterSidebar({
 								cluster.id
 							);
 						} }
+						onPair = { () => onPair(cluster.id) }
 						onRemoveMember = { actions.removeMember }
 						onResolveMissing = { actions.resolveMissing }
 						onToggle = { () => toggle(cluster.id) }
+						onUnlink = { () => {
+							void unlinkCluster(settingsStore, cluster.id);
+						} }
+						pairedName = { cluster.pairedWith === null ? null : clusters[cluster.pairedWith]?.name ?? null }
 					/>
 				);
 			}) }

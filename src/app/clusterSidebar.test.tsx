@@ -25,6 +25,19 @@ import SettingsStore from '../settings/SettingsStore';
 const opened = vi.hoisted((): unknown[][] => []);
 const openedTrays = vi.hoisted((): unknown[][] => []);
 const openedTraysAt = vi.hoisted((): unknown[][] => []);
+const openedClusters = vi.hoisted((): unknown[][] => []);
+const closedClusters = vi.hoisted((): unknown[][] => []);
+const openMembers = vi.hoisted(() => ({ size: 0 }));
+
+vi.mock('../obsidian/clusterOpenClose', () => ({
+	closeCluster: (...args: unknown[]) => {
+		closedClusters.push(args);
+	},
+	getOpenMembers: () => ({ size: openMembers.size }),
+	openCluster: (...args: unknown[]) => {
+		openedClusters.push(args);
+	},
+}));
 
 vi.mock('../obsidian/trayLeaves', () => ({
 	openClusterTray: (...args: unknown[]) => {
@@ -55,18 +68,22 @@ afterEach(cleanup);
  * @param app - The fake app.
  * @param store - The store.
  * @param onCreateCluster - Called when the create button is clicked.
+ * @param pairing - Called with a Cluster's id to pair it or to unlink it after a confirmation.
  * @returns The render result.
  */
 function renderSidebar(
 	app: App,
 	store: SettingsStore,
-	onCreateCluster: () => void = () => {}
+	onCreateCluster: () => void = () => {},
+	pairing: { onConfirmUnlink?: (id: string) => void; onPair?: (id: string) => void } = {}
 ): ReturnType<typeof render> {
 	return render(
 		<ClusterSidebar
 			app = { app }
 			settingsStore = { store }
+			onConfirmUnlink = { pairing.onConfirmUnlink ?? (() => {}) }
 			onCreateCluster = { onCreateCluster }
+			onPair = { pairing.onPair ?? (() => {}) }
 		/>
 	);
 }
@@ -311,5 +328,102 @@ describe('ClusterSidebar', () => {
 		Reflect.deleteProperty(document, 'elementFromPoint');
 
 		expect(openedTraysAt).toEqual([[app, store, 'one', target]]);
+	});
+
+	it('starts pairing a Cluster from its 🔗 icon', () => {
+		const onPair = vi.fn();
+		renderSidebar(
+			createConfiguredApp(),
+			buildStoreWith(buildCluster({ id: 'one' })),
+			() => {},
+			{ onPair }
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Pair with another cluster' }));
+
+		expect(onPair).toHaveBeenCalledWith('one');
+	});
+
+	it('names the partner on the 🔗 icon of a paired Cluster', () => {
+		renderSidebar(
+			createConfiguredApp(),
+			buildStoreWith(
+				buildCluster({ id: 'one', name: 'One', pairedWith: 'two' }),
+				buildCluster({ id: 'two', name: 'Two', pairedWith: 'one' })
+			)
+		);
+
+		expect([
+			screen.getByRole('button', { name: 'Unlink from Two' }),
+			screen.getByRole('button', { name: 'Unlink from One' }),
+		].length).toBe(2);
+	});
+
+	it('unlinks a paired Cluster at once from its 🔗 icon', async () => {
+		const store = buildStoreWith(
+			buildCluster({ id: 'one', name: 'One', pairedWith: 'two' }),
+			buildCluster({ id: 'two', name: 'Two', pairedWith: 'one' })
+		);
+		renderSidebar(createConfiguredApp(), store);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Unlink from Two' }));
+
+		await waitFor(() => {
+			expect([store.get().clusters['one'].pairedWith, store.get().clusters['two'].pairedWith]).toEqual([null, null]);
+		});
+	});
+
+	it('opens the Cluster from its context menu', () => {
+		openedClusters.length = 0;
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		const store = buildStoreWith(buildCluster({ id: 'one' }));
+		const app = createConfiguredApp();
+		renderSidebar(app, store);
+
+		fireEvent.contextMenu(screen.getByText('Cluster A'));
+		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+
+		expect(openedClusters).toEqual([[app, store, 'one']]);
+	});
+
+	it('offers Close cluster, and closes the Cluster, while a member is open', () => {
+		closedClusters.length = 0;
+		openMembers.size = 1;
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		const store = buildStoreWith(buildCluster({ id: 'one' }));
+		const app = createConfiguredApp();
+		renderSidebar(app, store);
+
+		fireEvent.contextMenu(screen.getByText('Cluster A'));
+		const items = menus[0].menuItems__;
+		items[2].onClick__?.(new MouseEvent('click'));
+		openMembers.size = 0;
+
+		expect([items.map((item) => item.title__), closedClusters]).toEqual([
+			['Open tray', 'Open cluster', 'Close cluster', 'Pair with…'],
+			[[app, store, 'one']],
+		]);
+	});
+
+	it('leaves Close cluster out while no member is open', () => {
+		openMembers.size = 0;
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderSidebar(createConfiguredApp(), buildStoreWith(buildCluster({ id: 'one' })));
+
+		fireEvent.contextMenu(screen.getByText('Cluster A'));
+
+		expect(menus[0].menuItems__.map((item) => item.title__)).toEqual(['Open tray', 'Open cluster', 'Pair with…']);
 	});
 });

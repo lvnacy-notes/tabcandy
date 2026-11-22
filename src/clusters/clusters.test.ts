@@ -24,6 +24,7 @@ import {
 	removeMember,
 	reorderMember,
 	replaceMemberPath,
+	setLayoutSnapshot,
 	touchCluster,
 	unpairCluster
 } from './clusters';
@@ -765,5 +766,31 @@ describe('getMissingMembers', () => {
 		const cluster = buildCluster({ members: ['a.md'] });
 
 		expect(getMissingMembers(cluster, () => true)).toEqual([]);
+	});
+});
+
+describe('setLayoutSnapshot', () => {
+	it('stores the snapshot without touching the Cluster', () => {
+		const clusters = buildClusters(buildCluster({ id: 'one', lastTouchedAt: 5 }));
+
+		const next = setLayoutSnapshot(
+			clusters,
+			'one',
+			{ type: 'tabs' }
+		);
+
+		expect([next['one'].layoutSnapshot, next['one'].lastTouchedAt]).toEqual([{ type: 'tabs' }, 5]);
+	});
+
+	it('returns the same record when the Cluster does not exist', () => {
+		const clusters = buildClusters(buildCluster({ id: 'one' }));
+
+		const next = setLayoutSnapshot(
+			clusters,
+			'gone',
+			{ type: 'tabs' }
+		);
+
+		expect(next).toBe(clusters);
 	});
 });

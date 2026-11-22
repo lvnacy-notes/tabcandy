@@ -13,6 +13,7 @@ import {
 	buildCluster,
 	createConfiguredApp
 } from '../test/fakes';
+import { findButton } from '../test/modalHelpers';
 
 /**
  * Opens a modal over two Clusters whose submissions are recorded.
@@ -34,22 +35,6 @@ function openModal(): {
 	);
 	modal.open();
 	return { modal, onSubmit };
-}
-
-/**
- * Finds a button by its label.
- *
- * @param modal - The open modal.
- * @param label - The button text.
- * @returns The button.
- */
-function findButton(modal: ChooseClusterModal, label: string): HTMLButtonElement {
-	const button = Array.from(modal.contentEl.querySelectorAll('button'))
-		.find((candidate) => candidate.textContent === label);
-	if (button === undefined) {
-		throw new Error(`No "${ label }" button`);
-	}
-	return button;
 }
 
 /**

@@ -1,20 +1,30 @@
 /** @file Tests for the open-cluster-tray command. */
 import {
+	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
 	vi
 } from 'vitest';
 import { buildInvokeCommand } from './openClusterTray';
+import { buildStoreWith, isAvailable } from '../test/clusterHelpers';
 import {
+	buildCluster,
 	buildStore,
-	buildStoreWith,
-	isAvailable
-} from '../test/clusterHelpers';
-import { buildCluster, createConfiguredApp } from '../test/fakes';
+	createConfiguredApp
+} from '../test/fakes';
 import { CLUSTER_TRAY_VIEW_TYPE, type PromptForClusterChoice } from '../types';
 
 describe('open-cluster-tray command', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(
 			createConfiguredApp(),
@@ -58,13 +68,12 @@ describe('open-cluster-tray command', () => {
 		);
 
 		command.checkCallback?.(false);
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(setViewState).toHaveBeenCalledWith({
-				type: CLUSTER_TRAY_VIEW_TYPE,
-				active: true,
-				state: { clusterId: 'cluster-a' },
-			});
+		expect(setViewState).toHaveBeenCalledWith({
+			type: CLUSTER_TRAY_VIEW_TYPE,
+			active: true,
+			state: { clusterId: 'cluster-a' },
 		});
 		expect(prompt.mock.calls[0][2]).toEqual({ action: 'Open', title: 'Open a cluster tray' });
 	});

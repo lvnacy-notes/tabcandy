@@ -1,20 +1,30 @@
 /** @file Tests for the open-recent-cluster-tray command. */
 import {
+	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
 	vi
 } from 'vitest';
 import { buildInvokeCommand } from './openRecentClusterTray';
+import { buildStoreWith, isAvailable } from '../test/clusterHelpers';
 import {
+	buildCluster,
 	buildStore,
-	buildStoreWith,
-	isAvailable
-} from '../test/clusterHelpers';
-import { buildCluster, createConfiguredApp } from '../test/fakes';
+	createConfiguredApp
+} from '../test/fakes';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 describe('open-recent-cluster-tray command', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createConfiguredApp(), buildStore());
 
@@ -42,13 +52,12 @@ describe('open-recent-cluster-tray command', () => {
 
 		expect(isAvailable(command)).toBe(true);
 		command.checkCallback?.(false);
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(setViewState).toHaveBeenCalledWith({
-				type: CLUSTER_TRAY_VIEW_TYPE,
-				active: true,
-				state: { clusterId: 'new' },
-			});
+		expect(setViewState).toHaveBeenCalledWith({
+			type: CLUSTER_TRAY_VIEW_TYPE,
+			active: true,
+			state: { clusterId: 'new' },
 		});
 	});
 });

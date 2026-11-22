@@ -64,6 +64,9 @@ export enum TIME_FORMAT {
 	TWENTY_FOUR_HOUR = '24-hour',
 }
 
+/** A node of a captured layout: a leaf, a tab group or a split. */
+export type LayoutNode = Record<string, unknown>;
+
 export type OverlayContrastCacheEntry = { mtime: number } & OverlayContrastResult;
 
 export type OverlayContrastCache = Record<string, OverlayContrastCacheEntry>;
@@ -78,11 +81,28 @@ export type PromptForClusterChoice = (
 	labels?: ChooseClusterLabels
 ) => void;
 
+/** Asks the user to confirm an action; calls `onConfirm` once, or never if cancelled. */
+export type PromptForConfirmation = (
+	title: string,
+	text: string,
+	confirmLabel: string,
+	onConfirm: () => void
+) => void;
+
+/** Asks the user to pick two different `clusters`; calls `onSubmit` once with the source id and the target id, or never if cancelled. */
+export type PromptForClusterPair = (
+	clusters: TabCandyCluster[],
+	onSubmit: (sourceId: string, targetId: string) => void
+) => void;
+
 /** Asks the user to pick any of `clusters`; calls `onSubmit` once with their ids, or never if cancelled. */
 export type PromptForClusterRemoval = (
 	clusters: TabCandyCluster[],
 	onSubmit: (ids: string[]) => void
 ) => void;
+
+/** How a snapshot is placed: tab groups holding member paths, nested in splits. */
+export type RestorePlan = TabGroupPlan | SplitPlan;
 
 /** Clusters keyed by `id`. */
 export type TabCandyClusters = Record<string, TabCandyCluster>;
@@ -125,6 +145,20 @@ export interface ClusterMemberActions {
 	resolveMissing: (focusPath?: string) => void;
 }
 
+/** What a Cluster's options menu offers. */
+export interface ClusterMenuActions {
+	/** Whether a member is open right now. Read when the menu opens. */
+	hasOpenMember: () => boolean;
+	onCloseCluster: () => void;
+	onConfirmUnlink: () => void;
+	onOpenCluster: () => void;
+	/** Left out of the Tray's menu, which is already a Tray. */
+	onOpenTray?: () => void;
+	onPair: () => void;
+	/** Name of the paired Cluster, or null when unpaired. */
+	pairedName: string | null;
+}
+
 /** What the commands need from the plugin. */
 export interface CommandDependencies {
 	/** The Obsidian app. */
@@ -135,8 +169,12 @@ export interface CommandDependencies {
 	promptForCluster: PromptForCluster;
 	/** Collects the choice of Cluster to add a file to. */
 	promptForClusterChoice: PromptForClusterChoice;
+	/** Collects the choice of two Clusters to pair. */
+	promptForClusterPair: PromptForClusterPair;
 	/** Collects the choice of Clusters to remove a file from. */
 	promptForClusterRemoval: PromptForClusterRemoval;
+	/** Collects a confirmation. */
+	promptForConfirmation: PromptForConfirmation;
 }
 
 /** A user-supplied quote with its author. */
@@ -175,6 +213,13 @@ export interface SearchProvider {
 	command: string;
 	/** Label shown to the user. */
 	display: string;
+}
+
+/** A split of plans. */
+export interface SplitPlan {
+	kind: 'split';
+	direction: 'horizontal' | 'vertical';
+	children: RestorePlan[];
 }
 
 /** A persisted, named bundle of tabs. `members` is the Cluster; open state is derived from live leaves, never stored. */
@@ -266,6 +311,12 @@ export interface TabCandySettings {
 	keepPairedClustersInSync: boolean;
 	/** When true, opening an already-open Tray or Cluster jumps to it instead of opening a duplicate. */
 	jumpToExistingCluster: boolean;
+}
+
+/** A tab group: member paths, in tab order. */
+export interface TabGroupPlan {
+	kind: 'tabs';
+	paths: string[];
 }
 
 /** A tab as seen by duplicate detection. */

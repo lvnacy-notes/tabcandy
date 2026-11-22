@@ -16,13 +16,28 @@ import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock('../app/ClusterTray', () => ({
-	default: ({ clusterId, onOpenMember }: { clusterId: string | null; onOpenMember?: (path: string) => void }) => (
-		<button
-			data-testid = 'tray-marker'
-			onClick = { () => onOpenMember?.('a.md') }
-		>
-			{ clusterId ?? 'none' }
-		</button>
+	default: ({ clusterId, onConfirmUnlink, onOpenMember, onPair }: {
+		clusterId: string | null;
+		onConfirmUnlink: (id: string) => void;
+		onOpenMember?: (path: string) => void;
+		onPair: (id: string) => void;
+	}) => (
+		<>
+			<button
+				data-testid = 'tray-marker'
+				onClick = { () => onOpenMember?.('a.md') }
+			>
+				{ clusterId ?? 'none' }
+			</button>
+			<button
+				data-testid = 'pair-marker'
+				onClick = { () => onPair('paired') }
+			/>
+			<button
+				data-testid = 'unlink-marker'
+				onClick = { () => onConfirmUnlink('unlinked') }
+			/>
+		</>
 	),
 }));
 
@@ -39,12 +54,15 @@ const { ClusterTrayView } = await import('./ClusterTrayView');
 function buildView(
 	app: App,
 	store: SettingsStore,
-	trayReturn: TrayReturnTracker = { openMember: vi.fn() } as unknown as TrayReturnTracker
+	trayReturn: TrayReturnTracker = { openMember: vi.fn() } as unknown as TrayReturnTracker,
+	pairing: { onConfirmUnlink?: (id: string) => void; onPair?: (id: string) => void } = {}
 ) {
 	const leaf: WorkspaceLeaf = app.workspace.getLeaf(true);
 	return new ClusterTrayView(
 		store,
 		trayReturn,
+		pairing.onPair ?? (() => {}),
+		pairing.onConfirmUnlink ?? (() => {}),
 		leaf
 	);
 }
@@ -88,6 +106,27 @@ describe('ClusterTrayView', () => {
 		await act(async () => {
 			await view.onOpen();
 			await view.setState({ clusterId: 'one' }, { history: false });
+		});
+
+		expect(view.contentEl.querySelector('[data-testid="tray-marker"]')?.textContent).toBe('one');
+	});
+
+	it('renders nothing until its state is applied', async () => {
+		const view = buildView(createConfiguredApp(), buildStoreWith(buildCluster({ id: 'one' })));
+
+		await act(async () => {
+			await view.onOpen();
+		});
+
+		expect(view.contentEl.querySelector('[data-testid="tray-marker"]')).toBeNull();
+	});
+
+	it('renders the Tray when its state is applied before it opens', async () => {
+		const view = buildView(createConfiguredApp(), buildStoreWith(buildCluster({ id: 'one' })));
+
+		await act(async () => {
+			await view.setState({ clusterId: 'one' }, { history: false });
+			await view.onOpen();
 		});
 
 		expect(view.contentEl.querySelector('[data-testid="tray-marker"]')?.textContent).toBe('one');
@@ -138,5 +177,27 @@ describe('ClusterTrayView', () => {
 			'one',
 			'a.md'
 		);
+	});
+
+	it('hands the Tray its pairing callbacks', async () => {
+		const onPair = vi.fn();
+		const onConfirmUnlink = vi.fn();
+		const view = buildView(
+			createConfiguredApp(),
+			buildStoreWith(buildCluster({ id: 'one' })),
+			undefined,
+			{ onConfirmUnlink, onPair }
+		);
+		await act(async () => {
+			await view.onOpen();
+			await view.setState({ clusterId: 'one' }, { history: false });
+		});
+
+		act(() => {
+			(view.contentEl.querySelector('[data-testid="pair-marker"]') as HTMLElement).click();
+			(view.contentEl.querySelector('[data-testid="unlink-marker"]') as HTMLElement).click();
+		});
+
+		expect([onPair.mock.calls, onConfirmUnlink.mock.calls]).toEqual([[['paired']], [['unlinked']]]);
 	});
 });

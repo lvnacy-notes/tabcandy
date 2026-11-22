@@ -5,11 +5,8 @@ import {
 	it
 } from 'vitest';
 import { buildInvokeCommand } from './createCluster';
-import {
-	buildStore,
-	cancelling,
-	submitting
-} from '../test/clusterHelpers';
+import { cancelling, submitting } from '../test/clusterHelpers';
+import { buildStore } from '../test/fakes';
 
 describe('create-cluster command', () => {
 	it('has its id and name', () => {

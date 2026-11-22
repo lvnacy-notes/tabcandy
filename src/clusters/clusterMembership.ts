@@ -16,7 +16,9 @@ import {
 import SettingsStore from '../settings/SettingsStore';
 import type {
 	PromptForClusterChoice,
-	PromptForClusterRemoval
+	PromptForClusterRemoval,
+	TabCandyCluster,
+	TabCandyClusters
 } from '../types';
 
 /**
@@ -100,6 +102,36 @@ export function describeRemoval(count: number): string {
 export function getActiveTabPath(app: App): string | null {
 	const leaf = app.workspace.getMostRecentLeaf();
 	return leaf === null ? null : getTabPath(leaf);
+}
+
+/**
+ * Removes the member at `index` from the Cluster paired with `source`. Goes one hop and no further.
+ *
+ * @param clusters - The Clusters after the original removal.
+ * @param source - The Cluster the removal was made on, as it was before.
+ * @param index - Position the removed member held in `source`.
+ * @param skipIds - Ids of Clusters the user acted on directly. Never mirrored onto.
+ * @returns The next record, or `clusters` itself when `source` has no pair, the pair was acted on directly, or it has no member at `index`.
+ */
+function mirrorRemoval(
+	clusters: TabCandyClusters,
+	source: TabCandyCluster,
+	index: number,
+	skipIds: string[]
+): TabCandyClusters {
+	const partner = source.pairedWith === null ? undefined : clusters[source.pairedWith];
+	if (partner === undefined || skipIds.includes(partner.id)) {
+		return clusters;
+	}
+
+	const path = partner.members[index];
+	return path === undefined
+		? clusters
+		: removeMember(
+			clusters,
+			partner.id,
+			path
+		);
 }
 
 /**
@@ -231,7 +263,7 @@ export async function removePathFromClusters(
 	clusterIds: string[],
 	path: string
 ): Promise<number> {
-	const { clusters } = settingsStore.get();
+	const { clusters, keepPairedClustersInSync } = settingsStore.get();
 	let next = clusters;
 	let count = 0;
 	for (const id of clusterIds) {
@@ -243,6 +275,14 @@ export async function removePathFromClusters(
 		if (after !== next) {
 			next = after;
 			count += 1;
+			if (keepPairedClustersInSync) {
+				next = mirrorRemoval(
+					next,
+					clusters[id],
+					clusters[id].members.indexOf(path),
+					clusterIds
+				);
+			}
 		}
 	}
 	if (count > 0) {
@@ -267,8 +307,8 @@ export async function reorderClusterMember(
 	fromIndex: number,
 	toIndex: number
 ): Promise<boolean> {
-	const { clusters } = settingsStore.get();
-	const next = reorderMember(
+	const { clusters, keepPairedClustersInSync } = settingsStore.get();
+	let next = reorderMember(
 		clusters,
 		clusterId,
 		fromIndex,
@@ -278,34 +318,56 @@ export async function reorderClusterMember(
 		return false;
 	}
 
+	const partnerId = clusters[clusterId].pairedWith;
+	if (keepPairedClustersInSync && partnerId !== null) {
+		next = reorderMember(
+			next,
+			partnerId,
+			fromIndex,
+			toIndex
+		);
+	}
+
 	await settingsStore.update({ clusters: next });
 	return true;
 }
 
 /**
- * Replaces a missing path with another file in every Cluster and saves.
- * Saves nothing when no Cluster holds the stale path.
+ * Replaces a missing path with another file in one Cluster, in `members` and
+ * in its `layoutSnapshot`, and saves. Other Clusters holding the same path are
+ * left as they are. Saves nothing when the Cluster doesn't exist or doesn't
+ * hold the stale path.
  *
  * @param settingsStore - Store holding the Clusters.
+ * @param clusterId - Id of the Cluster.
  * @param stalePath - The missing member path.
  * @param newPath - Vault-relative path of the file to use instead.
  * @returns Whether anything was replaced.
  */
 export async function resolveMissingMember(
 	settingsStore: SettingsStore,
+	clusterId: string,
 	stalePath: string,
 	newPath: string
 ): Promise<boolean> {
 	const { clusters } = settingsStore.get();
-	const next = replaceMemberPath(
-		clusters,
-		stalePath,
-		newPath
-	);
-	if (next === clusters) {
+	const cluster = clusters[clusterId];
+	if (cluster === undefined) {
 		return false;
 	}
 
-	await settingsStore.update({ clusters: next });
+	const alone = { [clusterId]: cluster };
+	const replaced = replaceMemberPath(
+		alone,
+		stalePath,
+		newPath
+	);
+	if (replaced === alone) {
+		return false;
+	}
+
+	await settingsStore.update({
+		clusters: { ...clusters, [clusterId]: replaced[clusterId] },
+	});
 	return true;
 }

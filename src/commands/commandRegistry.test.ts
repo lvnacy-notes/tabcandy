@@ -7,11 +7,13 @@ import {
 import { buildCommands } from './commandRegistry';
 import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import {
-	buildStore,
 	cancelling,
 	choosingNothing,
+	confirmingNothing,
+	pairingNothing,
 	selectingNothing
 } from '../test/clusterHelpers';
+import { buildStore } from '../test/fakes';
 
 describe('buildCommands', () => {
 	/**
@@ -25,7 +27,9 @@ describe('buildCommands', () => {
 			settingsStore: buildStore(),
 			promptForCluster: cancelling().prompt,
 			promptForClusterChoice: choosingNothing().prompt,
+			promptForClusterPair: pairingNothing().prompt,
 			promptForClusterRemoval: selectingNothing().prompt,
+			promptForConfirmation: confirmingNothing().prompt,
 		});
 	}
 
@@ -35,6 +39,7 @@ describe('buildCommands', () => {
 		expect(ids).toEqual([
 			'add-to-cluster',
 			'add-to-most-recent-cluster',
+			'close-cluster',
 			'close-duplicate-tabs',
 			'close-other-tabs',
 			'close-tabs-in-folder',
@@ -42,14 +47,18 @@ describe('buildCommands', () => {
 			'create-cluster-from-active-pane',
 			'create-cluster-from-active-tab',
 			'next-tab-across-groups',
+			'open-cluster',
 			'open-cluster-sidebar',
 			'open-cluster-tray',
 			'open-recent-cluster-tray',
 			'open-tab-candy',
+			'pair-cluster-with',
+			'pair-clusters',
 			'previous-tab-across-groups',
 			'remove-from-cluster',
 			'reopen-closed-tab',
 			'search-open-tabs',
+			'unlink-clusters',
 		]);
 	});
 

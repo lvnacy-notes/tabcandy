@@ -2,6 +2,7 @@
 import { App, TAbstractFile } from 'obsidian';
 import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import { DEFAULT_SETTINGS } from '../settings/defaultSettings';
+import SettingsStore from '../settings/SettingsStore';
 import {
 	TabCandyCluster,
 	TabCandyClusters,
@@ -30,6 +31,16 @@ export function buildSettings(
 	overrides: Partial<TabCandySettings> = {}
 ): TabCandySettings {
 	return { ...DEFAULT_SETTINGS, ...overrides };
+}
+
+/**
+ * Builds a settings store over `buildSettings(overrides)` that discards its saves.
+ *
+ * @param overrides - Settings to replace.
+ * @returns The store.
+ */
+export function buildStore(overrides: Partial<TabCandySettings> = {}): SettingsStore {
+	return new SettingsStore(buildSettings(overrides), async () => {});
 }
 
 /**

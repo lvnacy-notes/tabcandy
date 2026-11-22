@@ -5,18 +5,20 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent
 } from 'obsidian';
+import { getTabPath } from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 interface PendingReturn {
 	clusterId: string;
+	file: TFile;
 	leaf: WorkspaceLeaf;
 	parent: WorkspaceParent;
 	siblings: WorkspaceLeaf[];
 }
 
 /**
- * Remembers each Tray that was replaced by one of its members. When that member's leaf is destroyed, opens a new Tray leaf in the slot. Never intercepts the close and never resurrects the old leaf.
+ * Remembers each Tray that was replaced by one of its members. When that member's leaf is destroyed, opens a new Tray leaf in the slot. Forgets a Tray once its leaf stops showing the member. Never intercepts the close and never resurrects the old leaf.
  */
 export default class TrayReturnTracker {
 	private readonly app: App;
@@ -30,61 +32,6 @@ export default class TrayReturnTracker {
 	constructor(app: App, settingsStore: SettingsStore) {
 		this.app = app;
 		this.settingsStore = settingsStore;
-	}
-
-	/**
-	 * Opens a member in the Tray's own leaf and remembers the slot so the Tray can return to it. Does nothing when the file is missing.
-	 *
-	 * @param leaf - The leaf showing the Tray.
-	 * @param clusterId - Id of the Tray's Cluster.
-	 * @param path - Vault-relative path of the member.
-	 */
-	async openMember(
-		leaf: WorkspaceLeaf,
-		clusterId: string,
-		path: string
-	): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(path);
-		if (!(file instanceof TFile)) {
-			return;
-		}
-
-		this.pending.push({
-			clusterId,
-			leaf,
-			parent: leaf.parent,
-			siblings: this.getLeavesIn(leaf.parent),
-		});
-		await leaf.openFile(file);
-	}
-
-	/** Opens a Tray in the slot of each remembered leaf that no longer exists. Call on `layout-change`. */
-	async handleLayoutChange(): Promise<void> {
-		if (!this.app.workspace.layoutReady) {
-			return;
-		}
-
-		const alive = new Set<WorkspaceLeaf>();
-		this.app.workspace.iterateAllLeaves((leaf) => {
-			alive.add(leaf);
-		});
-
-		const gone = this.pending.filter((entry) => !alive.has(entry.leaf));
-		if (gone.length === 0) {
-			return;
-		}
-		this.pending = this.pending.filter((entry) => alive.has(entry.leaf));
-
-		for (const entry of gone) {
-			if (this.settingsStore.get().clusters[entry.clusterId] === undefined) {
-				continue;
-			}
-			await this.getSlotLeaf(entry).setViewState({
-				type: CLUSTER_TRAY_VIEW_TYPE,
-				active: true,
-				state: { clusterId: entry.clusterId },
-			});
-		}
 	}
 
 	/**
@@ -126,5 +73,75 @@ export default class TrayReturnTracker {
 			this.app.workspace.setActiveLeaf(anchor, { focus: false });
 		}
 		return this.app.workspace.getLeaf('tab');
+	}
+
+	/** Forgets each remembered leaf that no longer shows its member, then opens a Tray in the slot of each one that no longer exists. Call on `layout-change`. */
+	async handleLayoutChange(): Promise<void> {
+		if (!this.app.workspace.layoutReady) {
+			return;
+		}
+
+		const alive = new Set<WorkspaceLeaf>();
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			alive.add(leaf);
+		});
+
+		const gone = this.pending.filter((entry) => !alive.has(entry.leaf));
+		this.pending = this.pending.filter((entry) => alive.has(entry.leaf) && this.isShowingMember(entry));
+		if (gone.length === 0) {
+			return;
+		}
+
+		for (const entry of gone) {
+			if (this.settingsStore.get().clusters[entry.clusterId] === undefined) {
+				continue;
+			}
+			await this.getSlotLeaf(entry).setViewState({
+				type: CLUSTER_TRAY_VIEW_TYPE,
+				active: true,
+				state: { clusterId: entry.clusterId },
+			});
+		}
+	}
+
+	/**
+	 * Tests whether a remembered leaf still shows the member opened from the Tray.
+	 *
+	 * @param entry - The remembered leaf.
+	 * @returns True when the leaf's file is the member.
+	 */
+	private isShowingMember(entry: PendingReturn): boolean {
+		return getTabPath(entry.leaf) === entry.file.path;
+	}
+
+	/**
+	 * Opens a member in the Tray's own leaf and remembers the slot so the Tray can return to it. Does nothing when the file is missing.
+	 *
+	 * @param leaf - The leaf showing the Tray.
+	 * @param clusterId - Id of the Tray's Cluster.
+	 * @param path - Vault-relative path of the member.
+	 */
+	async openMember(
+		leaf: WorkspaceLeaf,
+		clusterId: string,
+		path: string
+	): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(path);
+		if (!(file instanceof TFile)) {
+			return;
+		}
+
+		const { parent } = leaf;
+		const siblings = this.getLeavesIn(parent);
+		await leaf.openFile(file);
+
+		this.pending = this.pending.filter((entry) => entry.leaf !== leaf);
+		this.pending.push({
+			clusterId,
+			file,
+			leaf,
+			parent,
+			siblings,
+		});
 	}
 }

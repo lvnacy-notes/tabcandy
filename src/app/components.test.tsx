@@ -68,16 +68,23 @@ function renderRow(
 			cluster = { cluster }
 			expanded = { false }
 			getDraggedPath = { () => null }
+			hasOpenMember = { () => false }
 			isFilePresent = { () => true }
+			onCloseCluster = { () => {} }
+			onConfirmUnlink = { () => {} }
 			onDragCluster = { () => {} }
 			onDragMember = { () => {} }
 			onDropPath = { () => {} }
 			onMoveMember = { () => {} }
+			onOpenCluster = { () => {} }
 			onOpenMember = { () => {} }
 			onOpenTray = { () => {} }
+			onPair = { () => {} }
 			onRemoveMember = { () => {} }
 			onResolveMissing = { () => {} }
 			onToggle = { () => {} }
+			onUnlink = { () => {} }
+			pairedName = { null }
 			{ ...overrides }
 		/>
 	);
@@ -123,10 +130,10 @@ describe('ClusterRow', () => {
 			}
 		);
 
-		const unresolved = Array.from(container.querySelectorAll('.is-unresolved'))
-			.map((row) => row.textContent);
+		const unresolved = Array.from(container.querySelectorAll('.is-unresolved .tabcandy-member-title'))
+			.map((title) => title.textContent);
 
-		expect(unresolved).toEqual(['gone−']);
+		expect(unresolved).toEqual(['gone']);
 	});
 
 	it('reports the expanded state to assistive technology', () => {
@@ -342,7 +349,140 @@ describe('ClusterRow', () => {
 		const items = menus[0].menuItems__;
 		items[0].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onOpenTray.mock.calls.length]).toEqual([['Open tray'], 1]);
+		expect([items.map((item) => item.title__), onOpenTray.mock.calls.length]).toEqual([['Open tray', 'Open cluster', 'Pair with…'], 1]);
+	});
+
+	it('offers Open tray from the Cluster options button without toggling the row', () => {
+		const onOpenTray = vi.fn();
+		const onToggle = vi.fn();
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderRow(buildCluster(), { onOpenTray, onToggle });
+
+		fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+		const items = menus[0].menuItems__;
+		items[0].onClick__?.(new MouseEvent('click'));
+
+		expect([items.map((item) => item.title__), onOpenTray.mock.calls.length, onToggle.mock.calls.length]).toEqual([
+			['Open tray', 'Open cluster', 'Pair with…'],
+			1,
+			0,
+		]);
+	});
+
+	it('pairs from the 🔗 icon when unpaired, without toggling the row', () => {
+		const onPair = vi.fn();
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), { onPair, onToggle });
+
+		fireEvent.click(screen.getByRole('button', { name: 'Pair with another cluster' }));
+
+		expect([onPair.mock.calls.length, onToggle.mock.calls.length]).toEqual([1, 0]);
+	});
+
+	it('unlinks from the 🔗 icon when paired, naming the partner', () => {
+		const onUnlink = vi.fn();
+		const onToggle = vi.fn();
+		renderRow(buildCluster(), {
+			onUnlink,
+			onToggle,
+			pairedName: 'Other',
+		});
+
+		const button = screen.getByRole('button', { name: 'Unlink from Other' });
+		fireEvent.click(button);
+
+		expect([
+			button.classList.contains('is-paired'),
+			onUnlink.mock.calls.length,
+			onToggle.mock.calls.length,
+		]).toEqual([true, 1, 0]);
+	});
+
+	it('does not mark the 🔗 icon as paired when unpaired', () => {
+		renderRow(buildCluster());
+
+		const button = screen.getByRole('button', { name: 'Pair with another cluster' });
+
+		expect(button.classList.contains('is-paired')).toBe(false);
+	});
+
+	it('offers Unlink, not Pair with…, from the options button when paired', () => {
+		const onConfirmUnlink = vi.fn();
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderRow(buildCluster(), { onConfirmUnlink, pairedName: 'Other' });
+
+		fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+		const items = menus[0].menuItems__;
+		items[2].onClick__?.(new MouseEvent('click'));
+
+		expect([items.map((item) => item.title__), onConfirmUnlink.mock.calls.length]).toEqual([['Open tray', 'Open cluster', 'Unlink'], 1]);
+	});
+
+	it('opens the Cluster from the row menu', () => {
+		const onOpenCluster = vi.fn();
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderRow(buildCluster(), { onOpenCluster });
+
+		fireEvent.contextMenu(screen.getByRole('button', { name: /Cluster A/ }));
+		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+
+		expect(onOpenCluster).toHaveBeenCalledTimes(1);
+	});
+
+	it('offers Close cluster only while a member is open', () => {
+		const onCloseCluster = vi.fn();
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderRow(buildCluster(), { hasOpenMember: () => true, onCloseCluster });
+
+		fireEvent.contextMenu(screen.getByRole('button', { name: /Cluster A/ }));
+		const items = menus[0].menuItems__;
+		items[2].onClick__?.(new MouseEvent('click'));
+
+		expect([items.map((item) => item.title__), onCloseCluster.mock.calls.length]).toEqual([
+			['Open tray', 'Open cluster', 'Close cluster', 'Pair with…'],
+			1,
+		]);
+	});
+
+	it('offers Move down from the first member\'s options button', () => {
+		const onMoveMember = vi.fn();
+		const menus: MenuMock[] = [];
+		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+			menus.push(this as unknown as MenuMock);
+			return this;
+		});
+		renderRow(buildCluster({ members: ['a.md', 'b.md'] }), { expanded: true, onMoveMember });
+
+		fireEvent.click(screen.getAllByRole('button', { name: 'Member options' })[0]);
+		const items = menus[0].menuItems__;
+		items[0].onClick__?.(new MouseEvent('click'));
+
+		expect([items.map((item) => item.title__), onMoveMember.mock.calls]).toEqual([
+			['Move down'],
+			[[0, 1]],
+		]);
+	});
+
+	it('leaves out the member options button when the menu would be empty', () => {
+		renderRow(buildCluster({ members: ['a.md'] }), { expanded: true });
+
+		expect(screen.queryByRole('button', { name: 'Member options' })).toBeNull();
 	});
 });
 

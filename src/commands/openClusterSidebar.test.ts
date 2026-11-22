@@ -1,6 +1,8 @@
 /** @file Tests for the open-cluster-sidebar command. */
 import { WorkspaceLeaf } from 'obsidian';
 import {
+	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
@@ -24,6 +26,14 @@ function buildLeaf(): { leaf: WorkspaceLeaf; setViewState: ReturnType<typeof vi.
 }
 
 describe('open-cluster-sidebar command', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createFakeWorkspaceApp());
 
@@ -38,10 +48,9 @@ describe('open-cluster-sidebar command', () => {
 		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(reveal).toHaveBeenCalledWith(leaf);
-		});
+		expect(reveal).toHaveBeenCalledWith(leaf);
 		expect(setViewState).toHaveBeenCalledWith({
 			type: CLUSTER_SIDEBAR_VIEW_TYPE,
 			active: true,
@@ -56,10 +65,9 @@ describe('open-cluster-sidebar command', () => {
 		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(reveal).toHaveBeenCalledWith(leaf);
-		});
+		expect(reveal).toHaveBeenCalledWith(leaf);
 		expect(getRightLeaf).not.toHaveBeenCalled();
 	});
 
@@ -70,7 +78,7 @@ describe('open-cluster-sidebar command', () => {
 		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
-		await Promise.resolve();
+		await vi.runAllTimersAsync();
 
 		expect(reveal).not.toHaveBeenCalled();
 	});

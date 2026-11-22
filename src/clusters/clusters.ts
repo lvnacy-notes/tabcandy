@@ -220,6 +220,29 @@ export function reorderMember(
 }
 
 /**
+ * Stores a Cluster's layout snapshot. Doesn't change `lastTouchedAt`.
+ *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param layoutSnapshot - The snapshot.
+ * @returns The next record, or `clusters` itself when `id` doesn't exist.
+ */
+export function setLayoutSnapshot(
+	clusters: TabCandyClusters,
+	id: string,
+	layoutSnapshot: Record<string, unknown>
+): TabCandyClusters {
+	if (!hasCluster(clusters, id)) {
+		return clusters;
+	}
+
+	return {
+		...clusters,
+		[id]: { ...clusters[id], layoutSnapshot },
+	};
+}
+
+/**
  * Sets a Cluster's `lastTouchedAt`.
  *
  * @param clusters - The current Clusters.

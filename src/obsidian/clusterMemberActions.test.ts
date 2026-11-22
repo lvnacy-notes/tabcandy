@@ -1,5 +1,7 @@
 /** @file Tests for the actions a Cluster's member list offers. */
 import {
+	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
@@ -23,6 +25,14 @@ vi.mock('../ui/ResolveMissingModal', () => ({
 }));
 
 describe('buildMemberActions', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('moves a member within its own Cluster', async () => {
 		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md', 'c.md'] }));
 		const actions = buildMemberActions(
@@ -32,10 +42,9 @@ describe('buildMemberActions', () => {
 		);
 
 		actions.moveMember(0, 2);
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(store.get().clusters['one'].members).toEqual(['b.md', 'c.md', 'a.md']);
-		});
+		expect(store.get().clusters['one'].members).toEqual(['b.md', 'c.md', 'a.md']);
 	});
 
 	it('removes a member from its own Cluster only', async () => {
@@ -50,10 +59,9 @@ describe('buildMemberActions', () => {
 		);
 
 		actions.removeMember('a.md');
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(store.get().clusters['one'].members).toEqual(['b.md']);
-		});
+		expect(store.get().clusters['one'].members).toEqual(['b.md']);
 		expect(store.get().clusters['two'].members).toEqual(['a.md']);
 	});
 
@@ -68,10 +76,9 @@ describe('buildMemberActions', () => {
 		);
 
 		actions.openMember('a.md');
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(openFile).toHaveBeenCalledTimes(1);
-		});
+		expect(openFile).toHaveBeenCalledTimes(1);
 	});
 
 	it('starts a member drag through the drag manager', () => {

@@ -17,6 +17,7 @@ import {
 } from 'react';
 import {
 	ClosedTabEntry,
+	ClusterMenuActions,
 	Quote,
 	TabCandyCluster
 } from '../types';
@@ -43,16 +44,23 @@ interface ClusterRowProps {
 	cluster: TabCandyCluster;
 	expanded: boolean;
 	getDraggedPath: () => string | null;
+	hasOpenMember: () => boolean;
 	isFilePresent: (path: string) => boolean;
+	onCloseCluster: () => void;
+	onConfirmUnlink: () => void;
 	onDragCluster: (target: Element | null) => void;
 	onDragMember: (path: string, event: DragEvent) => void;
 	onDropPath: (path: string) => void;
 	onMoveMember: (fromIndex: number, toIndex: number) => void;
+	onOpenCluster: () => void;
 	onOpenMember: (path: string) => void;
 	onOpenTray: () => void;
+	onPair: () => void;
 	onRemoveMember: (path: string) => void;
 	onResolveMissing: (focusPath?: string) => void;
 	onToggle: () => void;
+	onUnlink: () => void;
+	pairedName: string | null;
 }
 
 interface MemberListProps {
@@ -174,38 +182,61 @@ export function Bookmarks({ files, onOpen }: BookmarksProps) {
 }
 
 /**
- * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
+ * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. Its options button and its context menu offer Open tray, Open cluster, Close cluster while a member is open, and Pair with… or Unlink. Its 🔗 icon pairs when unpaired and unlinks at once when paired. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
  *
  * @param props.cluster - The Cluster.
  * @param props.expanded - Whether the member list is shown.
  * @param props.getDraggedPath - Reads the path of the file or tab being dragged, or null when there is none.
+ * @param props.hasOpenMember - Whether a member is open right now. Read when the menu opens.
  * @param props.isFilePresent - Whether a member's file exists.
+ * @param props.onCloseCluster - Called when Close cluster is chosen from the row's menu.
+ * @param props.onConfirmUnlink - Called when Unlink is chosen from the row's menu.
  * @param props.onDragCluster - Called with the element under the pointer when a drag of the Cluster's row ends.
  * @param props.onDragMember - Called with a member's path and the drag start event when a member row starts to drag.
  * @param props.onDropPath - Called with the path of a file or tab dropped on the Cluster's row.
  * @param props.onMoveMember - Called with a member's current and new positions when it is reordered.
+ * @param props.onOpenCluster - Called when Open cluster is chosen from the row's menu.
  * @param props.onOpenMember - Called with the path of a clicked member.
  * @param props.onOpenTray - Called when Open tray is chosen from the row's context menu.
+ * @param props.onPair - Called when the 🔗 icon is clicked while unpaired, and when Pair with… is chosen from the row's menu.
  * @param props.onRemoveMember - Called with the path of a member whose minus button is clicked.
  * @param props.onResolveMissing - Called to resolve missing members, with the path of a single missing member to focus or none for all.
  * @param props.onToggle - Called when the row is activated.
+ * @param props.onUnlink - Called when the 🔗 icon is clicked while paired.
+ * @param props.pairedName - Name of the paired Cluster, or null when unpaired.
  */
 export function ClusterRow({
 	cluster,
 	expanded,
 	getDraggedPath,
+	hasOpenMember,
 	isFilePresent,
+	onCloseCluster,
+	onConfirmUnlink,
 	onDragCluster,
 	onDragMember,
 	onDropPath,
 	onMoveMember,
+	onOpenCluster,
 	onOpenMember,
 	onOpenTray,
+	onPair,
 	onRemoveMember,
 	onResolveMissing,
 	onToggle,
+	onUnlink,
+	pairedName,
 }: ClusterRowProps) {
 	const [dragOver, setDragOver] = useState(false);
+	const menuActions: ClusterMenuActions = {
+		hasOpenMember,
+		onCloseCluster,
+		onConfirmUnlink,
+		onOpenCluster,
+		onOpenTray,
+		onPair,
+		pairedName,
+	};
 
 	const headerClasses = ['workspace-tab-header', 'tabcandy-cluster-header'];
 	if (cluster.flavor !== undefined) {
@@ -227,7 +258,7 @@ export function ClusterRow({
 				draggable
 				onContextMenu = { (event: ReactMouseEvent<HTMLDivElement>) => {
 					event.preventDefault();
-					openClusterMenu(event.nativeEvent, onOpenTray);
+					openClusterMenu(event.nativeEvent, menuActions);
 				} }
 				onDragEnd = { (event: ReactDragEvent<HTMLDivElement>) => {
 					onDragCluster(event.currentTarget.ownerDocument.elementFromPoint(event.clientX, event.clientY));
@@ -262,6 +293,36 @@ export function ClusterRow({
 				<div className = 'workspace-tab-header-inner' >
 					<div className = 'workspace-tab-header-inner-title' >{ cluster.name }</div>
 					<span className = 'tabcandy-cluster-count' >{ cluster.members.length }</span>
+					<button
+						className = { pairedName === null ? 'tabcandy-pair-button' : 'tabcandy-pair-button is-paired' }
+						aria-label = { pairedName === null ? 'Pair with another cluster' : `Unlink from ${ pairedName }` }
+						onClick = { (event: ReactMouseEvent<HTMLButtonElement>) => {
+							event.stopPropagation();
+							if (pairedName === null) {
+								onPair();
+							} else {
+								onUnlink();
+							}
+						} }
+						onKeyDown = { (event: KeyboardEvent<HTMLButtonElement>) => {
+							event.stopPropagation();
+						} }
+					>
+						<Icon name = 'link' />
+					</button>
+					<button
+						className = 'tabcandy-menu-button'
+						aria-label = 'Cluster options'
+						onClick = { (event: ReactMouseEvent<HTMLButtonElement>) => {
+							event.stopPropagation();
+							openClusterMenu(event.nativeEvent, menuActions);
+						} }
+						onKeyDown = { (event: KeyboardEvent<HTMLButtonElement>) => {
+							event.stopPropagation();
+						} }
+					>
+						⋯
+					</button>
 				</div>
 			</div>
 			{ expanded && (
@@ -367,7 +428,7 @@ export function MemberList({
 }
 
 /**
- * One member of a Cluster, styled as a tab header. A missing member is marked unresolved. Clicking the title calls `onOpen`; clicking the minus button calls `onRemove`. The row can be dragged onto another member of the same Cluster to reorder, or onto a pane to open it, and its context menu offers Move up and Move down, plus Resolve missing member when the file is missing.
+ * One member of a Cluster, styled as a tab header. A missing member is marked unresolved. Clicking the title calls `onOpen`; clicking the minus button calls `onRemove`. The row can be dragged onto another member of the same Cluster to reorder, or onto a pane to open it. Its options button and its context menu offer Move up and Move down, plus Resolve missing member when the file is missing. The options button is left out when the menu would be empty.
  *
  * @param props.clusterId - Id of the Cluster the row belongs to.
  * @param props.count - Number of members in the Cluster.
@@ -393,6 +454,7 @@ export function MemberRow({
 	onResolve,
 }: MemberRowProps) {
 	const [dragOver, setDragOver] = useState(false);
+	const hasMenu = count > 1 || !exists;
 
 	const classes = ['workspace-tab-header', 'tabcandy-member-row'];
 	if (!exists) {
@@ -448,6 +510,24 @@ export function MemberRow({
 				>
 					{ getMemberLabel(path) }
 				</button>
+				{ hasMenu && (
+					<button
+						className = 'tabcandy-menu-button'
+						aria-label = 'Member options'
+						onClick = { (event: ReactMouseEvent<HTMLButtonElement>) => {
+							openMemberMenu(
+								event.nativeEvent,
+								index,
+								count,
+								exists,
+								onMove,
+								onResolve
+							);
+						} }
+					>
+						⋯
+					</button>
+				) }
 				<button
 					className = 'tabcandy-member-remove'
 					aria-label = 'Remove from cluster'
@@ -594,15 +674,33 @@ function getMemberLabel(path: string): string {
 }
 
 /**
- * Opens a Cluster row's context menu, which offers Open tray.
+ * Opens a Cluster's options menu: Open tray (the row only), Open cluster, Close cluster while a member is open, and Pair with… or Unlink.
  *
- * @param event - The context menu event.
- * @param onOpenTray - Called when Open tray is chosen.
+ * @param event - The event that opened the menu.
+ * @param actions - What the menu offers.
  */
-function openClusterMenu(event: MouseEvent, onOpenTray: () => void): void {
+export function openClusterMenu(event: MouseEvent, actions: ClusterMenuActions): void {
 	const menu = new Menu();
+	if (actions.onOpenTray !== undefined) {
+		const { onOpenTray } = actions;
+		menu.addItem((item) => {
+			item.setTitle('Open tray').setIcon('layers').onClick(onOpenTray);
+		});
+	}
 	menu.addItem((item) => {
-		item.setTitle('Open tray').setIcon('layers').onClick(onOpenTray);
+		item.setTitle('Open cluster').setIcon('folder-open').onClick(actions.onOpenCluster);
+	});
+	if (actions.hasOpenMember()) {
+		menu.addItem((item) => {
+			item.setTitle('Close cluster').setIcon('folder-closed').onClick(actions.onCloseCluster);
+		});
+	}
+	menu.addItem((item) => {
+		if (actions.pairedName === null) {
+			item.setTitle('Pair with…').setIcon('link').onClick(actions.onPair);
+		} else {
+			item.setTitle('Unlink').setIcon('unlink').onClick(actions.onConfirmUnlink);
+		}
 	});
 	menu.showAtMouseEvent(event);
 }

@@ -2,6 +2,7 @@
 import { Command } from 'obsidian';
 import { buildInvokeCommand as buildAddToClusterCommand } from './addToCluster';
 import { buildInvokeCommand as buildAddToMostRecentClusterCommand } from './addToMostRecentCluster';
+import { buildInvokeCommand as buildCloseClusterCommand } from './closeCluster';
 import { buildInvokeCommand as buildCloseDuplicateTabsCommand } from './closeDuplicateTabs';
 import { buildInvokeCommand as buildCloseOtherTabsCommand } from './closeOtherTabs';
 import { buildInvokeCommand as buildCloseTabsInFolderCommand } from './closeTabsInFolder';
@@ -9,14 +10,18 @@ import { buildInvokeCommand as buildCreateClusterCommand } from './createCluster
 import { buildInvokeCommand as buildCreateClusterFromActivePaneCommand } from './createClusterFromActivePane';
 import { buildInvokeCommand as buildCreateClusterFromActiveTabCommand } from './createClusterFromActiveTab';
 import { buildInvokeCommand as buildNextTabAcrossGroupsCommand } from './nextTabAcrossGroups';
+import { buildInvokeCommand as buildOpenClusterCommand } from './openCluster';
 import { buildInvokeCommand as buildOpenClusterSidebarCommand } from './openClusterSidebar';
 import { buildInvokeCommand as buildOpenClusterTrayCommand } from './openClusterTray';
 import { buildInvokeCommand as buildOpenRecentClusterTrayCommand } from './openRecentClusterTray';
 import { buildInvokeCommand as buildOpenTabCandyCommand } from './openTabCandy';
+import { buildInvokeCommand as buildPairClusterWithCommand } from './pairClusterWith';
+import { buildInvokeCommand as buildPairClustersCommand } from './pairClusters';
 import { buildInvokeCommand as buildPreviousTabAcrossGroupsCommand } from './previousTabAcrossGroups';
 import { buildInvokeCommand as buildRemoveFromClusterCommand } from './removeFromCluster';
 import { buildInvokeCommand as buildReopenClosedTabCommand } from './reopenClosedTab';
 import { buildInvokeCommand as buildSearchOpenTabsCommand } from './searchOpenTabs';
+import { buildInvokeCommand as buildUnlinkClustersCommand } from './unlinkClusters';
 import type { CommandDependencies } from '../types';
 
 /**
@@ -31,7 +36,9 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 		settingsStore,
 		promptForCluster,
 		promptForClusterChoice,
-		promptForClusterRemoval
+		promptForClusterPair,
+		promptForClusterRemoval,
+		promptForConfirmation
 	} = dependencies;
 
 	return [
@@ -41,6 +48,11 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 			promptForClusterChoice
 		),
 		buildAddToMostRecentClusterCommand(app, settingsStore),
+		buildCloseClusterCommand(
+			app,
+			settingsStore,
+			promptForClusterChoice
+		),
 		buildCloseDuplicateTabsCommand(app),
 		buildCloseOtherTabsCommand(app),
 		buildCloseTabsInFolderCommand(app, settingsStore),
@@ -56,6 +68,11 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 			promptForCluster
 		),
 		buildNextTabAcrossGroupsCommand(app),
+		buildOpenClusterCommand(
+			app,
+			settingsStore,
+			promptForClusterChoice
+		),
 		buildOpenClusterSidebarCommand(app),
 		buildOpenClusterTrayCommand(
 			app,
@@ -64,6 +81,17 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 		),
 		buildOpenRecentClusterTrayCommand(app, settingsStore),
 		buildOpenTabCandyCommand(app),
+		buildPairClusterWithCommand(
+			app,
+			settingsStore,
+			promptForClusterChoice,
+			promptForConfirmation
+		),
+		buildPairClustersCommand(
+			settingsStore,
+			promptForClusterPair,
+			promptForConfirmation
+		),
 		buildPreviousTabAcrossGroupsCommand(app),
 		buildRemoveFromClusterCommand(
 			app,
@@ -72,5 +100,11 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 		),
 		buildReopenClosedTabCommand(app),
 		buildSearchOpenTabsCommand(app),
+		buildUnlinkClustersCommand(
+			app,
+			settingsStore,
+			promptForClusterChoice,
+			promptForConfirmation
+		),
 	];
 }

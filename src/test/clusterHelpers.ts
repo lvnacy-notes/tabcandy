@@ -13,7 +13,9 @@ import {
 	ClusterDraft,
 	PromptForCluster,
 	PromptForClusterChoice,
+	PromptForClusterPair,
 	PromptForClusterRemoval,
+	PromptForConfirmation,
 	TabCandyCluster
 } from '../types';
 
@@ -61,15 +63,6 @@ export async function addNonFileTab(app: App, pane: object): Promise<WorkspaceLe
 }
 
 /**
- * Builds a store holding no Clusters.
- *
- * @returns The store.
- */
-export function buildStore(): SettingsStore {
-	return new SettingsStore(buildSettings(), async () => {});
-}
-
-/**
  * Builds a store holding the given Clusters.
  *
  * @param clusters - The Clusters to hold.
@@ -89,6 +82,32 @@ export function cancelling(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForCluster>();
+	return { prompt: spy, spy };
+}
+
+/**
+ * A confirmation that is accepted immediately.
+ *
+ * @returns The prompt and a spy on it.
+ */
+export function confirming(): {
+	prompt: PromptForConfirmation;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn((_title: string, _text: string, _confirmLabel: string, onConfirm: () => void) => onConfirm());
+	return { prompt: spy, spy };
+}
+
+/**
+ * A confirmation that is declined: it never confirms.
+ *
+ * @returns The prompt and a spy on it.
+ */
+export function confirmingNothing(): {
+	prompt: PromptForConfirmation;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn<PromptForConfirmation>();
 	return { prompt: spy, spy };
 }
 
@@ -127,6 +146,34 @@ export function choosingNothing(): {
  */
 export function isAvailable(command: Command): boolean {
 	return command.checkCallback?.(true) === true;
+}
+
+/**
+ * A prompt that picks the Clusters `sourceId` and `targetId` immediately.
+ *
+ * @param sourceId - The source id to submit.
+ * @param targetId - The target id to submit.
+ * @returns The prompt and a spy on it.
+ */
+export function pairing(sourceId: string, targetId: string): {
+	prompt: PromptForClusterPair;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (sourceId: string, targetId: string) => void) => onSubmit(sourceId, targetId));
+	return { prompt: spy, spy };
+}
+
+/**
+ * A prompt for pairing that is cancelled: it never submits.
+ *
+ * @returns The prompt and a spy on it.
+ */
+export function pairingNothing(): {
+	prompt: PromptForClusterPair;
+	spy: ReturnType<typeof vi.fn>;
+} {
+	const spy = vi.fn<PromptForClusterPair>();
+	return { prompt: spy, spy };
 }
 
 /**

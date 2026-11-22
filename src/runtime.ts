@@ -1,6 +1,7 @@
 /** @file Wires the plugin's features together. */
 import type { EventRef } from 'obsidian';
 import { promptAndCreate } from './clusters/clusterCreation';
+import { promptAndPair, promptAndUnlink } from './clusters/clusterPairing';
 import { buildCommands } from './commands/commandRegistry';
 import {
 	pruneMissingManualBackgroundFiles,
@@ -25,7 +26,9 @@ import {
 import { checkForPluginUpdates } from './obsidian/versionCheck';
 import { registerTabTracking } from './tabs/tabNavigation';
 import ChooseClusterModal from './ui/ChooseClusterModal';
+import ConfirmModal from './ui/ConfirmModal';
 import CreateClusterModal from './ui/CreateClusterModal';
+import PairClustersModal from './ui/PairClustersModal';
 import RemoveFromClustersModal from './ui/RemoveFromClustersModal';
 import type TabCandyPlugin from '../main';
 import {
@@ -33,7 +36,9 @@ import {
 	CLUSTER_TRAY_VIEW_TYPE,
 	PromptForCluster,
 	PromptForClusterChoice,
+	PromptForClusterPair,
 	PromptForClusterRemoval,
+	PromptForConfirmation,
 	TAB_CANDY_VIEW_TYPE
 } from './types';
 
@@ -118,6 +123,24 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		new RemoveFromClustersModal(app, clusters, onSubmit).open();
 	};
 
+	const promptForClusterPair: PromptForClusterPair = (clusters, onSubmit) => {
+		new PairClustersModal(
+			app,
+			clusters,
+			onSubmit
+		).open();
+	};
+
+	const promptForConfirmation: PromptForConfirmation = (title, text, confirmLabel, onConfirm) => {
+		new ConfirmModal(
+			app,
+			onConfirm,
+			title,
+			text,
+			confirmLabel
+		).open();
+	};
+
 	plugin.registerView(
 		CLUSTER_SIDEBAR_VIEW_TYPE,
 		(leaf) => new ClusterSidebarView(
@@ -128,6 +151,25 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 					promptForCluster,
 					[]
 				);
+			},
+			(id) => {
+				promptAndPair(
+					settingsStore,
+					promptForClusterChoice,
+					promptForConfirmation,
+					id
+				);
+			},
+			(id) => {
+				const cluster = settingsStore.get().clusters[id];
+				if (cluster !== undefined) {
+					promptAndUnlink(
+						settingsStore,
+						promptForClusterChoice,
+						promptForConfirmation,
+						[cluster]
+					);
+				}
 			},
 			leaf
 		)
@@ -152,7 +194,9 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		settingsStore,
 		promptForCluster,
 		promptForClusterChoice,
+		promptForClusterPair,
 		promptForClusterRemoval,
+		promptForConfirmation,
 	})) {
 		plugin.addCommand(command);
 	}

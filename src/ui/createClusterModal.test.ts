@@ -10,6 +10,7 @@ import {
 } from 'vitest';
 import CreateClusterModal from './CreateClusterModal';
 import { createConfiguredApp } from '../test/fakes';
+import { findButton } from '../test/modalHelpers';
 import type { ClusterDraft } from '../types';
 
 /**
@@ -25,22 +26,6 @@ function openModal(): {
 	const modal = new CreateClusterModal(createConfiguredApp(), onSubmit);
 	modal.open();
 	return { modal, onSubmit };
-}
-
-/**
- * Finds a button by its label.
- *
- * @param modal - The open modal.
- * @param label - The button text.
- * @returns The button.
- */
-function findButton(modal: CreateClusterModal, label: string): HTMLButtonElement {
-	const button = Array.from(modal.contentEl.querySelectorAll('button'))
-		.find((candidate) => candidate.textContent === label);
-	if (button === undefined) {
-		throw new Error(`No "${ label }" button`);
-	}
-	return button;
 }
 
 /**

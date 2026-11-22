@@ -9,13 +9,12 @@ import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace
 import {
 	addFileTab,
 	addNonFileTab,
-	buildStore,
 	buildStoreWith,
 	isAvailable,
 	selecting,
 	selectingNothing
 } from '../test/clusterHelpers';
-import { buildCluster } from '../test/fakes';
+import { buildCluster, buildStore } from '../test/fakes';
 
 describe('remove-from-cluster command', () => {
 	it('has its id and name', () => {

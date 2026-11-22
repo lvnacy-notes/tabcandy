@@ -20,13 +20,8 @@ import {
 	resolveMissingMember
 } from './clusterMembership';
 import {
-	createFakeWorkspaceApp,
-	setMostRecentLeaf
-} from '../test/FakeWorkspace';
-import {
 	addFileTab,
 	addNonFileTab,
-	buildStore,
 	buildStoreWith,
 	choosing,
 	choosingNothing,
@@ -37,8 +32,13 @@ import {
 	buildCluster,
 	buildClusters,
 	buildSettings,
+	buildStore,
 	createConfiguredApp
 } from '../test/fakes';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import SettingsStore from '../settings/SettingsStore';
 
 /**
@@ -565,6 +565,7 @@ describe('resolveMissingMember', () => {
 
 		const replaced = await resolveMissingMember(
 			store,
+			'one',
 			'gone.md',
 			'b.md'
 		);
@@ -572,16 +573,296 @@ describe('resolveMissingMember', () => {
 		expect([replaced, store.get().clusters['one'].members]).toEqual([true, ['a.md', 'b.md', 'c.md']]);
 	});
 
-	it('saves nothing when no Cluster holds the stale path', async () => {
+	it('leaves other Clusters holding the same stale path as they are', async () => {
+		const { store } = buildCountingStore(
+			buildCluster({ id: 'one', members: ['gone.md'] }),
+			buildCluster({ id: 'two', members: ['gone.md'] })
+		);
+
+		await resolveMissingMember(
+			store,
+			'one',
+			'gone.md',
+			'b.md'
+		);
+
+		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([['b.md'], ['gone.md']]);
+	});
+
+	it('saves nothing when the Cluster does not hold the stale path', async () => {
 		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md'] }));
 
 		const replaced = await resolveMissingMember(
 			store,
+			'one',
 			'gone.md',
 			'b.md'
 		);
 
 		expect(replaced).toBe(false);
 		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('saves nothing when the Cluster does not exist', async () => {
+		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['gone.md'] }));
+
+		const replaced = await resolveMissingMember(
+			store,
+			'missing',
+			'gone.md',
+			'b.md'
+		);
+
+		expect(replaced).toBe(false);
+		expect(save).not.toHaveBeenCalled();
+	});
+});
+
+
+/**
+ * Builds a store holding two paired Clusters with sync on.
+ *
+ * @param one - Members of the Cluster `one`.
+ * @param two - Members of the Cluster `two`.
+ * @returns The store.
+ */
+function buildSyncedStore(one: string[], two: string[]): SettingsStore {
+	return buildStore({
+		keepPairedClustersInSync: true,
+		clusters: buildClusters(
+			buildCluster({
+				id: 'one',
+				members: one,
+				pairedWith: 'two',
+			}),
+			buildCluster({
+				id: 'two',
+				members: two,
+				pairedWith: 'one',
+			})
+		),
+	});
+}
+
+describe('reorderClusterMember with keepPairedClustersInSync on', () => {
+	it('makes the same move in the paired Cluster', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md', 'z.md']);
+
+		await reorderClusterMember(
+			store,
+			'one',
+			0,
+			2
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['y.md', 'z.md', 'x.md']);
+	});
+
+	it('does nothing to the paired Cluster when a position is out of its range', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md']);
+
+		await reorderClusterMember(
+			store,
+			'one',
+			0,
+			2
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['x.md', 'y.md']);
+	});
+
+	it('does not mirror when the move changes nothing', async () => {
+		const { store, save } = buildCountingStore(
+			buildCluster({
+				id: 'one',
+				members: ['a.md', 'b.md'],
+				pairedWith: 'two',
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['x.md', 'y.md'],
+				pairedWith: 'one',
+			})
+		);
+
+		await reorderClusterMember(
+			store,
+			'one',
+			1,
+			1
+		);
+
+		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('leaves the paired Cluster alone when sync is off', async () => {
+		const store = buildStore({
+			clusters: buildClusters(
+				buildCluster({
+					id: 'one',
+					members: ['a.md', 'b.md'],
+					pairedWith: 'two',
+				}),
+				buildCluster({
+					id: 'two',
+					members: ['x.md', 'y.md'],
+					pairedWith: 'one',
+				})
+			),
+		});
+
+		await reorderClusterMember(
+			store,
+			'one',
+			0,
+			1
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['x.md', 'y.md']);
+	});
+
+	it('saves both Clusters in one save', async () => {
+		const save = vi.fn(async () => {});
+		const store = new SettingsStore(
+			buildSettings({
+				keepPairedClustersInSync: true,
+				clusters: buildClusters(
+					buildCluster({
+						id: 'one',
+						members: ['a.md', 'b.md'],
+						pairedWith: 'two',
+					}),
+					buildCluster({
+						id: 'two',
+						members: ['x.md', 'y.md'],
+						pairedWith: 'one',
+					})
+				),
+			}),
+			save
+		);
+
+		await reorderClusterMember(
+			store,
+			'one',
+			0,
+			1
+		);
+
+		expect(save).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('removePathFromClusters with keepPairedClustersInSync on', () => {
+	it('removes the member at the same position from the paired Cluster', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md', 'z.md']);
+
+		await removePathFromClusters(
+			store,
+			['one'],
+			'b.md'
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['x.md', 'z.md']);
+	});
+
+	it('does nothing to the paired Cluster when it has no member at that position', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md']);
+
+		await removePathFromClusters(
+			store,
+			['one'],
+			'c.md'
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['x.md']);
+	});
+
+	it('removes by position even when the paired member\'s file is missing', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md'], ['gone.md', 'y.md']);
+
+		await removePathFromClusters(
+			store,
+			['one'],
+			'a.md'
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['y.md']);
+	});
+
+	it('does not count the mirrored removal', async () => {
+		const store = buildSyncedStore(['a.md'], ['x.md']);
+
+		const count = await removePathFromClusters(
+			store,
+			['one'],
+			'a.md'
+		);
+
+		expect(count).toBe(1);
+	});
+
+	it('does not mirror onto a paired Cluster that was listed too', async () => {
+		const store = buildSyncedStore(['a.md', 'b.md'], ['a.md', 'b.md']);
+
+		await removePathFromClusters(
+			store,
+			['one', 'two'],
+			'a.md'
+		);
+
+		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([['b.md'], ['b.md']]);
+	});
+
+	it('leaves the paired Cluster alone when sync is off', async () => {
+		const store = buildStore({
+			clusters: buildClusters(
+				buildCluster({
+					id: 'one',
+					members: ['a.md'],
+					pairedWith: 'two',
+				}),
+				buildCluster({
+					id: 'two',
+					members: ['x.md'],
+					pairedWith: 'one',
+				})
+			),
+		});
+
+		await removePathFromClusters(
+			store,
+			['one'],
+			'a.md'
+		);
+
+		expect(store.get().clusters['two'].members).toEqual(['x.md']);
+	});
+
+	it('goes one hop only', async () => {
+		const store = buildStore({
+			keepPairedClustersInSync: true,
+			clusters: buildClusters(
+				buildCluster({
+					id: 'one',
+					members: ['a.md'],
+					pairedWith: 'two',
+				}),
+				buildCluster({
+					id: 'two',
+					members: ['x.md'],
+					pairedWith: 'one',
+				}),
+				buildCluster({ id: 'three', members: ['q.md'] })
+			),
+		});
+
+		await removePathFromClusters(
+			store,
+			['one'],
+			'a.md'
+		);
+
+		expect(store.get().clusters['three'].members).toEqual(['q.md']);
 	});
 });

@@ -1,5 +1,7 @@
 /** @file Tests for the open-tab-candy command. */
 import {
+	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	it,
@@ -10,6 +12,14 @@ import { createConfiguredApp } from '../test/fakes';
 import { TAB_CANDY_VIEW_TYPE } from '../types';
 
 describe('open-tab-candy command', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createConfiguredApp({ files: {} }));
 
@@ -20,9 +30,8 @@ describe('open-tab-candy command', () => {
 		const app = createConfiguredApp({ files: {} });
 
 		buildInvokeCommand(app).callback?.();
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(app.workspace.getLeavesOfType(TAB_CANDY_VIEW_TYPE)).toHaveLength(1);
-		});
+		expect(app.workspace.getLeavesOfType(TAB_CANDY_VIEW_TYPE)).toHaveLength(1);
 	});
 });

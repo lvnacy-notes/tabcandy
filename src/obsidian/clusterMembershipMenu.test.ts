@@ -11,14 +11,13 @@ import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import {
 	addFileTab,
 	addNonFileTab,
-	buildStore,
 	buildStoreWith,
 	choosing,
 	choosingNothing,
 	selecting,
 	selectingNothing
 } from '../test/clusterHelpers';
-import { buildCluster } from '../test/fakes';
+import { buildCluster, buildStore } from '../test/fakes';
 import { openFileMenu } from '../test/menuHelpers';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice, PromptForClusterRemoval } from '../types';

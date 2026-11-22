@@ -7,23 +7,31 @@ import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
 
 /** The Cluster sidebar. Renders the React sidebar into its content element. */
 export class ClusterSidebarView extends ItemView {
+	onConfirmUnlink: (id: string) => void;
 	onCreateCluster: () => void;
+	onPair: (id: string) => void;
 	root: Root | null = null;
 	settingsStore: SettingsStore;
 
 	/**
 	 * @param settingsStore - Store holding the Clusters.
 	 * @param onCreateCluster - Starts creating an empty Cluster.
+	 * @param onPair - Starts pairing a Cluster, by id.
+	 * @param onConfirmUnlink - Starts unlinking a Cluster after a confirmation, by id.
 	 * @param leaf - The leaf hosting the view.
 	 */
 	constructor(
 		settingsStore: SettingsStore,
 		onCreateCluster: () => void,
+		onPair: (id: string) => void,
+		onConfirmUnlink: (id: string) => void,
 		leaf: WorkspaceLeaf
 	) {
 		super(leaf);
 		this.settingsStore = settingsStore;
 		this.onCreateCluster = onCreateCluster;
+		this.onPair = onPair;
+		this.onConfirmUnlink = onConfirmUnlink;
 	}
 
 	/** @returns The view's title. */
@@ -58,7 +66,9 @@ export class ClusterSidebarView extends ItemView {
 			<ClusterSidebar
 				app = { this.app }
 				settingsStore = { this.settingsStore }
+				onConfirmUnlink = { this.onConfirmUnlink }
 				onCreateCluster = { this.onCreateCluster }
+				onPair = { this.onPair }
 			/>
 		);
 		this.containerEl.addClass('tabcandy-sidebar');

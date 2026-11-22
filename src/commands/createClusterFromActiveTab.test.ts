@@ -12,11 +12,11 @@ import {
 import {
 	addFileTab,
 	addNonFileTab,
-	buildStore,
 	cancelling,
 	isAvailable,
 	submitting
 } from '../test/clusterHelpers';
+import { buildStore } from '../test/fakes';
 
 describe('create-cluster-from-active-tab command', () => {
 	it('has its id and name', () => {

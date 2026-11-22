@@ -11,6 +11,7 @@ import {
 import ResolveMissingModal from './ResolveMissingModal';
 import { buildStoreWith } from '../test/clusterHelpers';
 import { buildCluster, createConfiguredApp } from '../test/fakes';
+import { findButton } from '../test/modalHelpers';
 import SettingsStore from '../settings/SettingsStore';
 
 interface Suggest {
@@ -30,10 +31,12 @@ vi.mock('./FileInputSuggest', () => ({
 
 beforeEach(() => {
 	suggests.length = 0;
+	vi.useFakeTimers();
 });
 
 afterEach(() => {
 	vi.restoreAllMocks();
+	vi.useRealTimers();
 });
 
 /**
@@ -61,8 +64,9 @@ function openModal(
 		'one',
 		focusPath
 	);
-	// The mock's `open()` auto-closes on a zero-delay timer, which would empty the content mid-test.
-	modal.onOpen();
+	modal.open();
+	// Discards the mock's zero-delay auto-close so a later flush doesn't empty the content.
+	vi.clearAllTimers();
 	return {
 		modal,
 		store,
@@ -74,22 +78,6 @@ function openModal(
 			return file;
 		},
 	};
-}
-
-/**
- * Finds a button by its label.
- *
- * @param modal - The open modal.
- * @param label - The button text.
- * @returns The button.
- */
-function findButton(modal: ResolveMissingModal, label: string): HTMLButtonElement {
-	const button = Array.from(modal.contentEl.querySelectorAll('button'))
-		.find((candidate) => candidate.textContent === label);
-	if (button === undefined) {
-		throw new Error(`No "${ label }" button`);
-	}
-	return button;
 }
 
 describe('ResolveMissingModal', () => {
@@ -105,10 +93,9 @@ describe('ResolveMissingModal', () => {
 		const { store, getFile } = openModal(['a.md', 'gone.md', 'c.md'], ['a.md', 'b.md', 'c.md']);
 
 		suggests[0].onPick(getFile('b.md'));
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(store.get().clusters['one'].members).toEqual(['a.md', 'b.md', 'c.md']);
-		});
+		expect(store.get().clusters['one'].members).toEqual(['a.md', 'b.md', 'c.md']);
 	});
 
 	it('closes once the last missing member is resolved', async () => {
@@ -116,20 +103,18 @@ describe('ResolveMissingModal', () => {
 		const close = vi.spyOn(modal, 'close');
 
 		suggests[0].onPick(getFile('b.md'));
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(close).toHaveBeenCalled();
-		});
+		expect(close).toHaveBeenCalled();
 	});
 
 	it('keeps listing the members that are still missing after one is resolved', async () => {
 		const { modal, getFile } = openModal(['gone.md', 'also-gone.md'], ['b.md']);
 
 		suggests[0].onPick(getFile('b.md'));
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(modal.contentEl.querySelectorAll('input')).toHaveLength(1);
-		});
+		expect(modal.contentEl.querySelectorAll('input')).toHaveLength(1);
 		expect(modal.getMissing()).toEqual(['also-gone.md']);
 	});
 
@@ -138,10 +123,9 @@ describe('ResolveMissingModal', () => {
 		const close = vi.spyOn(modal, 'close');
 
 		findButton(modal, 'Remove all missing').click();
+		await vi.runAllTimersAsync();
 
-		await vi.waitFor(() => {
-			expect(close).toHaveBeenCalled();
-		});
+		expect(close).toHaveBeenCalled();
 		expect(store.get().clusters['one'].members).toEqual(['a.md']);
 	});
 

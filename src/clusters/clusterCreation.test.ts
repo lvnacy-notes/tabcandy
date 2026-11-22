@@ -16,15 +16,12 @@ import {
 	createFakeLeaf,
 	makeUnreadable
 } from '../test/FakeWorkspaceLeaf';
-import {
-	addFileTab,
-	addNonFileTab,
-	buildStore
-} from '../test/clusterHelpers';
+import { addFileTab, addNonFileTab } from '../test/clusterHelpers';
 import {
 	buildCluster,
 	buildClusters,
-	buildSettings
+	buildSettings,
+	buildStore
 } from '../test/fakes';
 import SettingsStore from '../settings/SettingsStore';
 import { UNTITLED_CLUSTER_NAME } from '../types';
