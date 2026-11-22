@@ -49,7 +49,10 @@ export function closeDuplicateTabs(app: App): void {
  */
 export function closeLeaves(
 	app: App,
-	shouldClose: (leaf: WorkspaceLeaf, viewState: ViewState) => boolean,
+	shouldClose: (
+		leaf: WorkspaceLeaf,
+		viewState: ViewState
+	) => boolean,
 	remember: boolean
 ): void {
 	const doomed: WorkspaceLeaf[] = [];
@@ -58,7 +61,10 @@ export function closeLeaves(
 		if (viewState === null || viewState.pinned === true) {
 			continue;
 		}
-		if (shouldClose(leaf, viewState)) {
+		if (shouldClose(
+			leaf,
+			viewState
+		)) {
 			doomed.push(leaf);
 		}
 	}
@@ -99,7 +105,11 @@ export function closeTabsInFolder(
 		app,
 		(_leaf, viewState) => {
 			const path = getViewStateFilePath(viewState);
-			return path !== null && isUnderFolder(path, folderPath, recursive);
+			return path !== null && isUnderFolder(
+				path,
+				folderPath,
+				recursive
+			);
 		},
 		true
 	);
@@ -118,13 +128,14 @@ export function focusOpenLeaf(
 	path: string,
 	host: WorkspaceLeaf
 ): boolean {
-	const existing = getRootLeaves(app).find(
-		(leaf) => leaf !== host && getLeafFilePath(leaf) === path
-	);
+	const existing = getRootLeaves(app).find((leaf) => leaf !== host && getLeafFilePath(leaf) === path);
 	if (!existing) {
 		return false;
 	}
-	app.workspace.setActiveLeaf(existing, { focus: true });
+	app.workspace.setActiveLeaf(
+		existing,
+		{ focus: true }
+	);
 	return true;
 }
 
@@ -214,7 +225,10 @@ export function goToAdjacentTab(app: App, direction: 1 | -1): void {
 		direction
 	);
 	if (next) {
-		app.workspace.setActiveLeaf(next, { focus: true });
+		app.workspace.setActiveLeaf(
+			next,
+			{ focus: true }
+		);
 	}
 }
 
@@ -243,7 +257,10 @@ export function isUnderFolder(
 		return folderPath === '' || filePath.startsWith(`${folderPath}/`);
 	}
 	const lastSlash = filePath.lastIndexOf('/');
-	const parentPath = lastSlash === -1 ? '' : filePath.slice(0, lastSlash);
+	const parentPath = lastSlash === -1 ? '' : filePath.slice(
+		0,
+		lastSlash
+	);
 	return parentPath === folderPath;
 }
 
@@ -265,9 +282,15 @@ function onLayoutChange(app: App): void {
 	const current = new Set<WorkspaceLeaf>();
 	app.workspace.iterateRootLeaves((leaf) => current.add(leaf));
 
-	for (const [leaf, entry] of snapshots) {
+	for (const [
+		leaf,
+		entry
+	] of snapshots) {
 		if (!current.has(leaf)) {
-			pushClosedTab(closedTabsRing, entry);
+			pushClosedTab(
+				closedTabsRing,
+				entry
+			);
 			snapshots.delete(leaf);
 		}
 	}
@@ -287,7 +310,10 @@ function onLayoutChange(app: App): void {
 export function planDuplicateClosures(
 	records: TabRecord[],
 	current: WorkspaceLeaf | null
-): { close: WorkspaceLeaf[]; reveal: WorkspaceLeaf | null } {
+): {
+	close: WorkspaceLeaf[];
+	reveal: WorkspaceLeaf | null
+} {
 	const sets = new Map<string, TabRecord[]>();
 	for (const record of records) {
 		if (record.key === null) {
@@ -297,7 +323,10 @@ export function planDuplicateClosures(
 		if (set) {
 			set.push(record);
 		} else {
-			sets.set(record.key, [record]);
+			sets.set(
+				record.key,
+				[record]
+			);
 		}
 	}
 
@@ -321,7 +350,10 @@ export function planDuplicateClosures(
 			}
 		}
 	}
-	return { close, reveal };
+	return {
+		close,
+		reveal
+	};
 }
 
 /**
@@ -360,9 +392,18 @@ export function registerTabTracking(
 ): void {
 	app.workspace.onLayoutReady(() => {
 		refreshAllSnapshots(app);
-		registerEvent(app.workspace.on('layout-change', () => onLayoutChange(app)));
-		registerEvent(app.workspace.on('active-leaf-change', () => refreshAllSnapshots(app)));
-		registerEvent(app.workspace.on('file-open', () => refreshAllSnapshots(app)));
+		registerEvent(app.workspace.on(
+			'layout-change',
+			() => onLayoutChange(app)
+		));
+		registerEvent(app.workspace.on(
+			'active-leaf-change',
+			() => refreshAllSnapshots(app)
+		));
+		registerEvent(app.workspace.on(
+			'file-open',
+			() => refreshAllSnapshots(app)
+		));
 	});
 }
 
@@ -388,7 +429,13 @@ function refreshSnapshot(leaf: WorkspaceLeaf): void {
 	const sanitized = { ...viewState };
 	delete sanitized.group;
 	delete sanitized.active;
-	snapshots.set(leaf, { viewState: sanitized, title: leaf.getDisplayText() });
+	snapshots.set(
+		leaf,
+		{
+			viewState: sanitized,
+			title: leaf.getDisplayText()
+		}
+	);
 }
 
 /**
@@ -398,7 +445,10 @@ function refreshSnapshot(leaf: WorkspaceLeaf): void {
 export function removeClosedTab(entry: ClosedTabEntry): void {
 	const index = closedTabsRing.indexOf(entry);
 	if (index !== -1) {
-		closedTabsRing.splice(index, 1);
+		closedTabsRing.splice(
+			index,
+			1
+		);
 	}
 }
 
@@ -414,7 +464,10 @@ export async function reopenClosedTab(
 ): Promise<void> {
 	removeClosedTab(entry);
 	const leaf = target ?? app.workspace.getLeaf('tab');
-	await leaf.setViewState({ ...entry.viewState, active: true });
+	await leaf.setViewState({
+		...entry.viewState,
+		active: true
+	});
 	await app.workspace.revealLeaf(leaf);
 }
 
@@ -425,7 +478,10 @@ export async function reopenClosedTab(
 export function reopenLastClosedTab(app: App): void {
 	const [newest] = getClosedTabs();
 	if (newest) {
-		void reopenClosedTab(app, newest);
+		void reopenClosedTab(
+			app,
+			newest
+		);
 	}
 }
 
@@ -440,12 +496,19 @@ export function resetTabTrackingState(): void {
 export function toTabRecord(leaf: WorkspaceLeaf): TabRecord {
 	const viewState = readViewState(leaf);
 	if (viewState === null) {
-		return { leaf, key: null, isProtected: true };
+		return {
+			leaf,
+			key: null,
+			isProtected: true
+		};
 	}
 	const file = getViewStateFilePath(viewState);
 	return {
 		leaf,
-		key: file === null ? null : JSON.stringify([viewState.type, file]),
+		key: file === null ? null : JSON.stringify([
+			viewState.type,
+			file
+		]),
 		isProtected: viewState.pinned === true || isLinked(viewState),
 	};
 }

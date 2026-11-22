@@ -23,7 +23,10 @@ export default class FakeWorkspace extends WorkspaceMock {
 	private mostRecentLeafOverride: WorkspaceLeafMock | null | undefined = undefined;
 
 	constructor(app: AppMock, containerEl: HTMLElement) {
-		super(app, containerEl);
+		super(
+			app,
+			containerEl
+		);
 		this.appRef = app;
 	}
 
@@ -50,7 +53,10 @@ export default class FakeWorkspace extends WorkspaceMock {
 	}
 
 	override iterateAllLeaves(callback: (leaf: WorkspaceLeafMock) => unknown): void {
-		for (const leaf of [...this.rootLeaves, ...this.sidebarLeaves]) {
+		for (const leaf of [
+			...this.rootLeaves,
+			...this.sidebarLeaves
+		]) {
 			callback(leaf);
 		}
 	}
@@ -65,7 +71,10 @@ export default class FakeWorkspace extends WorkspaceMock {
 	override removeLeaf__(leaf: WorkspaceLeafMock): void {
 		const index = this.rootLeaves.indexOf(leaf);
 		if (index !== -1) {
-			this.rootLeaves.splice(index, 1);
+			this.rootLeaves.splice(
+				index,
+				1
+			);
 		}
 		this.sidebarLeaves.delete(leaf);
 	}
@@ -84,11 +93,12 @@ export default class FakeWorkspace extends WorkspaceMock {
 /**
  * Builds an app whose workspace is a FakeWorkspace.
  */
-export function createFakeWorkspaceApp(
-	options: Parameters<typeof AppMock.createConfigured__>[0] = {}
-): App {
+export function createFakeWorkspaceApp(options: Parameters<typeof AppMock.createConfigured__>[0] = {}): App {
 	const app = AppMock.createConfigured__(options);
-	app.workspace = new FakeWorkspace(app, createDiv());
+	app.workspace = new FakeWorkspace(
+		app,
+		createDiv()
+	);
 	return app.asOriginalType__();
 }
 
@@ -96,27 +106,21 @@ export function createFakeWorkspaceApp(
  * Adds a leaf to the workspace's root split (a tab).
  */
 export function addRootLeaf(app: App, leaf: WorkspaceLeaf): void {
-	(app.workspace as unknown as FakeWorkspace).addRootLeaf(
-		leaf as unknown as WorkspaceLeafMock
-	);
+	(app.workspace as unknown as FakeWorkspace).addRootLeaf(leaf as unknown as WorkspaceLeafMock);
 }
 
 /**
  * Adds a leaf to a sidebar rather than the root split.
  */
 export function addSidebarLeaf(app: App, leaf: WorkspaceLeaf): void {
-	(app.workspace as unknown as FakeWorkspace).addSidebarLeaf(
-		leaf as unknown as WorkspaceLeafMock
-	);
+	(app.workspace as unknown as FakeWorkspace).addSidebarLeaf(leaf as unknown as WorkspaceLeafMock);
 }
 
 /**
  * Fixes what the workspace's getMostRecentLeaf() returns.
  */
 export function setMostRecentLeaf(app: App, leaf: WorkspaceLeaf | null): void {
-	(app.workspace as unknown as FakeWorkspace).setMostRecentLeaf(
-		leaf as unknown as WorkspaceLeafMock | null
-	);
+	(app.workspace as unknown as FakeWorkspace).setMostRecentLeaf(leaf as unknown as WorkspaceLeafMock | null);
 }
 
 /**

@@ -22,8 +22,14 @@ function buildApp(): ObsidianApp {
 }
 
 function buildView(app: ObsidianApp): TabCandyView {
-	const settingsStore = new SettingsStore(normalizeSettings({}), async () => {});
-	return new TabCandyView(settingsStore, app.workspace.getLeaf(true));
+	const settingsStore = new SettingsStore(
+		normalizeSettings({}),
+		async () => {}
+	);
+	return new TabCandyView(
+		settingsStore,
+		app.workspace.getLeaf(true)
+	);
 }
 
 async function open(view: TabCandyView): Promise<void> {
@@ -84,9 +90,18 @@ describe('TabCandyView + real App: full-stack lifecycle', () => {
 
 	it('does not error when the settings store updates after the view has closed', async () => {
 		const app = buildApp();
-		const settingsStore = new SettingsStore(normalizeSettings({}), async () => {});
-		const view = new TabCandyView(settingsStore, app.workspace.getLeaf(true));
-		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const settingsStore = new SettingsStore(
+			normalizeSettings({}),
+			async () => {}
+		);
+		const view = new TabCandyView(
+			settingsStore,
+			app.workspace.getLeaf(true)
+		);
+		const consoleError = vi.spyOn(
+			console,
+			'error'
+		).mockImplementation(() => {});
 		await open(view);
 
 		await close(view);

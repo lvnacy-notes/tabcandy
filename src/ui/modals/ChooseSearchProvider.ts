@@ -1,4 +1,7 @@
-import { App, FuzzySuggestModal } from 'obsidian';
+import {
+	App,
+	FuzzySuggestModal
+} from 'obsidian';
 import {
 	SEARCH_PROVIDER,
 	SearchProvider,
@@ -26,7 +29,10 @@ class ChooseSearchProvider extends FuzzySuggestModal<SearchProvider> {
 	}
 
 	getItems(): SearchProvider[] {
-		return listSearchProviderCommands(this.app, SEARCH_PROVIDER);
+		return listSearchProviderCommands(
+			this.app,
+			SEARCH_PROVIDER
+		);
 	}
 
 	getItemText(item: SearchProvider): string {

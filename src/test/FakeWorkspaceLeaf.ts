@@ -1,4 +1,8 @@
-import { App, ViewState, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	ViewState,
+	WorkspaceLeaf
+} from 'obsidian';
 import {
 	App as AppMock,
 	WorkspaceLeaf as WorkspaceLeafMock,
@@ -16,7 +20,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 	private displayText: string | null = null;
 
 	constructor(app: AppMock, id?: string) {
-		super(app, id);
+		super(
+			app,
+			id
+		);
 	}
 
 	makeUnreadable(): void {
@@ -36,7 +43,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		viewState: ViewState,
 		eState?: Record<string, unknown>
 	): Promise<void> {
-		await super.setViewState(viewState, eState);
+		await super.setViewState(
+			viewState,
+			eState
+		);
 		this.hasContent = true;
 	}
 
@@ -48,12 +58,13 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 
 	override getViewState(): ViewState {
 		if (this.unreadable) {
-			throw new Error(
-				'FakeWorkspaceLeaf: getViewState() is forced to throw for this leaf'
-			);
+			throw new Error('FakeWorkspaceLeaf: getViewState() is forced to throw for this leaf');
 		}
 		if (!this.hasContent) {
-			return { type: 'empty', state: {} };
+			return {
+				type: 'empty',
+				state: {}
+			};
 		}
 		return super.getViewState();
 	}
@@ -70,7 +81,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
  * Builds a fake leaf.
  */
 export function createFakeLeaf(app: App, id?: string): WorkspaceLeaf {
-	const leaf = new FakeWorkspaceLeaf(app as unknown as AppMock, id);
+	const leaf = new FakeWorkspaceLeaf(
+		app as unknown as AppMock,
+		id
+	);
 	return leaf.asOriginalType3__();
 }
 

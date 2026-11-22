@@ -14,9 +14,15 @@ import {
 	Quote,
 	TabCandySettings
 } from '../types';
-import { filterExistingFiles, getBackgroundResourcePath } from '../services/backgrounds';
+import {
+	filterExistingFiles,
+	getBackgroundResourcePath
+} from '../services/backgrounds';
 import { getBookmarks } from '../services/bookmarks';
-import { computeOverlayContrast, getFreshCacheEntry } from '../services/overlayContrast';
+import {
+	computeOverlayContrast,
+	getFreshCacheEntry
+} from '../services/overlayContrast';
 import getBackground from './utils/getBackground';
 import getQuote from './utils/getQuote';
 import { getTime } from './utils/time';
@@ -26,11 +32,15 @@ import { getTime } from './utils/time';
  * with it, unsubscribing on unmount.
  */
 export const useSettings = (settingsStore: SettingsStore): TabCandySettings => {
-	const [settings, setSettings] = useState<TabCandySettings>(
-		settingsStore.get()
-	);
+	const [
+		settings,
+		setSettings
+	] = useState<TabCandySettings>(settingsStore.get());
 
-	useEffect(() => settingsStore.subscribe(setSettings), [settingsStore]);
+	useEffect(
+		() => settingsStore.subscribe(setSettings),
+		[settingsStore]
+	);
 
 	return settings;
 };
@@ -41,7 +51,10 @@ export const useSettings = (settingsStore: SettingsStore): TabCandySettings => {
  * changes, not on every unrelated settings update.
  */
 export const useClock = (timeFormat: TabCandySettings['timeFormat']): string => {
-	const [time, setTime] = useState(() => getTime(timeFormat));
+	const [
+		time,
+		setTime
+	] = useState(() => getTime(timeFormat));
 
 	useEffect(() => {
 		setTime(getTime(timeFormat));
@@ -67,8 +80,14 @@ export const useQuote = (
 	fileQuotes: TabCandySettings['fileQuotes']
 ): Quote | null =>
 	useMemo(
-		() => getQuote([...customQuotes, ...fileQuotes]),
-		[customQuotes, fileQuotes]
+		() => getQuote([
+			...customQuotes,
+			...fileQuotes
+		]),
+		[
+			customQuotes,
+			fileQuotes
+		]
 	);
 
 /**
@@ -83,21 +102,35 @@ export const useBackground = (app: App, settings: TabCandySettings) => {
 			[
 				...settings.backgroundFiles,
 				...settings.manualBackgroundFiles,
-			].map((filePath) => getBackgroundResourcePath(app, filePath)),
-		[app, settings.backgroundFiles, settings.manualBackgroundFiles]
+			].map((filePath) => getBackgroundResourcePath(
+				app,
+				filePath
+			)),
+		[
+			app,
+			settings.backgroundFiles,
+			settings.manualBackgroundFiles
+		]
 	);
 
 	const resolvedCustomBackground = useMemo(() => {
 		if (!settings.customBackground) {
 			return null;
 		}
-		const [existingCustomBackground] = filterExistingFiles(app, [
-			settings.customBackground,
-		]);
+		const [existingCustomBackground] = filterExistingFiles(
+			app,
+			[settings.customBackground]
+		);
 		return existingCustomBackground
-			? getBackgroundResourcePath(app, existingCustomBackground)
+			? getBackgroundResourcePath(
+				app,
+				existingCustomBackground
+			)
 			: null;
-	}, [app, settings.customBackground]);
+	}, [
+		app,
+		settings.customBackground
+	]);
 
 	return useMemo(
 		() =>
@@ -147,9 +180,10 @@ export function resolveActiveBackgroundPath(
 			...settings.manualBackgroundFiles,
 		];
 		return (
-			candidates.find(
-				(path) => getBackgroundResourcePath(app, path) === background
-			) ?? null
+			candidates.find((path) => getBackgroundResourcePath(
+				app,
+				path
+			) === background) ?? null
 		);
 	}
 
@@ -178,10 +212,17 @@ export const useOverlayContrast = (
 	settings: TabCandySettings,
 	background: string | null
 ): string | null => {
-	const [overlayTextColor, setOverlayTextColor] = useState<string | null>(null);
+	const [
+		overlayTextColor,
+		setOverlayTextColor
+	] = useState<string | null>(null);
 
 	const activePath = useMemo(
-		() => resolveActiveBackgroundPath(app, settings, background),
+		() => resolveActiveBackgroundPath(
+			app,
+			settings,
+			background
+		),
 		[
 			app,
 			settings.backgroundTheme,
@@ -229,21 +270,23 @@ export const useOverlayContrast = (
 			})
 			.catch((error: unknown) => {
 				// File deleted/unreadable between the existence check and the read.
-				console.warn(`Tab Candy: could not read ${activePath} for overlay contrast`, error);
+				console.warn(
+					`Tab Candy: could not read ${activePath} for overlay contrast`,
+					error
+				);
 				return null;
 			})
-			.then(
-				(result) => {
-					if (cancelled || !result) {return;}
-					setOverlayTextColor(result.overlayTextColor);
-					void settingsStore.update({
-						overlayTextContrastCache: {
-							...settingsStore.get().overlayTextContrastCache,
-							[activePath]: { mtime: file.stat.mtime, ...result },
-						},
-					});
-				}
-			);
+			.then((result) => {
+				if (cancelled || !result) {return;}
+				setOverlayTextColor(result.overlayTextColor);
+				void settingsStore.update({ overlayTextContrastCache: {
+					...settingsStore.get().overlayTextContrastCache,
+					[activePath]: {
+						mtime: file.stat.mtime,
+						...result
+					},
+				} });
+			});
 
 		return () => {
 			cancelled = true;
@@ -268,14 +311,18 @@ export const useOverlayContrast = (
 export const useRecentFiles = (app: App): TFile[] => {
 	const files = app.vault
 		.getAllLoadedFiles()
-		.filter(
-			(file): file is TFile =>
-				file instanceof TFile && file.extension === 'md'
-		);
+		.filter((file): file is TFile =>
+			file instanceof TFile && file.extension === 'md');
 
-	files.sort((a, b) => b.stat.mtime - a.stat.mtime);
+	files.sort((
+		a,
+		b
+	) => b.stat.mtime - a.stat.mtime);
 
-	return files.slice(0, 5);
+	return files.slice(
+		0,
+		5
+	);
 };
 
 /**
@@ -288,7 +335,13 @@ export const useBookmarks = (
 	settings: TabCandySettings
 ): TFile[] => {
 	return useMemo(
-		() => getBookmarks(app, settings).slice(0, 5),
-		[app, settings]
+		() => getBookmarks(
+			app,
+			settings
+		).slice(0, 5),
+		[
+			app,
+			settings
+		]
 	);
 };

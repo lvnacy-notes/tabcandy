@@ -121,7 +121,13 @@ export default defineConfig([
 			// Stylistic rules adapted from carnival config
 			'@stylistic/indent': ['error', 'tab'],
 			'@stylistic/no-mixed-spaces-and-tabs': 'error',
-			'@stylistic/object-curly-spacing': ['error', 'always'],
+			'@stylistic/list-style': [
+				'error',
+				{
+					singleLine: { spacing: 'never' },
+					overrides: { '{}': { singleLine: { spacing: 'always' } } }
+				}
+			],
 			'@stylistic/quotes': [
 				'error',
 				'single',
@@ -175,7 +181,36 @@ export default defineConfig([
 		rules: {
 			'@typescript-eslint/prefer-nullish-coalescing': 'error',
 			'@typescript-eslint/prefer-optional-chain': 'error',
-			'@typescript-eslint/no-unnecessary-type-assertion': 'error'
+			'@typescript-eslint/no-unnecessary-type-assertion': 'error',
+			'@stylistic/list-style': [
+				'error',
+				{
+					singleLine: {
+						spacing: 'never',
+						maxItems: 1
+					},
+					multiLine: {
+						minItems: 2
+					},
+					overrides: {
+						'{}': {
+							singleLine: {
+								spacing: 'always'
+							}
+						},
+						'<>': {
+							singleLine: {
+								maxItems: 5
+							}
+						},
+						'TSInterfaceBody': {
+							multiLine: {
+								minItems: 0
+							}
+						}
+					}
+				}
+			],
 		}
 	},
 	{

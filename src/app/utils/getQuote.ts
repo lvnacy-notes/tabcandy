@@ -1,4 +1,7 @@
-import { CustomQuote, Quote } from '../../types';
+import {
+	CustomQuote,
+	Quote
+} from '../../types';
 
 /**
  * Picks a random quote from the user's custom quotes list. Returns `null`
@@ -14,7 +17,10 @@ const getQuote = (customQuotes: CustomQuote[]): Quote | null => {
 	const randomQuote =
 		customQuotes[Math.floor(Math.random() * customQuotes.length)];
 
-	return { content: randomQuote.text, author: randomQuote.author };
+	return {
+		content: randomQuote.text,
+		author: randomQuote.author
+	};
 };
 
 export default getQuote;

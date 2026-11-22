@@ -1,4 +1,7 @@
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import SettingsStore from '../settings/SettingsStore';
 import ChooseFolderModal from '../ui/modals/ChooseFolderModal';
 import { activateView } from './newTabHijack';
@@ -50,7 +53,10 @@ export function registerTabCommands(
 		id: 'next-tab-across-groups',
 		name: 'Go to next tab across groups',
 		callback: () => {
-			goToAdjacentTab(app, 1);
+			goToAdjacentTab(
+				app,
+				1
+			);
 		},
 	});
 
@@ -66,7 +72,10 @@ export function registerTabCommands(
 		id: 'previous-tab-across-groups',
 		name: 'Go to previous tab across groups',
 		callback: () => {
-			goToAdjacentTab(app, -1);
+			goToAdjacentTab(
+				app,
+				-1
+			);
 		},
 	});
 

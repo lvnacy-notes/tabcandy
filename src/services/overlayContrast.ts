@@ -100,7 +100,13 @@ const LEGIBILITY_FLOOR_LIGHT = '#dadada';
 const LEGIBILITY_FLOOR_DARK = '#1a1a1a';
 
 function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
+	return Math.min(
+		max,
+		Math.max(
+			min,
+			value
+		)
+	);
 }
 
 /**
@@ -119,12 +125,24 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
 	const rNorm = r / 255;
 	const gNorm = g / 255;
 	const bNorm = b / 255;
-	const max = Math.max(rNorm, gNorm, bNorm);
-	const min = Math.min(rNorm, gNorm, bNorm);
+	const max = Math.max(
+		rNorm,
+		gNorm,
+		bNorm
+	);
+	const min = Math.min(
+		rNorm,
+		gNorm,
+		bNorm
+	);
 	const l = (max + min) / 2;
 
 	if (max === min) {
-		return { h: 0, s: 0, l };
+		return {
+			h: 0,
+			s: 0,
+			l
+		};
 	}
 
 	const d = max - min;
@@ -143,7 +161,11 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
 			break;
 	}
 
-	return { h: h / 6, s, l };
+	return {
+		h: h / 6,
+		s,
+		l
+	};
 }
 
 /**
@@ -154,7 +176,11 @@ export function rgbToHsl(r: number, g: number, b: number): HSL {
 export function hslToRgb(h: number, s: number, l: number): RGB {
 	if (s === 0) {
 		const value = Math.round(l * 255);
-		return { r: value, g: value, b: value };
+		return {
+			r: value,
+			g: value,
+			b: value
+		};
 	}
 
 	const hue2rgb = (p: number, q: number, t: number): number => {
@@ -171,9 +197,21 @@ export function hslToRgb(h: number, s: number, l: number): RGB {
 	const p = 2 * l - q;
 
 	return {
-		r: Math.round(hue2rgb(p, q, h + 1 / 3) * 255),
-		g: Math.round(hue2rgb(p, q, h) * 255),
-		b: Math.round(hue2rgb(p, q, h - 1 / 3) * 255),
+		r: Math.round(hue2rgb(
+			p,
+			q,
+			h + 1 / 3
+		) * 255),
+		g: Math.round(hue2rgb(
+			p,
+			q,
+			h
+		) * 255),
+		b: Math.round(hue2rgb(
+			p,
+			q,
+			h - 1 / 3
+		) * 255),
 	};
 }
 
@@ -182,7 +220,11 @@ export function hslToRgb(h: number, s: number, l: number): RGB {
  */
 export function rgbToHex(r: number, g: number, b: number): string {
 	const channel = (value: number) =>
-		Math.round(clamp(value, 0, 255)).toString(16).padStart(2, '0');
+		Math.round(clamp(
+			value,
+			0,
+			255
+		)).toString(16).padStart(2, '0');
 	return `#${channel(r)}${channel(g)}${channel(b)}`;
 }
 
@@ -200,9 +242,10 @@ export function rgbToHex(r: number, g: number, b: number): string {
  * test the math against known pixel data, never getImageData()/Canvas
  * itself).
  */
-export function computeDominantColorAndBrightness(
-	data: Uint8ClampedArray | number[]
-): { dominant: RGB; averageBrightness: number } {
+export function computeDominantColorAndBrightness(data: Uint8ClampedArray | number[]): {
+	dominant: RGB;
+	averageBrightness: number
+} {
 	interface Bucket {
 		weight: number;
 		r: number;
@@ -220,28 +263,53 @@ export function computeDominantColorAndBrightness(
 		const g = data[i + 1];
 		const b = data[i + 2];
 
-		brightnessTotal += perceivedBrightness(r, g, b);
+		brightnessTotal += perceivedBrightness(
+			r,
+			g,
+			b
+		);
 
-		const { s } = rgbToHsl(r, g, b);
+		const { s } = rgbToHsl(
+			r,
+			g,
+			b
+		);
 		const weight = s < SATURATION_FLOOR ? LOW_SATURATION_WEIGHT : s;
 
-		const key = [r, g, b]
+		const key = [
+			r,
+			g,
+			b
+		]
 			.map((channel) => Math.round(channel / QUANTIZE_BUCKET))
 			.join(',');
 
-		const bucket = buckets.get(key) ?? { weight: 0, r: 0, g: 0, b: 0, count: 0 };
+		const bucket = buckets.get(key) ?? {
+			weight: 0,
+			r: 0,
+			g: 0,
+			b: 0,
+			count: 0
+		};
 		bucket.weight += weight;
 		bucket.r += r;
 		bucket.g += g;
 		bucket.b += b;
 		bucket.count += 1;
-		buckets.set(key, bucket);
+		buckets.set(
+			key,
+			bucket
+		);
 	}
 
 	// Fallback if `data` was empty - shouldn't happen for a real sampled
 	// canvas (SAMPLE_SIZE x SAMPLE_SIZE is never zero pixels), but keeps
 	// this pure function total rather than throwing on malformed input.
-	let dominant: RGB = { r: 218, g: 218, b: 218 };
+	let dominant: RGB = {
+		r: 218,
+		g: 218,
+		b: 218
+	};
 	let bestWeight = -1;
 
 	for (const bucket of buckets.values()) {
@@ -270,21 +338,53 @@ export function computeDominantColorAndBrightness(
  * margin - rare, but the whole point of clamping is that it's possible.
  */
 export function adjustForContrast(dominant: RGB, averageBrightness: number): string {
-	const { h, s, l } = rgbToHsl(dominant.r, dominant.g, dominant.b);
+	const {
+		h,
+		s,
+		l
+	} = rgbToHsl(
+		dominant.r,
+		dominant.g,
+		dominant.b
+	);
 	const darken = averageBrightness >= CONTRAST_MID_BRIGHTNESS;
 	const step = darken ? -L_STEP : L_STEP;
 
-	let currentL = clamp(l, L_MIN, L_MAX);
+	let currentL = clamp(
+		l,
+		L_MIN,
+		L_MAX
+	);
 
 	for (let i = 0; i <= MAX_ADJUST_STEPS; i++) {
-		const { r, g, b } = hslToRgb(h, s, currentL);
-		const brightness = perceivedBrightness(r, g, b);
+		const {
+			r,
+			g,
+			b
+		} = hslToRgb(
+			h,
+			s,
+			currentL
+		);
+		const brightness = perceivedBrightness(
+			r,
+			g,
+			b
+		);
 
 		if (Math.abs(brightness - averageBrightness) >= CONTRAST_MARGIN) {
-			return rgbToHex(r, g, b);
+			return rgbToHex(
+				r,
+				g,
+				b
+			);
 		}
 
-		const nextL = clamp(currentL + step, L_MIN, L_MAX);
+		const nextL = clamp(
+			currentL + step,
+			L_MIN,
+			L_MAX
+		);
 		if (nextL === currentL) {
 			// Hit the clamp with no room left to move in this direction -
 			// stop rather than spinning through the remaining steps with no
@@ -304,13 +404,21 @@ export function adjustForContrast(dominant: RGB, averageBrightness: number): str
  * `computeOverlayContrast()` below is a thin wrapper around this plus the real
  * (untestable-in-this-environment) Canvas/Image plumbing.
  */
-export function computeOverlayContrastFromPixelData(
-	data: Uint8ClampedArray | number[]
-): OverlayContrastResult {
-	const { dominant, averageBrightness } = computeDominantColorAndBrightness(data);
+export function computeOverlayContrastFromPixelData(data: Uint8ClampedArray | number[]): OverlayContrastResult {
+	const {
+		dominant,
+		averageBrightness
+	} = computeDominantColorAndBrightness(data);
 	return {
-		dominantColor: rgbToHex(dominant.r, dominant.g, dominant.b),
-		overlayTextColor: adjustForContrast(dominant, averageBrightness),
+		dominantColor: rgbToHex(
+			dominant.r,
+			dominant.g,
+			dominant.b
+		),
+		overlayTextColor: adjustForContrast(
+			dominant,
+			averageBrightness
+		),
 	};
 }
 
@@ -344,13 +452,27 @@ export async function computeOverlayContrast(imageUrl: string): Promise<OverlayC
 	const ctx = canvas.getContext('2d');
 
 	if (!ctx) {
-		return { dominantColor: DEFAULT_OVERLAY_COLOR, overlayTextColor: DEFAULT_OVERLAY_COLOR };
+		return {
+			dominantColor: DEFAULT_OVERLAY_COLOR,
+			overlayTextColor: DEFAULT_OVERLAY_COLOR
+		};
 	}
 
 	try {
 		const img = await loadImage(imageUrl);
-		ctx.drawImage(img, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
-		const { data } = ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+		ctx.drawImage(
+			img,
+			0,
+			0,
+			SAMPLE_SIZE,
+			SAMPLE_SIZE
+		);
+		const { data } = ctx.getImageData(
+			0,
+			0,
+			SAMPLE_SIZE,
+			SAMPLE_SIZE
+		);
 
 		return computeOverlayContrastFromPixelData(data);
 	} catch (error) {
@@ -358,8 +480,14 @@ export async function computeOverlayContrast(imageUrl: string): Promise<OverlayC
 		// cross-origin image; loadImage rejects on decode failure. Either way,
 		// fail open to the default colors rather than leaving an unhandled
 		// promise rejection.
-		console.warn(`Tab Candy: overlay contrast failed for ${imageUrl}`, error);
-		return { dominantColor: DEFAULT_OVERLAY_COLOR, overlayTextColor: DEFAULT_OVERLAY_COLOR };
+		console.warn(
+			`Tab Candy: overlay contrast failed for ${imageUrl}`,
+			error
+		);
+		return {
+			dominantColor: DEFAULT_OVERLAY_COLOR,
+			overlayTextColor: DEFAULT_OVERLAY_COLOR
+		};
 	}
 }
 
