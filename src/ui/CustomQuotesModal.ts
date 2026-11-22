@@ -31,9 +31,7 @@ export default class CustomQuotesModal extends Modal {
 		this._onSave = onSave;
 		// Deep clone via round-tripping through JSON, so edits made in this
 		// modal don't mutate the settings object until Save is clicked.
-		this._customQuotes = JSON.parse(
-			JSON.stringify(this._plugin.settings.customQuotes)
-		) as CustomQuote[];
+		this._customQuotes = JSON.parse(JSON.stringify(this._plugin.settings.customQuotes)) as CustomQuote[];
 	}
 
 	onOpen() {
@@ -50,14 +48,26 @@ export default class CustomQuotesModal extends Modal {
 
 		contentEl.empty();
 
-		contentEl.createEl('h2', { text: 'Custom quotes' });
+		contentEl.createEl(
+			'h2',
+			{ text: 'Custom quotes' }
+		);
 
-		const table = contentEl.createEl('table', { cls: 'tabcandy-customquotes-table' });
+		const table = contentEl.createEl(
+			'table',
+			{ cls: 'tabcandy-customquotes-table' }
+		);
 		const thead = table.createEl('thead');
 		const headerRow = thead.createEl('tr');
 		headerRow.createEl('th');
-		headerRow.createEl('th', { text: 'Text' });
-		headerRow.createEl('th', { text: 'Author' });
+		headerRow.createEl(
+			'th',
+			{ text: 'Text' }
+		);
+		headerRow.createEl(
+			'th',
+			{ text: 'Author' }
+		);
 		const tbody = table.createEl('tbody');
 
 		this._customQuotes.forEach((customQuote, index) => {
@@ -72,7 +82,10 @@ export default class CustomQuotesModal extends Modal {
 				new ConfirmModal(
 					this.app,
 					() => {
-						this._customQuotes.splice(index, 1);
+						this._customQuotes.splice(
+							index,
+							1
+						);
 						this.display();
 					},
 					'Remove quote',
@@ -82,9 +95,10 @@ export default class CustomQuotesModal extends Modal {
 			});
 
 			const textCell = tableRow.createEl('td');
-			const quoteTextInput = textCell.createEl('textarea', {
-				text: customQuote.text,
-			});
+			const quoteTextInput = textCell.createEl(
+				'textarea',
+				{ text: customQuote.text, }
+			);
 			quoteTextInput.addEventListener('change', (e: Event) => {
 				this._customQuotes[index].text = (
 					e.target as HTMLTextAreaElement
@@ -115,14 +129,12 @@ export default class CustomQuotesModal extends Modal {
 
 		new Setting(contentEl)
 			.setName('Import / export')
-			.setDesc(
-				'Export writes the list above to a new markdown note, in ' +
+			.setDesc('Export writes the list above to a new markdown note, in ' +
 				'the same blockquote format as the quotes file setting. ' +
 				'Import reads quotes back out of an existing note in that ' +
 				'same format and adds them to the list above - it does ' +
 				'not overwrite anything already there, and nothing is ' +
-				'saved until you click Save below.'
-			)
+				'saved until you click Save below.')
 			.addButton((component) => {
 				component.setButtonText('Export to note').onClick(() => {
 					new ChooseFolderModal(this.app, (folder) => {
@@ -164,15 +176,22 @@ export default class CustomQuotesModal extends Modal {
 		const write = async () => {
 			try {
 				if (existingFile instanceof TFile) {
-					await this.app.vault.modify(existingFile, content);
+					await this.app.vault.modify(
+						existingFile,
+						content
+					);
 				} else {
-					await this.app.vault.create(path, content);
+					await this.app.vault.create(
+						path,
+						content
+					);
 				}
-				new Notice(
-					`Tab Candy: exported ${this._customQuotes.length} quote(s) to "${path}".`
-				);
+				new Notice(`Tab Candy: exported ${this._customQuotes.length} quote(s) to "${path}".`);
 			} catch (error) {
-				console.error('Tab Candy: failed to export quotes', error);
+				console.error(
+					'Tab Candy: failed to export quotes',
+					error
+				);
 				new Notice(`Tab Candy: could not write to "${path}".`);
 			}
 		};
@@ -206,7 +225,10 @@ export default class CustomQuotesModal extends Modal {
 		try {
 			raw = await this.app.vault.read(file);
 		} catch (error) {
-			console.error('Tab Candy: failed to read quotes file for import', error);
+			console.error(
+				'Tab Candy: failed to read quotes file for import',
+				error
+			);
 			new Notice(`Tab Candy: could not read "${file.path}".`);
 			return;
 		}

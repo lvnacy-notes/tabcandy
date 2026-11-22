@@ -1,5 +1,8 @@
 /** @file Tests for the Tab Candy view. */
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 import { act } from 'react';
 import {
 	describe,
@@ -8,7 +11,10 @@ import {
 	vi
 } from 'vitest';
 import SettingsStore from '../settings/SettingsStore';
-import { buildSettings, createConfiguredApp } from '../test/fakes';
+import {
+	buildSettings,
+	createConfiguredApp
+} from '../test/fakes';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -35,10 +41,16 @@ function buildLeaf(app: App): WorkspaceLeaf {
  * @returns The view.
  */
 function buildView(app: App) {
-	const settingsStore = new SettingsStore(buildSettings(), async () => {});
+	const settingsStore = new SettingsStore(
+		buildSettings(),
+		async () => {}
+	);
 	const leaf = buildLeaf(app);
 
-	return new TabCandyView(settingsStore, leaf);
+	return new TabCandyView(
+		settingsStore,
+		leaf
+	);
 }
 
 /**

@@ -160,7 +160,9 @@ export function BackgroundSurface({
  * @param props.files - The files to list.
  * @param props.onOpen - Called with the clicked file.
  */
-export function Bookmarks({ files, onOpen }: BookmarksProps) {
+export function Bookmarks({
+	files, onOpen
+}: BookmarksProps) {
 	return (
 		<div className = 'tabcandy-dashboard-centeredrow'>
 			{ files.map((file) => (

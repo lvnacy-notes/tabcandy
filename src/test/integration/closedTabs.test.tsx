@@ -16,7 +16,10 @@ import {
 	createFakeWorkspaceApp,
 	setLayoutReady,
 } from '../FakeWorkspace';
-import { createFakeLeaf, setDisplayText } from '../FakeWorkspaceLeaf';
+import {
+	createFakeLeaf,
+	setDisplayText
+} from '../FakeWorkspaceLeaf';
 import { TabCandyView } from '../../obsidian/TabCandyView';
 import {
 	getClosedTabs,
@@ -61,10 +64,22 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 	it('surfaces a closed tab in the rendered list, and reopens it into the hosting leaf on click', async () => {
 		const app = buildApp();
 		const note = createFakeLeaf(app);
-		await note.setViewState({ type: 'markdown', state: { file: 'A.md' } });
-		setDisplayText(note, 'A');
-		addRootLeaf(app, note);
-		registerTabTracking(app, () => {});
+		await note.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' }
+		});
+		setDisplayText(
+			note,
+			'A'
+		);
+		addRootLeaf(
+			app,
+			note
+		);
+		registerTabTracking(
+			app,
+			() => {}
+		);
 		setLayoutReady(app);
 
 		note.detach();
@@ -76,12 +91,13 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 			async () => {}
 		);
 		const hostingLeaf = app.workspace.getLeaf(true);
-		const view = new TabCandyView(settingsStore, hostingLeaf);
+		const view = new TabCandyView(
+			settingsStore,
+			hostingLeaf
+		);
 		await open(view);
 
-		const entryButton = view.contentEl.querySelector(
-			'.tabcandy-dashboard-fileicon[title="A"]'
-		);
+		const entryButton = view.contentEl.querySelector('.tabcandy-dashboard-fileicon[title="A"]');
 		expect(entryButton).not.toBeNull();
 
 		fireEvent.click(entryButton as Element);
@@ -98,10 +114,22 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 	it('with dashboardFocusesOpenTab on, switches to an already-open copy instead of reopening, removes the entry, and leaves the Tab Candy leaf untouched', async () => {
 		const app = buildApp();
 		const note = createFakeLeaf(app);
-		await note.setViewState({ type: 'markdown', state: { file: 'A.md' } });
-		setDisplayText(note, 'A');
-		addRootLeaf(app, note);
-		registerTabTracking(app, () => {});
+		await note.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' }
+		});
+		setDisplayText(
+			note,
+			'A'
+		);
+		addRootLeaf(
+			app,
+			note
+		);
+		registerTabTracking(
+			app,
+			() => {}
+		);
 		setLayoutReady(app);
 
 		note.detach();
@@ -109,8 +137,14 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 		expect(getClosedTabs()).toHaveLength(1);
 
 		const alreadyOpen = createFakeLeaf(app);
-		await alreadyOpen.setViewState({ type: 'markdown', state: { file: 'A.md' } });
-		addRootLeaf(app, alreadyOpen);
+		await alreadyOpen.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' }
+		});
+		addRootLeaf(
+			app,
+			alreadyOpen
+		);
 
 		const settingsStore = new SettingsStore(
 			normalizeSettings({
@@ -120,29 +154,51 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 			async () => {}
 		);
 		const hostingLeaf = app.workspace.getLeaf(true);
-		const view = new TabCandyView(settingsStore, hostingLeaf);
+		const view = new TabCandyView(
+			settingsStore,
+			hostingLeaf
+		);
 		await open(view);
 
-		const entryButton = view.contentEl.querySelector(
-			'.tabcandy-dashboard-fileicon[title="A"]'
-		);
+		const entryButton = view.contentEl.querySelector('.tabcandy-dashboard-fileicon[title="A"]');
 		expect(entryButton).not.toBeNull();
-		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
+		const setActiveLeaf = vi.spyOn(
+			app.workspace,
+			'setActiveLeaf'
+		);
 
 		fireEvent.click(entryButton as Element);
 
-		expect(setActiveLeaf).toHaveBeenCalledWith(alreadyOpen, { focus: true });
+		expect(setActiveLeaf).toHaveBeenCalledWith(
+			alreadyOpen,
+			{ focus: true }
+		);
 		expect(getClosedTabs()).toEqual([]);
-		expect(hostingLeaf.getViewState()).toEqual({ type: 'empty', state: {} });
+		expect(hostingLeaf.getViewState()).toEqual({
+			type: 'empty',
+			state: {}
+		});
 	});
 
 	it('with dashboardFocusesOpenTab on but no already-open copy, falls back to reopening normally', async () => {
 		const app = buildApp();
 		const note = createFakeLeaf(app);
-		await note.setViewState({ type: 'markdown', state: { file: 'A.md' } });
-		setDisplayText(note, 'A');
-		addRootLeaf(app, note);
-		registerTabTracking(app, () => {});
+		await note.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' }
+		});
+		setDisplayText(
+			note,
+			'A'
+		);
+		addRootLeaf(
+			app,
+			note
+		);
+		registerTabTracking(
+			app,
+			() => {}
+		);
 		setLayoutReady(app);
 
 		note.detach();
@@ -157,12 +213,13 @@ describe('RecentlyClosedTabs + real App: close, track, reopen', () => {
 			async () => {}
 		);
 		const hostingLeaf = app.workspace.getLeaf(true);
-		const view = new TabCandyView(settingsStore, hostingLeaf);
+		const view = new TabCandyView(
+			settingsStore,
+			hostingLeaf
+		);
 		await open(view);
 
-		const entryButton = view.contentEl.querySelector(
-			'.tabcandy-dashboard-fileicon[title="A"]'
-		);
+		const entryButton = view.contentEl.querySelector('.tabcandy-dashboard-fileicon[title="A"]');
 		expect(entryButton).not.toBeNull();
 
 		fireEvent.click(entryButton as Element);

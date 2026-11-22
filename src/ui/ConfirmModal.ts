@@ -31,8 +31,14 @@ class ConfirmModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl('h2', { text: this._title });
-		contentEl.createEl('p', { text: this._text });
+		contentEl.createEl(
+			'h2',
+			{ text: this._title }
+		);
+		contentEl.createEl(
+			'p',
+			{ text: this._text }
+		);
 
 		new Setting(contentEl)
 			.addButton((component) => {

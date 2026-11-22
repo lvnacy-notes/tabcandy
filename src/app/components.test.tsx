@@ -32,8 +32,14 @@ import {
 	SearchButton
 } from './components';
 import { buildDataTransfer } from '../test/dragHelpers';
-import { buildCluster, createConfiguredApp } from '../test/fakes';
-import { ClosedTabEntry, TabCandyCluster } from '../types';
+import {
+	buildCluster,
+	createConfiguredApp
+} from '../test/fakes';
+import {
+	ClosedTabEntry,
+	TabCandyCluster
+} from '../types';
 
 /**
  * Builds a vault file.
@@ -488,17 +494,18 @@ describe('ClusterRow', () => {
 
 describe('SearchButton', () => {
 	it('renders the icon before the label when iconFirst is set', () => {
-		addIcon('search', '<path d="search-icon" />');
-		render(
-			<SearchButton
-				label = 'Search'
-				iconName = 'search'
-				iconFirst = { true }
-				className = 'a'
-				textClassName = 'b'
-				onClick = { () => {} }
-			/>
+		addIcon(
+			'search',
+			'<path d="search-icon" />'
 		);
+		render(<SearchButton
+			label = 'Search'
+			iconName = 'search'
+			iconFirst = { true }
+			className = 'a'
+			textClassName = 'b'
+			onClick = { () => {} }
+		/>);
 
 		const button = screen.getByText('Search').closest('button');
 		if (!button) {
@@ -510,16 +517,17 @@ describe('SearchButton', () => {
 	});
 
 	it('renders the icon after the label when iconFirst is unset', () => {
-		addIcon('search', '<path d="search-icon" />');
-		render(
-			<SearchButton
-				label = 'Search'
-				iconName = 'search'
-				className = 'a'
-				textClassName = 'b'
-				onClick = { () => {} }
-			/>
+		addIcon(
+			'search',
+			'<path d="search-icon" />'
 		);
+		render(<SearchButton
+			label = 'Search'
+			iconName = 'search'
+			className = 'a'
+			textClassName = 'b'
+			onClick = { () => {} }
+		/>);
 
 		const button = screen.getByText('Search').closest('button');
 		if (!button) {
@@ -532,15 +540,13 @@ describe('SearchButton', () => {
 
 	it('fires onClick when clicked', () => {
 		const onClick = vi.fn();
-		render(
-			<SearchButton
-				label = 'Search'
-				iconName = 'search'
-				className = 'a'
-				textClassName = 'b'
-				onClick = { onClick }
-			/>
-		);
+		render(<SearchButton
+			label = 'Search'
+			iconName = 'search'
+			className = 'a'
+			textClassName = 'b'
+			onClick = { onClick }
+		/>);
 
 		fireEvent.click(screen.getByText('Search'));
 
@@ -561,7 +567,10 @@ describe('RecentFiles', () => {
 		const fileOne = buildFile('Notes/one.md');
 		const fileTwo = buildFile('Notes/two.md');
 		const onOpen = vi.fn();
-		render(<RecentFiles files = { [fileOne, fileTwo] } onOpen = { onOpen } />);
+		render(<RecentFiles files = { [
+			fileOne,
+			fileTwo
+		] } onOpen = { onOpen } />);
 
 		expect(screen.getByText('one')).not.toBeNull();
 		fireEvent.click(screen.getByText('two'));
@@ -584,7 +593,10 @@ describe('Bookmarks', () => {
 		const fileOne = buildFile('Notes/one.md');
 		const fileTwo = buildFile('Notes/two.md');
 		const onOpen = vi.fn();
-		render(<Bookmarks files = { [fileOne, fileTwo] } onOpen = { onOpen } />);
+		render(<Bookmarks files = { [
+			fileOne,
+			fileTwo
+		] } onOpen = { onOpen } />);
 
 		expect(screen.getByText('one')).not.toBeNull();
 		fireEvent.click(screen.getByText('two'));
@@ -605,15 +617,24 @@ describe('RecentlyClosedTabs', () => {
 
 	it('renders one entry per closed tab and opens the right one on click', () => {
 		const entryOne: ClosedTabEntry = {
-			viewState: { type: 'markdown', state: { file: 'One.md' } },
+			viewState: {
+				type: 'markdown',
+				state: { file: 'One.md' }
+			},
 			title: 'Untitled',
 		};
 		const entryTwo: ClosedTabEntry = {
-			viewState: { type: 'markdown', state: { file: 'Two.md' } },
+			viewState: {
+				type: 'markdown',
+				state: { file: 'Two.md' }
+			},
 			title: 'Untitled',
 		};
 		const onOpen = vi.fn();
-		render(<RecentlyClosedTabs entries = { [entryOne, entryTwo] } onOpen = { onOpen } />);
+		render(<RecentlyClosedTabs entries = { [
+			entryOne,
+			entryTwo
+		] } onOpen = { onOpen } />);
 
 		expect(screen.getAllByText('Untitled')).toHaveLength(2);
 		fireEvent.click(screen.getAllByText('Untitled')[1]);
@@ -625,12 +646,13 @@ describe('RecentlyClosedTabs', () => {
 
 describe('QuoteDisplay', () => {
 	it('renders the quote and author when a quote is present and show is true', () => {
-		render(
-			<QuoteDisplay
-				quote = {{ content: 'Be water.', author: 'Bruce Lee' }}
-				show = { true }
-			/>
-		);
+		render(<QuoteDisplay
+			quote = {{
+				content: 'Be water.',
+				author: 'Bruce Lee'
+			}}
+			show = { true }
+		/>);
 
 		expect(screen.getByText('"Be water."')).not.toBeNull();
 		expect(screen.getByText('Bruce Lee')).not.toBeNull();
@@ -643,12 +665,13 @@ describe('QuoteDisplay', () => {
 	});
 
 	it('renders nothing when show is false, even with a quote available', () => {
-		const { container } = render(
-			<QuoteDisplay
-				quote = {{ content: 'Be water.', author: 'Bruce Lee' }}
-				show = { false }
-			/>
-		);
+		const { container } = render(<QuoteDisplay
+			quote = {{
+				content: 'Be water.',
+				author: 'Bruce Lee'
+			}}
+			show = { false }
+		/>);
 
 		expect(container.querySelector('.tabcandy-quote-content')).toBeNull();
 	});
@@ -662,18 +685,16 @@ describe('BackgroundSurface', () => {
 	 * @returns The render result.
 	 */
 	function renderSurface(props: Partial<Parameters<typeof BackgroundSurface>[0]> = {}) {
-		return render(
-			<BackgroundSurface
-				background = { undefined }
-				transparent = { false }
-				transparentWithShadows = { false }
-				onKeyDown = { () => {} }
-				containerRef = { createRef<HTMLDivElement>() }
-				{ ...props }
-			>
-				<span>content</span>
-			</BackgroundSurface>
-		);
+		return render(<BackgroundSurface
+			background = { undefined }
+			transparent = { false }
+			transparentWithShadows = { false }
+			onKeyDown = { () => {} }
+			containerRef = { createRef<HTMLDivElement>() }
+			{ ...props }
+		>
+			<span>content</span>
+		</BackgroundSurface>);
 	}
 
 	it('applies the transparent class when the transparent theme is active', () => {
@@ -738,7 +759,10 @@ describe('BackgroundSurface', () => {
 		const onKeyDown = vi.fn();
 		const { container } = renderSurface({ onKeyDown });
 
-		fireEvent.keyDown(container.firstElementChild as HTMLElement, { key: 'a' });
+		fireEvent.keyDown(
+			container.firstElementChild as HTMLElement,
+			{ key: 'a' }
+		);
 
 		expect(onKeyDown).toHaveBeenCalledTimes(1);
 	});
@@ -756,7 +780,10 @@ describe('Icon', () => {
 	});
 
 	it('renders the resolved icon element', () => {
-		addIcon('tabcandy-test-icon', '<path d="M0 0h10v10H0z" />');
+		addIcon(
+			'tabcandy-test-icon',
+			'<path d="M0 0h10v10H0z" />'
+		);
 		const { container } = render(<Icon name = 'tabcandy-test-icon' />);
 
 		expect(container.querySelector('span.tabcandy-icon svg')).not.toBeNull();
@@ -771,9 +798,18 @@ describe('Icon', () => {
 	});
 
 	it('swaps the icon rather than appending alongside the old one when name changes', () => {
-		addIcon('tabcandy-icon-a', '<path d="a" />');
-		addIcon('tabcandy-icon-b', '<path d="b" />');
-		const { container, rerender } = render(<Icon name = 'tabcandy-icon-a' />);
+		addIcon(
+			'tabcandy-icon-a',
+			'<path d="a" />'
+		);
+		addIcon(
+			'tabcandy-icon-b',
+			'<path d="b" />'
+		);
+		const {
+			container,
+			rerender
+		} = render(<Icon name = 'tabcandy-icon-a' />);
 
 		rerender(<Icon name = 'tabcandy-icon-b' />);
 

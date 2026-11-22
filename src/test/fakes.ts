@@ -1,5 +1,8 @@
 /** @file Test data builders and fake app helpers. */
-import { App, TAbstractFile } from 'obsidian';
+import {
+	App,
+	TAbstractFile
+} from 'obsidian';
 import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import { DEFAULT_SETTINGS } from '../settings/defaultSettings';
 import SettingsStore from '../settings/SettingsStore';
@@ -15,9 +18,7 @@ import {
  * @param options - Options for the mock app.
  * @returns The app.
  */
-export function createConfiguredApp(
-	options: Parameters<typeof AppMock.createConfigured__>[0] = {}
-): App {
+export function createConfiguredApp(options: Parameters<typeof AppMock.createConfigured__>[0] = {}): App {
 	return AppMock.createConfigured__(options).asOriginalType__();
 }
 
@@ -27,10 +28,11 @@ export function createConfiguredApp(
  * @param overrides - Settings to replace.
  * @returns The settings.
  */
-export function buildSettings(
-	overrides: Partial<TabCandySettings> = {}
-): TabCandySettings {
-	return { ...DEFAULT_SETTINGS, ...overrides };
+export function buildSettings(overrides: Partial<TabCandySettings> = {}): TabCandySettings {
+	return {
+		...DEFAULT_SETTINGS,
+		...overrides
+	};
 }
 
 /**
@@ -135,11 +137,9 @@ export function setInternalPluginsRegistry(
 	plugins: Record<string, FakeBookmarksPlugin | undefined> | undefined
 ): void {
 	(
-		app as unknown as {
-			internalPlugins:
+		app as unknown as { internalPlugins:
 				| { plugins: Record<string, FakeBookmarksPlugin | undefined> }
-				| undefined;
-		}
+				| undefined; }
 	).internalPlugins = plugins === undefined ? undefined : { plugins };
 }
 
@@ -154,9 +154,7 @@ export function setPluginsRegistry(
 	plugins: Record<string, unknown> | undefined
 ): void {
 	(
-		app as unknown as {
-			plugins: { plugins: Record<string, unknown> } | undefined;
-		}
+		app as unknown as { plugins: { plugins: Record<string, unknown> } | undefined; }
 	).plugins = plugins === undefined ? undefined : { plugins };
 }
 
@@ -167,8 +165,20 @@ export function setPluginsRegistry(
  * @returns The same app.
  */
 export function withEmptyPrivateRegistries(app: App): App {
-	setCommandsRegistry(app, { commands: {}, executeCommandById: () => true });
-	setPluginsRegistry(app, {});
-	setInternalPluginsRegistry(app, {});
+	setCommandsRegistry(
+		app,
+		{
+			commands: {},
+			executeCommandById: () => true
+		}
+	);
+	setPluginsRegistry(
+		app,
+		{}
+	);
+	setInternalPluginsRegistry(
+		app,
+		{}
+	);
 	return app;
 }

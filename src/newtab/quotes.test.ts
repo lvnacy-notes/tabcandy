@@ -23,7 +23,10 @@ import {
  * @returns The store.
  */
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
-	return new SettingsStore(buildSettings(overrides), async () => {});
+	return new SettingsStore(
+		buildSettings(overrides),
+		async () => {}
+	);
 }
 
 describe('parseQuoteBlockquotes', () => {
@@ -32,12 +35,10 @@ describe('parseQuoteBlockquotes', () => {
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([
-			{
-				text: 'The only way to do great work is to love what you do.',
-				author: 'Steve Jobs',
-			},
-		]);
+		expect(result).toEqual([{
+			text: 'The only way to do great work is to love what you do.',
+			author: 'Steve Jobs',
+		}]);
 	});
 
 	it('parses multiple quotes separated by a blank line', () => {
@@ -52,21 +53,39 @@ describe('parseQuoteBlockquotes', () => {
 		const result = parseQuoteBlockquotes(raw);
 
 		expect(result).toEqual([
-			{ text: 'First quote.', author: 'First Author' },
-			{ text: 'Second quote.', author: 'Second Author' },
+			{
+				text: 'First quote.',
+				author: 'First Author'
+			},
+			{
+				text: 'Second quote.',
+				author: 'Second Author'
+			},
 		]);
 	});
 
 	it.each([
-		['em dash', '—'],
-		['en dash', '–'],
-		['hyphen', '-'],
+		[
+			'em dash',
+			'—'
+		],
+		[
+			'en dash',
+			'–'
+		],
+		[
+			'hyphen',
+			'-'
+		],
 	])('supports %s as an attribution marker', (_label, dash) => {
 		const raw = `> A quote.\n> ${dash} An Author`;
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([{ text: 'A quote.', author: 'An Author' }]);
+		expect(result).toEqual([{
+			text: 'A quote.',
+			author: 'An Author'
+		}]);
 	});
 
 	it('joins a multi-line quote body into a single line before the attribution', () => {
@@ -78,12 +97,10 @@ describe('parseQuoteBlockquotes', () => {
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([
-			{
-				text: 'Line one of the quote. Line two of the quote.',
-				author: 'Author Name',
-			},
-		]);
+		expect(result).toEqual([{
+			text: 'Line one of the quote. Line two of the quote.',
+			author: 'Author Name',
+		}]);
 	});
 
 	it('defaults to an empty author when no attribution line is present', () => {
@@ -91,9 +108,10 @@ describe('parseQuoteBlockquotes', () => {
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([
-			{ text: 'Just a quote with no author.', author: '' },
-		]);
+		expect(result).toEqual([{
+			text: 'Just a quote with no author.',
+			author: ''
+		}]);
 	});
 
 	it('drops a block that is only an attribution line with no quote text', () => {
@@ -124,7 +142,10 @@ describe('parseQuoteBlockquotes', () => {
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([{ text: 'A real quote.', author: 'Real Author' }]);
+		expect(result).toEqual([{
+			text: 'A real quote.',
+			author: 'Real Author'
+		}]);
 	});
 
 	it('parses a trailing block with no closing blank line before EOF', () => {
@@ -133,29 +154,46 @@ describe('parseQuoteBlockquotes', () => {
 		const result = parseQuoteBlockquotes(raw);
 
 		expect(result).toEqual([
-			{ text: 'Quote one.', author: 'Author One' },
-			{ text: 'Quote two, no trailing newline.', author: '' },
+			{
+				text: 'Quote one.',
+				author: 'Author One'
+			},
+			{
+				text: 'Quote two, no trailing newline.',
+				author: ''
+			},
 		]);
 	});
 
 	it('treats a bare ">" line as a paragraph break within a block, not a block boundary', () => {
-		const raw = ['> Paragraph one.', '>', '> Paragraph two.', '> — Author'].join(
-			'\n'
-		);
+		const raw = [
+			'> Paragraph one.',
+			'>',
+			'> Paragraph two.',
+			'> — Author'
+		].join('\n');
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([
-			{ text: 'Paragraph one. Paragraph two.', author: 'Author' },
-		]);
+		expect(result).toEqual([{
+			text: 'Paragraph one. Paragraph two.',
+			author: 'Author'
+		}]);
 	});
 
 	it('attributes correctly even when a trailing bare ">" line follows the attribution', () => {
-		const raw = ['> A quote.', '> — Author Name', '>'].join('\n');
+		const raw = [
+			'> A quote.',
+			'> — Author Name',
+			'>'
+		].join('\n');
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([{ text: 'A quote.', author: 'Author Name' }]);
+		expect(result).toEqual([{
+			text: 'A quote.',
+			author: 'Author Name'
+		}]);
 	});
 
 	it('strips markers and surrounding whitespace regardless of spacing after ">" (none, single, multiple)', () => {
@@ -166,12 +204,10 @@ describe('parseQuoteBlockquotes', () => {
 
 		const result = parseQuoteBlockquotes(raw);
 
-		expect(result).toEqual([
-			{
-				text: 'No space before this. Two spaces before this.',
-				author: '',
-			},
-		]);
+		expect(result).toEqual([{
+			text: 'No space before this. Two spaces before this.',
+			author: '',
+		}]);
 	});
 
 	it('returns an empty array for an empty string', () => {
@@ -191,44 +227,52 @@ describe('parseQuoteBlockquotes', () => {
 
 describe('serializeQuotesAsBlockquotes', () => {
 	it('serializes a single quote with an attribution', () => {
-		const result = serializeQuotesAsBlockquotes([
-			{ text: 'A quote.', author: 'An Author' },
-		]);
+		const result = serializeQuotesAsBlockquotes([{
+			text: 'A quote.',
+			author: 'An Author'
+		}]);
 
 		expect(result).toBe('> A quote.\n> — An Author');
 	});
 
 	it('omits the attribution line entirely when author is empty', () => {
-		const result = serializeQuotesAsBlockquotes([
-			{ text: 'A quote with no author.', author: '' },
-		]);
+		const result = serializeQuotesAsBlockquotes([{
+			text: 'A quote with no author.',
+			author: ''
+		}]);
 
 		expect(result).toBe('> A quote with no author.');
 	});
 
 	it('separates multiple quotes with a blank line', () => {
 		const result = serializeQuotesAsBlockquotes([
-			{ text: 'First quote.', author: 'First Author' },
-			{ text: 'Second quote.', author: 'Second Author' },
+			{
+				text: 'First quote.',
+				author: 'First Author'
+			},
+			{
+				text: 'Second quote.',
+				author: 'Second Author'
+			},
 		]);
 
-		expect(result).toBe(
-			'> First quote.\n> — First Author\n\n> Second quote.\n> — Second Author'
-		);
+		expect(result).toBe('> First quote.\n> — First Author\n\n> Second quote.\n> — Second Author');
 	});
 
 	it('prefixes each line of a multi-line quote body with its own marker', () => {
-		const result = serializeQuotesAsBlockquotes([
-			{ text: 'Line one.\nLine two.', author: 'Author Name' },
-		]);
+		const result = serializeQuotesAsBlockquotes([{
+			text: 'Line one.\nLine two.',
+			author: 'Author Name'
+		}]);
 
 		expect(result).toBe('> Line one.\n> Line two.\n> — Author Name');
 	});
 
 	it('renders an internal blank line in a multi-line quote as a bare ">"', () => {
-		const result = serializeQuotesAsBlockquotes([
-			{ text: 'Paragraph one.\n\nParagraph two.', author: '' },
-		]);
+		const result = serializeQuotesAsBlockquotes([{
+			text: 'Paragraph one.\n\nParagraph two.',
+			author: ''
+		}]);
 
 		expect(result).toBe('> Paragraph one.\n>\n> Paragraph two.');
 	});
@@ -241,17 +285,35 @@ describe('serializeQuotesAsBlockquotes', () => {
 
 	it('round-trips a realistic quote list through parseQuoteBlockquotes', () => {
 		const quotes = [
-			{ text: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
-			{ text: 'Simplicity is the ultimate sophistication.', author: '' },
-			{ text: 'Line one.\nLine two.', author: 'Multi-line Author' },
+			{
+				text: 'The only way to do great work is to love what you do.',
+				author: 'Steve Jobs'
+			},
+			{
+				text: 'Simplicity is the ultimate sophistication.',
+				author: ''
+			},
+			{
+				text: 'Line one.\nLine two.',
+				author: 'Multi-line Author'
+			},
 		];
 
 		const result = parseQuoteBlockquotes(serializeQuotesAsBlockquotes(quotes));
 
 		expect(result).toEqual([
-			{ text: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
-			{ text: 'Simplicity is the ultimate sophistication.', author: '' },
-			{ text: 'Line one. Line two.', author: 'Multi-line Author' },
+			{
+				text: 'The only way to do great work is to love what you do.',
+				author: 'Steve Jobs'
+			},
+			{
+				text: 'Simplicity is the ultimate sophistication.',
+				author: ''
+			},
+			{
+				text: 'Line one. Line two.',
+				author: 'Multi-line Author'
+			},
 		]);
 	});
 
@@ -267,20 +329,30 @@ describe('serializeQuotesAsBlockquotes', () => {
 
 describe('listQuotesFromFile', () => {
 	it('returns quotes parsed from an existing file', async () => {
-		const app = createConfiguredApp({
-			files: { 'Quotes/quotes.md': '> A quote.\n> — An Author' },
-		});
+		const app = createConfiguredApp({ files: { 'Quotes/quotes.md': '> A quote.\n> — An Author' } });
 
-		const result = await listQuotesFromFile(app, 'Quotes/quotes.md');
+		const result = await listQuotesFromFile(
+			app,
+			'Quotes/quotes.md'
+		);
 
-		expect(result).toEqual([{ text: 'A quote.', author: 'An Author' }]);
+		expect(result).toEqual([{
+			text: 'A quote.',
+			author: 'An Author'
+		}]);
 	});
 
 	it('returns an empty array without touching the vault when the path is empty', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const readSpy = vi.spyOn(app.vault.adapter, 'read');
+		const readSpy = vi.spyOn(
+			app.vault.adapter,
+			'read'
+		);
 
-		const result = await listQuotesFromFile(app, '');
+		const result = await listQuotesFromFile(
+			app,
+			''
+		);
 
 		expect(result).toEqual([]);
 		expect(readSpy).not.toHaveBeenCalled();
@@ -288,21 +360,31 @@ describe('listQuotesFromFile', () => {
 
 	it('degrades to an empty array (and logs) when the file does not exist', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const consoleSpy = vi.spyOn(
+			console,
+			'error'
+		).mockImplementation(() => {});
 
-		const result = await listQuotesFromFile(app, 'Quotes/missing.md');
+		const result = await listQuotesFromFile(
+			app,
+			'Quotes/missing.md'
+		);
 
 		expect(result).toEqual([]);
 		expect(consoleSpy).toHaveBeenCalledOnce();
 	});
 
 	it('normalizes the file path before reading (trailing slash, backslashes)', async () => {
-		const app = createConfiguredApp({
-			files: { 'Quotes/quotes.md': '> A quote.' },
-		});
-		const readSpy = vi.spyOn(app.vault.adapter, 'read');
+		const app = createConfiguredApp({ files: { 'Quotes/quotes.md': '> A quote.' } });
+		const readSpy = vi.spyOn(
+			app.vault.adapter,
+			'read'
+		);
 
-		await listQuotesFromFile(app, 'Quotes\\/quotes.md');
+		await listQuotesFromFile(
+			app,
+			'Quotes\\/quotes.md'
+		);
 
 		expect(readSpy).toHaveBeenCalledWith('Quotes/quotes.md');
 	});
@@ -310,39 +392,49 @@ describe('listQuotesFromFile', () => {
 
 describe('syncQuotesFile', () => {
 	it('reads the configured file and writes the result to settings.fileQuotes', async () => {
-		const app = createConfiguredApp({
-			files: { 'Quotes/quotes.md': '> A quote.\n> — An Author' },
-		});
+		const app = createConfiguredApp({ files: { 'Quotes/quotes.md': '> A quote.\n> — An Author' } });
 		const store = buildStore({ quotesFilePath: 'Quotes/quotes.md' });
 
-		await syncQuotesFile(app, store);
+		await syncQuotesFile(
+			app,
+			store
+		);
 
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'A quote.', author: 'An Author' },
-		]);
+		expect(store.get().fileQuotes).toEqual([{
+			text: 'A quote.',
+			author: 'An Author'
+		}]);
 	});
 
 	it('resolves to an empty list without throwing when no file is configured', async () => {
 		const app = createConfiguredApp({ files: {} });
 		const store = buildStore({ quotesFilePath: '' });
 
-		await expect(syncQuotesFile(app, store)).resolves.toBeUndefined();
+		await expect(syncQuotesFile(
+			app,
+			store
+		)).resolves.toBeUndefined();
 		expect(store.get().fileQuotes).toEqual([]);
 	});
 
 	it('overwrites a previously-synced list rather than merging with it', async () => {
-		const app = createConfiguredApp({
-			files: { 'Quotes/quotes.md': '> New quote.' },
-		});
+		const app = createConfiguredApp({ files: { 'Quotes/quotes.md': '> New quote.' } });
 		const store = buildStore({
 			quotesFilePath: 'Quotes/quotes.md',
-			fileQuotes: [{ text: 'Stale quote.', author: 'Stale Author' }],
+			fileQuotes: [{
+				text: 'Stale quote.',
+				author: 'Stale Author'
+			}],
 		});
 
-		await syncQuotesFile(app, store);
+		await syncQuotesFile(
+			app,
+			store
+		);
 
-		expect(store.get().fileQuotes).toEqual([
-			{ text: 'New quote.', author: '' },
-		]);
+		expect(store.get().fileQuotes).toEqual([{
+			text: 'New quote.',
+			author: ''
+		}]);
 	});
 });

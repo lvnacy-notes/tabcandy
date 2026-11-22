@@ -17,9 +17,7 @@ class ChooseImageSuggestModal extends FuzzySuggestModal<TFile> {
 	getItems(): TFile[] {
 		return this.app.vault
 			.getFiles()
-			.filter((f) =>
-				BACKGROUND_IMAGE_EXTENSIONS.includes(f.extension.toLowerCase())
-			);
+			.filter((f) => BACKGROUND_IMAGE_EXTENSIONS.includes(f.extension.toLowerCase()));
 	}
 
 	getItemText(item: TFile): string {

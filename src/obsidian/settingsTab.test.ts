@@ -16,7 +16,10 @@ import {
 	withEmptyPrivateRegistries,
 } from '../test/fakes';
 import SettingsStore from '../settings/SettingsStore';
-import { BackgroundTheme, TabCandySettings } from '../types';
+import {
+	BackgroundTheme,
+	TabCandySettings
+} from '../types';
 
 /**
  * A minimal stand-in for TabCandyPlugin, narrowed to just the two members
@@ -27,13 +30,17 @@ import { BackgroundTheme, TabCandySettings } from '../types';
  * plugin lifecycle, etc. that this file's assertions have no use for).
  */
 function buildPlugin(settings: TabCandySettings): TabCandyPlugin {
-	const settingsStore = new SettingsStore(settings, async () => {});
-	return { settings, settingsStore } as unknown as TabCandyPlugin;
+	const settingsStore = new SettingsStore(
+		settings,
+		async () => {}
+	);
+	return {
+		settings,
+		settingsStore
+	} as unknown as TabCandyPlugin;
 }
 
-function buildTab(
-	settings: TabCandySettings = buildSettings()
-): TabCandySettingTab {
+function buildTab(settings: TabCandySettings = buildSettings()): TabCandySettingTab {
 	// getSettingDefinitions() calls getBookmarkGroups(this.app) to build
 	// the Bookmarks-group dropdown's options regardless of which page it
 	// ends up nested under, which touches the same undocumented
@@ -44,7 +51,10 @@ function buildTab(
 	// present-but-empty to avoid the strict-proxy's throw-on-unassigned-
 	// access.
 	const app = withEmptyPrivateRegistries(createConfiguredApp({ files: {} }));
-	return new TabCandySettingTab(app, buildPlugin(settings));
+	return new TabCandySettingTab(
+		app,
+		buildPlugin(settings)
+	);
 }
 
 describe('getSettingDefinitions', () => {
@@ -66,9 +76,7 @@ describe('getSettingDefinitions', () => {
 
 		const [functionPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 
-		const headings = (functionPage.items ?? []).map(
-			(item) => (item as SettingDefinitionGroup).heading
-		);
+		const headings = (functionPage.items ?? []).map((item) => (item as SettingDefinitionGroup).heading);
 		expect(headings).toEqual([
 			'New tab behavior',
 			'Search settings',
@@ -85,21 +93,18 @@ describe('getSettingDefinitions', () => {
 	it('relocates Background settings and Local background images under Design, unchanged', () => {
 		const tab = buildTab();
 
-		const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+		const [
+			,
+			designPage
+		] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 
 		const items = designPage.items ?? [];
 		expect(items).toHaveLength(4);
-		expect((items[0] as SettingDefinitionGroup).heading).toBe(
-			'Background settings'
-		);
+		expect((items[0] as SettingDefinitionGroup).heading).toBe('Background settings');
 		expect((items[1] as SettingDefinitionGroup).heading).toBe('');
 		expect((items[2] as SettingDefinitionList).type).toBe('list');
-		expect((items[2] as SettingDefinitionList).heading).toBe(
-			'Local background images'
-		);
-		expect((items[3] as SettingDefinitionGroup).heading).toBe(
-			'Style customization'
-		);
+		expect((items[2] as SettingDefinitionList).heading).toBe('Local background images');
+		expect((items[3] as SettingDefinitionGroup).heading).toBe('Style customization');
 	});
 
 	it('does not change any relocated item\'s control binding', () => {
@@ -114,59 +119,63 @@ describe('getSettingDefinitions', () => {
 
 	describe("Design page's status badge", () => {
 		it('is null when the background theme is not Local', () => {
-			const tab = buildTab(
-				buildSettings({
-					backgroundTheme: BackgroundTheme.CUSTOM,
-					manualBackgroundFiles: ['Backgrounds/missing.png'],
-				})
-			);
+			const tab = buildTab(buildSettings({
+				backgroundTheme: BackgroundTheme.CUSTOM,
+				manualBackgroundFiles: ['Backgrounds/missing.png'],
+			}));
 
-			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const [
+				,
+				designPage
+			] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 			const status = designPage.status as () => 'warning' | null;
 
 			expect(status()).toBeNull();
 		});
 
 		it('is null when the Local theme has no missing manual or synced files', () => {
-			const tab = buildTab(
-				buildSettings({
-					backgroundTheme: BackgroundTheme.LOCAL,
-					manualBackgroundFiles: [],
-					backgroundFiles: [],
-				})
-			);
+			const tab = buildTab(buildSettings({
+				backgroundTheme: BackgroundTheme.LOCAL,
+				manualBackgroundFiles: [],
+				backgroundFiles: [],
+			}));
 
-			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const [
+				,
+				designPage
+			] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 			const status = designPage.status as () => 'warning' | null;
 
 			expect(status()).toBeNull();
 		});
 
 		it('is a warning when the Local theme references a manual background file that no longer resolves', () => {
-			const tab = buildTab(
-				buildSettings({
-					backgroundTheme: BackgroundTheme.LOCAL,
-					manualBackgroundFiles: ['Backgrounds/deleted.png'],
-					backgroundFiles: [],
-				})
-			);
+			const tab = buildTab(buildSettings({
+				backgroundTheme: BackgroundTheme.LOCAL,
+				manualBackgroundFiles: ['Backgrounds/deleted.png'],
+				backgroundFiles: [],
+			}));
 
-			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const [
+				,
+				designPage
+			] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 			const status = designPage.status as () => 'warning' | null;
 
 			expect(status()).toBe('warning');
 		});
 
 		it('is a warning when the Local theme references a synced background file that no longer resolves', () => {
-			const tab = buildTab(
-				buildSettings({
-					backgroundTheme: BackgroundTheme.LOCAL,
-					manualBackgroundFiles: [],
-					backgroundFiles: ['Backgrounds/deleted.png'],
-				})
-			);
+			const tab = buildTab(buildSettings({
+				backgroundTheme: BackgroundTheme.LOCAL,
+				manualBackgroundFiles: [],
+				backgroundFiles: ['Backgrounds/deleted.png'],
+			}));
 
-			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const [
+				,
+				designPage
+			] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 			const status = designPage.status as () => 'warning' | null;
 
 			expect(status()).toBe('warning');
@@ -174,11 +183,15 @@ describe('getSettingDefinitions', () => {
 	});
 
 	describe('Auto-contrast overlay text toggle', () => {
-		function getToggleItem(
-			settings: TabCandySettings
-		): { visible?: () => boolean; control?: { key?: string } } {
+		function getToggleItem(settings: TabCandySettings): {
+			visible?: () => boolean;
+			control?: { key?: string }
+		} {
 			const tab = buildTab(settings);
-			const [, designPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+			const [
+				,
+				designPage
+			] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
 			const styleGroup = (designPage.items ?? [])[3] as SettingDefinitionGroup<keyof TabCandySettings>;
 			return (styleGroup.items ?? [])[0] as {
 				visible?: () => boolean;
@@ -193,25 +206,19 @@ describe('getSettingDefinitions', () => {
 		});
 
 		it('is visible when the background theme is Custom', () => {
-			const toggleItem = getToggleItem(
-				buildSettings({ backgroundTheme: BackgroundTheme.CUSTOM })
-			);
+			const toggleItem = getToggleItem(buildSettings({ backgroundTheme: BackgroundTheme.CUSTOM }));
 
 			expect(toggleItem.visible?.()).toBe(true);
 		});
 
 		it('is visible when the background theme is Local', () => {
-			const toggleItem = getToggleItem(
-				buildSettings({ backgroundTheme: BackgroundTheme.LOCAL })
-			);
+			const toggleItem = getToggleItem(buildSettings({ backgroundTheme: BackgroundTheme.LOCAL }));
 
 			expect(toggleItem.visible?.()).toBe(true);
 		});
 
 		it('is hidden for the transparent themes, where there is no background to contrast against', () => {
-			const toggleItem = getToggleItem(
-				buildSettings({ backgroundTheme: BackgroundTheme.TRANSPARENT })
-			);
+			const toggleItem = getToggleItem(buildSettings({ backgroundTheme: BackgroundTheme.TRANSPARENT }));
 
 			expect(toggleItem.visible?.()).toBe(false);
 		});

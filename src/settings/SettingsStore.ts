@@ -45,7 +45,10 @@ export default class SettingsStore {
 	 * see a real, intentional state transition.
 	 */
 	async update(patch: Partial<TabCandySettings>): Promise<void> {
-		this.value = { ...this.value, ...patch };
+		this.value = {
+			...this.value,
+			...patch
+		};
 		await this.persist(this.value);
 		this.subscribers.forEach((subscriber) => subscriber(this.value));
 	}

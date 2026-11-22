@@ -21,7 +21,10 @@ describe('activateView', () => {
 
 	it('reveals the newly created leaf', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const revealLeaf = vi.spyOn(app.workspace, 'revealLeaf');
+		const revealLeaf = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		);
 
 		await activateView(app);
 
@@ -41,7 +44,10 @@ describe('activateView', () => {
 	it('reveals the existing Tab Candy leaf when one is already open', async () => {
 		const app = createConfiguredApp({ files: {} });
 		await activateView(app);
-		const revealLeaf = vi.spyOn(app.workspace, 'revealLeaf');
+		const revealLeaf = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		);
 
 		await activateView(app);
 

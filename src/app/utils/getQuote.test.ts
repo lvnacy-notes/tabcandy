@@ -17,11 +17,15 @@ function buildCustomQuote(overrides: Partial<CustomQuote> = {}): CustomQuote {
 
 describe('getQuote', () => {
 	it('returns a quote from the custom list', () => {
-		const quote = getQuote([
-			buildCustomQuote({ text: 'Be water.', author: 'Bruce Lee' }),
-		]);
+		const quote = getQuote([buildCustomQuote({
+			text: 'Be water.',
+			author: 'Bruce Lee'
+		})]);
 
-		expect(quote).toEqual({ content: 'Be water.', author: 'Bruce Lee' });
+		expect(quote).toEqual({
+			content: 'Be water.',
+			author: 'Bruce Lee'
+		});
 	});
 
 	it('returns null when there are no custom quotes configured', () => {
@@ -31,14 +35,26 @@ describe('getQuote', () => {
 	});
 
 	it('can return any entry in a multi-quote list', () => {
-		vi.spyOn(Math, 'random').mockReturnValue(0.99);
+		vi.spyOn(
+			Math,
+			'random'
+		).mockReturnValue(0.99);
 
 		const quote = getQuote([
-			buildCustomQuote({ text: 'First.', author: 'A' }),
-			buildCustomQuote({ text: 'Second.', author: 'B' }),
+			buildCustomQuote({
+				text: 'First.',
+				author: 'A'
+			}),
+			buildCustomQuote({
+				text: 'Second.',
+				author: 'B'
+			}),
 		]);
 
-		expect(quote).toEqual({ content: 'Second.', author: 'B' });
+		expect(quote).toEqual({
+			content: 'Second.',
+			author: 'B'
+		});
 		vi.restoreAllMocks();
 	});
 });

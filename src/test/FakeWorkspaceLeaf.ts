@@ -21,7 +21,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 	 * @param id - The leaf's id.
 	 */
 	constructor(app: AppMock, id?: string) {
-		super(app, id);
+		super(
+			app,
+			id
+		);
 	}
 
 	/** Makes `getViewState()` throw from now on. */
@@ -48,7 +51,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 		viewState: ViewState,
 		eState?: Record<string, unknown>
 	): Promise<void> {
-		await super.setViewState(viewState, eState);
+		await super.setViewState(
+			viewState,
+			eState
+		);
 		this.hasContent = true;
 		this.extraState = {};
 		if (viewState.active !== undefined) {
@@ -77,12 +83,13 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 	 */
 	override getViewState(): ViewState {
 		if (this.unreadable) {
-			throw new Error(
-				'FakeWorkspaceLeaf: getViewState() is forced to throw for this leaf'
-			);
+			throw new Error('FakeWorkspaceLeaf: getViewState() is forced to throw for this leaf');
 		}
 		if (!this.hasContent) {
-			return { type: 'empty', state: {} };
+			return {
+				type: 'empty',
+				state: {}
+			};
 		}
 		return { ...super.getViewState(), ...this.extraState };
 	}
@@ -108,7 +115,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
  * @returns The leaf.
  */
 export function createFakeLeaf(app: App, id?: string): WorkspaceLeaf {
-	const leaf = new FakeWorkspaceLeaf(app as unknown as AppMock, id);
+	const leaf = new FakeWorkspaceLeaf(
+		app as unknown as AppMock,
+		id
+	);
 	return leaf.asOriginalType3__();
 }
 

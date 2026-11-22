@@ -36,7 +36,10 @@ import {
 } from '../tabs/tabNavigation';
 import SettingsStore from '../settings/SettingsStore';
 import { getTimeOfDayGreeting } from './utils/time';
-import { BackgroundTheme, ClosedTabEntry } from '../types';
+import {
+	BackgroundTheme,
+	ClosedTabEntry
+} from '../types';
 
 /**
  * The new tab page: a greeting, clock, search buttons, recent files,
@@ -57,11 +60,25 @@ export default function App({
 }) {
 	const settings = useSettings(settingsStore);
 	const time = useClock(settings.timeFormat);
-	const quote = useQuote(settings.customQuotes, settings.fileQuotes);
-	const background = useBackground(app, settings);
-	const overlayTextColor = useOverlayContrast(app, settingsStore, settings, background);
+	const quote = useQuote(
+		settings.customQuotes,
+		settings.fileQuotes
+	);
+	const background = useBackground(
+		app,
+		settings
+	);
+	const overlayTextColor = useOverlayContrast(
+		app,
+		settingsStore,
+		settings,
+		background
+	);
 	const recentFiles = useRecentFiles(app);
-	const bookmarks = useBookmarks(app, settings);
+	const bookmarks = useBookmarks(
+		app,
+		settings
+	);
 	const mainDivRef = useRef<HTMLDivElement>(null);
 
 	/**
@@ -71,10 +88,12 @@ export default function App({
 	 * @param file - The file to open.
 	 */ 
 	const openFile = (file: TFile) => {
-		if (
-			settings.dashboardFocusesOpenTab &&
-			focusOpenLeaf(app, file.path, leaf)
-		) {
+		if (settings.dashboardFocusesOpenTab &&
+			focusOpenLeaf(
+				app,
+				file.path,
+				leaf
+			)) {
 			return;
 		}
 		void leaf.openFile(file);
@@ -89,20 +108,29 @@ export default function App({
 	 */
 	const reopenTab = (entry: ClosedTabEntry) => {
 		const path = getViewStateFilePath(entry.viewState);
-		if (
-			settings.dashboardFocusesOpenTab &&
+		if (settings.dashboardFocusesOpenTab &&
 			path !== null &&
-			focusOpenLeaf(app, path, leaf)
-		) {
+			focusOpenLeaf(
+				app,
+				path,
+				leaf
+			)) {
 			removeClosedTab(entry);
 			return;
 		}
-		void reopenClosedTab(app, entry, leaf);
+		void reopenClosedTab(
+			app,
+			entry,
+			leaf
+		);
 	};
 
 	/** Runs the inline search provider's command. */
 	const runInlineSearch = () =>
-		executeEnabledPluginCommand(app, settings.inlineSearchProvider.command);
+		executeEnabledPluginCommand(
+			app,
+			settings.inlineSearchProvider.command
+		);
 
 	/**
 	 * Runs the inline search when a plain letter or digit key is pressed.

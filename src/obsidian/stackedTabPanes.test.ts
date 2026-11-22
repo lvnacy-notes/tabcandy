@@ -23,7 +23,10 @@ import { buildSettings } from '../test/fakes';
  * @returns A SettingsStore ready to pass to `registerStackedTabPanes`.
  */
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
-	return new SettingsStore(buildSettings(overrides), async () => {});
+	return new SettingsStore(
+		buildSettings(overrides),
+		async () => {}
+	);
 }
 
 /** document.body is shared across tests; reset it so classes don't leak. */
@@ -35,7 +38,10 @@ describe('registerStackedTabPanes', () => {
 	it('leaves the class absent from <body> at registration when the setting is off (the default)', () => {
 		const settingsStore = buildStore({ widenStackedTabPanes: false });
 
-		registerStackedTabPanes(settingsStore, () => {});
+		registerStackedTabPanes(
+			settingsStore,
+			() => {}
+		);
 
 		expect(document.body.hasClass(WIDEN_STACKED_PANES_CLASS)).toBe(false);
 	});
@@ -43,14 +49,20 @@ describe('registerStackedTabPanes', () => {
 	it('adds the class at registration when the setting is already on', () => {
 		const settingsStore = buildStore({ widenStackedTabPanes: true });
 
-		registerStackedTabPanes(settingsStore, () => {});
+		registerStackedTabPanes(
+			settingsStore,
+			() => {}
+		);
 
 		expect(document.body.hasClass(WIDEN_STACKED_PANES_CLASS)).toBe(true);
 	});
 
 	it('adds the class when a settings update turns the setting on', async () => {
 		const settingsStore = buildStore({ widenStackedTabPanes: false });
-		registerStackedTabPanes(settingsStore, () => {});
+		registerStackedTabPanes(
+			settingsStore,
+			() => {}
+		);
 
 		await settingsStore.update({ widenStackedTabPanes: true });
 
@@ -59,7 +71,10 @@ describe('registerStackedTabPanes', () => {
 
 	it('removes the class when a settings update turns the setting back off', async () => {
 		const settingsStore = buildStore({ widenStackedTabPanes: true });
-		registerStackedTabPanes(settingsStore, () => {});
+		registerStackedTabPanes(
+			settingsStore,
+			() => {}
+		);
 
 		await settingsStore.update({ widenStackedTabPanes: false });
 
