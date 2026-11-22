@@ -1,5 +1,11 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { Root, createRoot } from 'react-dom/client';
+import {
+	ItemView,
+	WorkspaceLeaf
+} from 'obsidian';
+import {
+	Root,
+	createRoot
+} from 'react-dom/client';
 import ReactApp from './app/App';
 import SettingsStore from './settings/SettingsStore';
 import { TAB_CANDY_VIEW_TYPE } from './types';
@@ -51,13 +57,11 @@ export class TabCandyView extends ItemView {
 		this.contentEl.empty();
 
 		this.root = createRoot(this.contentEl);
-		this.root.render(
-			<ReactApp
-				app = { this.app }
-				settingsStore = { this.settingsStore }
-				leaf = { this.leaf }
-			/>
-		);
+		this.root.render(<ReactApp
+			app = { this.app }
+			settingsStore = { this.settingsStore }
+			leaf = { this.leaf }
+		/>);
 		this.containerEl.addClass('tabcandy');
 
 		return Promise.resolve();

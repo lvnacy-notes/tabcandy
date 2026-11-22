@@ -26,7 +26,10 @@ const ATTRIBUTION_LINE = /^[—–-]\s*(.+)$/;
  * has nothing after it.
  */
 function stripBlockquoteMarker(line: string): string {
-	return line.replace(/^>\s?/, '');
+	return line.replace(
+		/^>\s?/,
+		''
+	);
 }
 
 /**
@@ -93,13 +96,22 @@ function parseBlock(block: string[]): CustomQuote | null {
 
 	const author = attributionMatch ? attributionMatch[1].trim() : '';
 	const textLines = attributionMatch
-		? contentLines.slice(0, lastNonEmptyIndex)
-		: contentLines.slice(0, lastNonEmptyIndex + 1);
+		? contentLines.slice(
+			0,
+			lastNonEmptyIndex
+		)
+		: contentLines.slice(
+			0,
+			lastNonEmptyIndex + 1
+		);
 
 	const text = textLines.filter((line) => line !== '').join(' ').trim();
 	if (!text) {return null;}
 
-	return { text, author };
+	return {
+		text,
+		author
+	};
 }
 
 /**
@@ -146,7 +158,10 @@ function serializeQuoteBlock(quote: CustomQuote): string {
 		.map((line) => (line ? `> ${line}` : '>'));
 
 	const lines = quote.author
-		? [...textLines, `> — ${quote.author}`]
+		? [
+			...textLines,
+			`> — ${quote.author}`
+		]
 		: textLines;
 
 	return lines.join('\n');
@@ -244,43 +259,38 @@ export function registerQuotesVaultWatcher(
 	// 500ms after the last one, matching registerBackgroundVaultWatchers'
 	// debounce window.
 	const debouncedSync = debounce(() => {
-		void syncQuotesFile(app, settingsStore);
+		void syncQuotesFile(
+			app,
+			settingsStore
+		);
 	}, 500);
 
-	registerEvent(
-		app.vault.on('create', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('create', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('modify', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('modify', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('delete', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				void settingsStore.update({ fileQuotes: [] });
-			}
-		})
-	);
+	registerEvent(app.vault.on('delete', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			void settingsStore.update({ fileQuotes: [] });
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('rename', (file, oldPath) => {
-			// The file's content hasn't changed, only its path - update
-			// quotesFilePath to follow it rather than re-parsing, same
-			// content, from the new location. Mirrors how
-			// registerBackgroundVaultWatchers updates a renamed
-			// manualBackgroundFiles entry in place instead of re-syncing.
-			if (isConfiguredQuotesFile(oldPath)) {
-				void settingsStore.update({ quotesFilePath: file.path });
-			}
-		})
-	);
+	registerEvent(app.vault.on('rename', (file, oldPath) => {
+		// The file's content hasn't changed, only its path - update
+		// quotesFilePath to follow it rather than re-parsing, same
+		// content, from the new location. Mirrors how
+		// registerBackgroundVaultWatchers updates a renamed
+		// manualBackgroundFiles entry in place instead of re-syncing.
+		if (isConfiguredQuotesFile(oldPath)) {
+			void settingsStore.update({ quotesFilePath: file.path });
+		}
+	}));
 }

@@ -21,8 +21,14 @@ import {
 	useOverlayContrast,
 } from './hooks';
 import { DEFAULT_OVERLAY_COLOR } from '../services/overlayContrast';
-import { BackgroundTheme, TIME_FORMAT } from '../types';
-import { buildSettings, createConfiguredApp } from '../test/fakes';
+import {
+	BackgroundTheme,
+	TIME_FORMAT
+} from '../types';
+import {
+	buildSettings,
+	createConfiguredApp
+} from '../test/fakes';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -47,7 +53,13 @@ describe('useClock', () => {
 	});
 
 	it('returns the current time immediately on mount', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5));
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5
+		));
 
 		const { result } = renderHook(() => useClock(TIME_FORMAT.TWENTY_FOUR_HOUR));
 
@@ -55,11 +67,25 @@ describe('useClock', () => {
 	});
 
 	it('does not tick before a full second has elapsed', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5, 0));
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5,
+			0
+		));
 		const { result } = renderHook(() => useClock(TIME_FORMAT.TWENTY_FOUR_HOUR));
 
 		act(() => {
-			vi.setSystemTime(new Date(2026, 0, 1, 14, 5, 30));
+			vi.setSystemTime(new Date(
+				2026,
+				0,
+				1,
+				14,
+				5,
+				30
+			));
 			vi.advanceTimersByTime(500);
 		});
 
@@ -67,12 +93,26 @@ describe('useClock', () => {
 	});
 
 	it('ticks once a second, reflecting the clock as it advances', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5, 59));
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5,
+			59
+		));
 		const { result } = renderHook(() => useClock(TIME_FORMAT.TWENTY_FOUR_HOUR));
 		expect(result.current).toBe('14:05');
 
 		act(() => {
-			vi.setSystemTime(new Date(2026, 0, 1, 14, 6, 0));
+			vi.setSystemTime(new Date(
+				2026,
+				0,
+				1,
+				14,
+				6,
+				0
+			));
 			vi.advanceTimersByTime(1000);
 		});
 
@@ -80,8 +120,17 @@ describe('useClock', () => {
 	});
 
 	it('restarts the interval and re-reads the clock immediately when timeFormat changes', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5));
-		const { result, rerender } = renderHook(
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5
+		));
+		const {
+			result,
+			rerender
+		} = renderHook(
 			({ timeFormat }) => useClock(timeFormat),
 			{ initialProps: { timeFormat: TIME_FORMAT.TWENTY_FOUR_HOUR } }
 		);
@@ -93,8 +142,18 @@ describe('useClock', () => {
 	});
 
 	it('does not restart the interval on an unrelated re-render', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5, 0));
-		const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5,
+			0
+		));
+		const clearIntervalSpy = vi.spyOn(
+			window,
+			'clearInterval'
+		);
 		const { rerender } = renderHook(
 			({ timeFormat }) => useClock(timeFormat),
 			{ initialProps: { timeFormat: TIME_FORMAT.TWENTY_FOUR_HOUR } }
@@ -106,8 +165,18 @@ describe('useClock', () => {
 	});
 
 	it('clears the interval on unmount rather than leaking it', () => {
-		vi.setSystemTime(new Date(2026, 0, 1, 14, 5, 0));
-		const clearIntervalSpy = vi.spyOn(window, 'clearInterval');
+		vi.setSystemTime(new Date(
+			2026,
+			0,
+			1,
+			14,
+			5,
+			0
+		));
+		const clearIntervalSpy = vi.spyOn(
+			window,
+			'clearInterval'
+		);
 		const { unmount } = renderHook(() => useClock(TIME_FORMAT.TWENTY_FOUR_HOUR));
 
 		unmount();
@@ -130,15 +199,16 @@ describe('useBackground', () => {
 	});
 
 	it('resolves customBackground to a resource URL when the file exists in the vault', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const settings = buildSettings({
 			backgroundTheme: BackgroundTheme.CUSTOM,
 			customBackground: 'Backgrounds/sunset.png',
 		});
 
-		const { result } = renderHook(() => useBackground(app, settings));
+		const { result } = renderHook(() => useBackground(
+			app,
+			settings
+		));
 
 		expect(result.current).toBe('app://local/Backgrounds/sunset.png');
 	});
@@ -150,7 +220,10 @@ describe('useBackground', () => {
 			customBackground: 'Backgrounds/deleted.png',
 		});
 
-		const { result } = renderHook(() => useBackground(app, settings));
+		const { result } = renderHook(() => useBackground(
+			app,
+			settings
+		));
 
 		expect(result.current).toBeNull();
 	});
@@ -162,7 +235,10 @@ describe('useBackground', () => {
 			customBackground: '',
 		});
 
-		const { result } = renderHook(() => useBackground(app, settings));
+		const { result } = renderHook(() => useBackground(
+			app,
+			settings
+		));
 
 		expect(result.current).toBeNull();
 	});
@@ -173,13 +249,15 @@ describe('resolveActiveBackgroundPath', () => {
 		const app = createConfiguredApp({ files: {} });
 		const settings = buildSettings({ backgroundTheme: BackgroundTheme.CUSTOM });
 
-		expect(resolveActiveBackgroundPath(app, settings, null)).toBeNull();
+		expect(resolveActiveBackgroundPath(
+			app,
+			settings,
+			null
+		)).toBeNull();
 	});
 
 	it('returns customBackground for the Custom theme when a background is resolved', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const settings = buildSettings({
 			backgroundTheme: BackgroundTheme.CUSTOM,
 			customBackground: 'Backgrounds/sunset.png',
@@ -195,15 +273,16 @@ describe('resolveActiveBackgroundPath', () => {
 	});
 
 	it('returns the Local-theme candidate whose resolved URL matches the active background', () => {
-		const app = createConfiguredApp({
-			files: {
-				'Backgrounds/one.png': '',
-				'Backgrounds/two.png': '',
-			},
-		});
+		const app = createConfiguredApp({ files: {
+			'Backgrounds/one.png': '',
+			'Backgrounds/two.png': '',
+		} });
 		const settings = buildSettings({
 			backgroundTheme: BackgroundTheme.LOCAL,
-			backgroundFiles: ['Backgrounds/one.png', 'Backgrounds/two.png'],
+			backgroundFiles: [
+				'Backgrounds/one.png',
+				'Backgrounds/two.png'
+			],
 		});
 
 		const result = resolveActiveBackgroundPath(
@@ -216,9 +295,7 @@ describe('resolveActiveBackgroundPath', () => {
 	});
 
 	it('returns null for the Local theme when no candidate matches the active background', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/one.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/one.png': '' } });
 		const settings = buildSettings({
 			backgroundTheme: BackgroundTheme.LOCAL,
 			backgroundFiles: ['Backgrounds/one.png'],
@@ -237,7 +314,11 @@ describe('resolveActiveBackgroundPath', () => {
 		const app = createConfiguredApp({ files: {} });
 		const settings = buildSettings({ backgroundTheme: BackgroundTheme.TRANSPARENT });
 
-		const result = resolveActiveBackgroundPath(app, settings, 'app://local/anything.png');
+		const result = resolveActiveBackgroundPath(
+			app,
+			settings,
+			'app://local/anything.png'
+		);
 
 		expect(result).toBeNull();
 	});
@@ -249,7 +330,10 @@ describe('useOverlayContrast', () => {
 	});
 
 	function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
-		return new SettingsStore(buildSettings(overrides), async () => {});
+		return new SettingsStore(
+			buildSettings(overrides),
+			async () => {}
+		);
 	}
 
 	function getMtime(app: ReturnType<typeof createConfiguredApp>, path: string): number {
@@ -263,7 +347,10 @@ describe('useOverlayContrast', () => {
 	// The in-memory vault only serves seeded text files through readBinary(),
 	// and jsdom has no URL.createObjectURL - stub both so the blob: path runs.
 	function stubBinaryRead(app: ReturnType<typeof createConfiguredApp>) {
-		vi.spyOn(app.vault, 'readBinary').mockResolvedValue(new ArrayBuffer(8));
+		vi.spyOn(
+			app.vault,
+			'readBinary'
+		).mockResolvedValue(new ArrayBuffer(8));
 		URL.createObjectURL = vi.fn(() => 'blob:tabcandy-test');
 		URL.revokeObjectURL = vi.fn();
 	}
@@ -282,8 +369,7 @@ describe('useOverlayContrast', () => {
 				store,
 				store.get(),
 				'app://local/Backgrounds/sunset.png'
-			)
-		);
+			));
 
 		expect(result.current).toBeNull();
 	});
@@ -296,28 +382,36 @@ describe('useOverlayContrast', () => {
 		});
 
 		const { result } = renderHook(() =>
-			useOverlayContrast(app, store, store.get(), null)
-		);
+			useOverlayContrast(
+				app,
+				store,
+				store.get(),
+				null
+			));
 
 		expect(result.current).toBeNull();
 	});
 
 	it('returns a cached value without recomputing when the cache is fresh', async () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
-		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const mtime = getMtime(
+			app,
+			'Backgrounds/sunset.png'
+		);
 		const store = buildStore({
 			autoContrastOverlayText: true,
 			backgroundTheme: BackgroundTheme.CUSTOM,
 			customBackground: 'Backgrounds/sunset.png',
-			overlayTextContrastCache: {
-				'Backgrounds/sunset.png': {
-					mtime,
-					dominantColor: '#ff8800',
-					overlayTextColor: '#123456',
-				},
-			},
+			overlayTextContrastCache: { 'Backgrounds/sunset.png': {
+				mtime,
+				dominantColor: '#ff8800',
+				overlayTextColor: '#123456',
+			} },
 		});
-		const updateSpy = vi.spyOn(store, 'update');
+		const updateSpy = vi.spyOn(
+			store,
+			'update'
+		);
 
 		const { result } = renderHook(() =>
 			useOverlayContrast(
@@ -325,8 +419,7 @@ describe('useOverlayContrast', () => {
 				store,
 				store.get(),
 				'app://local/Backgrounds/sunset.png'
-			)
-		);
+			));
 
 		await waitFor(() => expect(result.current).toBe('#123456'));
 		expect(updateSpy).not.toHaveBeenCalled();
@@ -335,7 +428,10 @@ describe('useOverlayContrast', () => {
 	it('recomputes and persists a result when there is no cache entry for the active file', async () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		stubBinaryRead(app);
-		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const mtime = getMtime(
+			app,
+			'Backgrounds/sunset.png'
+		);
 		const store = buildStore({
 			autoContrastOverlayText: true,
 			backgroundTheme: BackgroundTheme.CUSTOM,
@@ -348,8 +444,7 @@ describe('useOverlayContrast', () => {
 				store,
 				store.get(),
 				'app://local/Backgrounds/sunset.png'
-			)
-		);
+			));
 
 		// This environment has no real Canvas 2D implementation, so a
 		// genuine recompute always resolves to the default overlay color
@@ -367,18 +462,19 @@ describe('useOverlayContrast', () => {
 	it('recomputes when the cached mtime no longer matches the file', async () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		stubBinaryRead(app);
-		const mtime = getMtime(app, 'Backgrounds/sunset.png');
+		const mtime = getMtime(
+			app,
+			'Backgrounds/sunset.png'
+		);
 		const store = buildStore({
 			autoContrastOverlayText: true,
 			backgroundTheme: BackgroundTheme.CUSTOM,
 			customBackground: 'Backgrounds/sunset.png',
-			overlayTextContrastCache: {
-				'Backgrounds/sunset.png': {
-					mtime: mtime - 1000,
-					dominantColor: '#ff8800',
-					overlayTextColor: '#123456',
-				},
-			},
+			overlayTextContrastCache: { 'Backgrounds/sunset.png': {
+				mtime: mtime - 1000,
+				dominantColor: '#ff8800',
+				overlayTextColor: '#123456',
+			} },
 		});
 
 		const { result } = renderHook(() =>
@@ -387,8 +483,7 @@ describe('useOverlayContrast', () => {
 				store,
 				store.get(),
 				'app://local/Backgrounds/sunset.png'
-			)
-		);
+			));
 
 		// A stale cache entry ('#123456') would return synchronously; seeing
 		// the fresh-recompute default confirms the mismatch triggered a

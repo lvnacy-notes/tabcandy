@@ -5,8 +5,14 @@ import {
 	useEffect,
 	useRef
 } from 'react';
-import { TFile, getIcon } from 'obsidian';
-import { ClosedTabEntry, Quote } from '../types';
+import {
+	TFile,
+	getIcon
+} from 'obsidian';
+import {
+	ClosedTabEntry,
+	Quote
+} from '../types';
 
 interface BackgroundSurfaceProps {
 	background: string | null | undefined;
@@ -131,7 +137,10 @@ export const Icon = ({ name }: { name: string }) => {
  * inside is left as ordinary (non-hidden) content, so it doubles as
  * the button's accessible name with no extra `aria-label` needed.
  */
-export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
+export const Bookmarks = ({
+	files,
+	onOpen
+}: BookmarksProps) => (
 	<div className = 'tabcandy-dashboard-centeredrow'>
 		{ files.map((file) => (
 			<button
@@ -154,7 +163,10 @@ export const Bookmarks = ({ files, onOpen }: BookmarksProps) => (
  * A quote and its author, rendered only once a quote has loaded and the
  * setting is enabled.
  */
-export const QuoteDisplay = ({ quote, show }: QuoteDisplayProps) => (
+export const QuoteDisplay = ({
+	quote,
+	show
+}: QuoteDisplayProps) => (
 	<div className = 'tabcandy-quote'>
 		{ quote && show && (
 			<>
@@ -177,7 +189,10 @@ export const QuoteDisplay = ({ quote, show }: QuoteDisplayProps) => (
  * inside is left as ordinary (non-hidden) content, so it doubles as
  * the button's accessible name with no extra `aria-label` needed.
  */
-export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
+export const RecentFiles = ({
+	files,
+	onOpen
+}: RecentFilesProps) => (
 	<div className = 'tabcandy-dashboard-centeredrow'>
 		{ files.map((file) => (
 			<button
@@ -208,7 +223,10 @@ export const RecentFiles = ({ files, onOpen }: RecentFilesProps) => (
  * the full title on hover, since a closed tab's title isn't a filename a
  * person will already recognize when truncated.
  */
-export const RecentlyClosedTabs = ({ entries, onOpen }: RecentlyClosedTabsProps) => (
+export const RecentlyClosedTabs = ({
+	entries,
+	onOpen
+}: RecentlyClosedTabsProps) => (
 	<div className = 'tabcandy-dashboard-centeredrow'>
 		{ entries.map((entry, index) => (
 			<button

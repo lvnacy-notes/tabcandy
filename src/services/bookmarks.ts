@@ -1,5 +1,11 @@
-import { App, TFile } from 'obsidian';
-import { BOOKMARK_SOURCE, TabCandySettings } from '../types';
+import {
+	App,
+	TFile
+} from 'obsidian';
+import {
+	BOOKMARK_SOURCE,
+	TabCandySettings
+} from '../types';
 
 /**
  * Shape of an entry in the Bookmarks core plugin's item tree. Bookmarks can
@@ -40,15 +46,11 @@ const isBookmarkGroupItem = (item: BookmarkItem): item is BookmarkGroupItem =>
  */
 interface BookmarksInternalPlugin {
 	enabled?: boolean;
-	instance?: {
-		items?: unknown;
-	};
+	instance?: { items?: unknown; };
 }
 
 interface AppWithInternalPlugins extends App {
-	internalPlugins: {
-		plugins: Record<string, BookmarksInternalPlugin | undefined>;
-	};
+	internalPlugins: { plugins: Record<string, BookmarksInternalPlugin | undefined>; };
 }
 
 /**
@@ -103,7 +105,10 @@ const getBookmarksByGroupName = (
 		if (item.title === title) {
 			flattened = flattenBookmarks(item.items);
 		} else {
-			const nested = getBookmarksByGroupName(title, item.items);
+			const nested = getBookmarksByGroupName(
+				title,
+				item.items
+			);
 			if (nested.length > 0) {
 				flattened = nested;
 			}
@@ -129,7 +134,10 @@ export const getBookmarks = (
 
 	const fileBookmarks =
 		settings.bookmarkSource === BOOKMARK_SOURCE.GROUP
-			? getBookmarksByGroupName(settings.bookmarkGroup, items)
+			? getBookmarksByGroupName(
+				settings.bookmarkGroup,
+				items
+			)
 			: flattenBookmarks(items);
 
 	return fileBookmarks
@@ -160,8 +168,14 @@ const flattenBookmarkGroups = (
 		if (!isBookmarkGroupItem(item)) {return;}
 
 		const path = parentPath ? `${parentPath}/${item.title}` : item.title;
-		flattened.push({ title: item.title, path });
-		flattened = flattened.concat(flattenBookmarkGroups(item.items, path));
+		flattened.push({
+			title: item.title,
+			path
+		});
+		flattened = flattened.concat(flattenBookmarkGroups(
+			item.items,
+			path
+		));
 	});
 
 	return flattened;

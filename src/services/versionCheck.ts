@@ -1,4 +1,7 @@
-import { Notice, requestUrl } from 'obsidian';
+import {
+	Notice,
+	requestUrl
+} from 'obsidian';
 import withTimeout from '../utils/withTimeout';
 
 const REQUEST_TIMEOUT_MS = 8000;
@@ -14,12 +17,10 @@ const BETA_MANIFEST_URL =
  * URL, not something this plugin controls the shape of.
  */
 const readVersionField = (data: unknown): string | undefined => {
-	if (
-		data &&
+	if (data &&
 		typeof data === 'object' &&
 		'version' in data &&
-		typeof data.version === 'string'
-	) {
+		typeof data.version === 'string') {
 		return data.version;
 	}
 
@@ -33,16 +34,19 @@ const readVersionField = (data: unknown): string | undefined => {
  * failure mode collapses to the same predictable "unknown" result so the
  * caller doesn't need to distinguish them.
  */
-const fetchPublishedVersion = async (
-	url: string
-): Promise<string | undefined> => {
+const fetchPublishedVersion = async (url: string): Promise<string | undefined> => {
 	try {
 		const response = await withTimeout(
-			requestUrl({ url, throw: false }),
+			requestUrl({
+				url,
+				throw: false
+			}),
 			REQUEST_TIMEOUT_MS
 		);
 
-		if (response.status !== 200) {return undefined;}
+		if (response.status !== 200) {
+			return undefined;
+		}
 
 		return readVersionField(await response.json);
 	} catch {
@@ -66,20 +70,19 @@ const fetchPublishedVersion = async (
 export async function checkForPluginUpdates(): Promise<void> {
 	const localVersion = process.env.PLUGIN_VERSION;
 
-	const [stableVersion, betaVersion] = await Promise.all([
+	const [
+		stableVersion,
+		betaVersion
+	] = await Promise.all([
 		fetchPublishedVersion(STABLE_MANIFEST_URL),
 		fetchPublishedVersion(BETA_MANIFEST_URL),
 	]);
 
 	if (localVersion?.includes('beta')) {
 		if (betaVersion && localVersion !== betaVersion) {
-			new Notice(
-				'There is a beta update available for the Tab Candy plugin. Please update to to the latest version to get the latest features!'
-			);
+			new Notice('There is a beta update available for the Tab Candy plugin. Please update to to the latest version to get the latest features!');
 		}
 	} else if (stableVersion && localVersion !== stableVersion) {
-		new Notice(
-			'There is an update available for the Tab Candy plugin. Please update to to the latest version to get the latest features!'
-		);
+		new Notice('There is an update available for the Tab Candy plugin. Please update to to the latest version to get the latest features!');
 	}
 }

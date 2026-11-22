@@ -9,7 +9,10 @@ import {
 	TIME_FORMAT,
 } from '../types';
 import { DEFAULT_SETTINGS } from './defaultSettings';
-import { CURRENT_SETTINGS_VERSION, normalizeSettings } from './normalizeSettings';
+import {
+	CURRENT_SETTINGS_VERSION,
+	normalizeSettings
+} from './normalizeSettings';
 
 describe('normalizeSettings', () => {
 	it('returns DEFAULT_SETTINGS with the current version stamped when given no data at all', () => {
@@ -46,7 +49,12 @@ describe('normalizeSettings', () => {
 	});
 
 	it('falls back to defaults when given an array instead of a plain object', () => {
-		const raw = ['not', 'a', 'settings', 'object'];
+		const raw = [
+			'not',
+			'a',
+			'settings',
+			'object'
+		];
 
 		const result = normalizeSettings(raw);
 
@@ -227,14 +235,23 @@ describe('normalizeSettings', () => {
 	});
 
 	describe('backgroundFiles / manualBackgroundFiles string arrays', () => {
-		const arrayFields = ['backgroundFiles', 'manualBackgroundFiles'] as const;
+		const arrayFields = [
+			'backgroundFiles',
+			'manualBackgroundFiles'
+		] as const;
 
 		it.each(arrayFields)('passes through a valid string array for %s', (field) => {
-			const raw = { [field]: ['Assets/one.png', 'Assets/two.jpg'] };
+			const raw = { [field]: [
+				'Assets/one.png',
+				'Assets/two.jpg'
+			] };
 
 			const result = normalizeSettings(raw);
 
-			expect(result[field]).toEqual(['Assets/one.png', 'Assets/two.jpg']);
+			expect(result[field]).toEqual([
+				'Assets/one.png',
+				'Assets/two.jpg'
+			]);
 		});
 
 		it.each(arrayFields)('passes through an empty array for %s', (field) => {
@@ -246,7 +263,11 @@ describe('normalizeSettings', () => {
 		});
 
 		it.each(arrayFields)('drops the whole array for %s when any entry is not a string', (field) => {
-			const raw = { [field]: ['Assets/one.png', 42, 'Assets/two.jpg'] };
+			const raw = { [field]: [
+				'Assets/one.png',
+				42,
+				'Assets/two.jpg'
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -272,12 +293,16 @@ describe('normalizeSettings', () => {
 
 	describe('customQuotes', () => {
 		it('passes through a valid array of custom quotes', () => {
-			const raw = {
-				customQuotes: [
-					{ text: 'Be excellent to each other.', author: 'Bill' },
-					{ text: 'Party on, dudes.', author: 'Ted' },
-				],
-			};
+			const raw = { customQuotes: [
+				{
+					text: 'Be excellent to each other.',
+					author: 'Bill'
+				},
+				{
+					text: 'Party on, dudes.',
+					author: 'Ted'
+				},
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -293,12 +318,13 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops the whole array when one entry is missing its author field', () => {
-			const raw = {
-				customQuotes: [
-					{ text: 'Be excellent to each other.', author: 'Bill' },
-					{ text: 'Missing an author' },
-				],
-			};
+			const raw = { customQuotes: [
+				{
+					text: 'Be excellent to each other.',
+					author: 'Bill'
+				},
+				{ text: 'Missing an author' },
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -306,9 +332,10 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops the whole array when one entry has a non-string text field', () => {
-			const raw = {
-				customQuotes: [{ text: 123, author: 'Bill' }],
-			};
+			const raw = { customQuotes: [{
+				text: 123,
+				author: 'Bill'
+			}] };
 
 			const result = normalizeSettings(raw);
 
@@ -334,12 +361,16 @@ describe('normalizeSettings', () => {
 
 	describe('fileQuotes', () => {
 		it('passes through a valid array of quotes parsed from the quotes file', () => {
-			const raw = {
-				fileQuotes: [
-					{ text: 'Be excellent to each other.', author: 'Bill' },
-					{ text: 'Party on, dudes.', author: 'Ted' },
-				],
-			};
+			const raw = { fileQuotes: [
+				{
+					text: 'Be excellent to each other.',
+					author: 'Bill'
+				},
+				{
+					text: 'Party on, dudes.',
+					author: 'Ted'
+				}
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -355,12 +386,13 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops the whole array when one entry is missing its author field', () => {
-			const raw = {
-				fileQuotes: [
-					{ text: 'Be excellent to each other.', author: 'Bill' },
-					{ text: 'Missing an author' },
-				],
-			};
+			const raw = { fileQuotes: [
+				{
+					text: 'Be excellent to each other.',
+					author: 'Bill'
+				},
+				{ text: 'Missing an author' },
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -368,9 +400,10 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops the whole array when one entry has a non-string text field', () => {
-			const raw = {
-				fileQuotes: [{ text: 123, author: 'Bill' }],
-			};
+			const raw = { fileQuotes: [{
+				text: 123,
+				author: 'Bill'
+			}] };
 
 			const result = normalizeSettings(raw);
 
@@ -396,15 +429,11 @@ describe('normalizeSettings', () => {
 
 	describe('overlayTextContrastCache', () => {
 		it('passes through a valid cache object unchanged', () => {
-			const raw = {
-				overlayTextContrastCache: {
-					'Backgrounds/sunset.png': {
-						mtime: 123,
-						dominantColor: '#ff8800',
-						overlayTextColor: '#1a1a1a',
-					},
-				},
-			};
+			const raw = { overlayTextContrastCache: {'Backgrounds/sunset.png': {
+				mtime: 123,
+				dominantColor: '#ff8800',
+				overlayTextColor: '#1a1a1a',
+			}} };
 
 			const result = normalizeSettings(raw);
 
@@ -428,7 +457,11 @@ describe('normalizeSettings', () => {
 		});
 
 		it('falls back to an empty object when given an array', () => {
-			const raw = { overlayTextContrastCache: ['not', 'a', 'cache'] };
+			const raw = { overlayTextContrastCache: [
+				'not',
+				'a',
+				'cache'
+			] };
 
 			const result = normalizeSettings(raw);
 
@@ -436,58 +469,54 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops only the entry with a non-numeric mtime, keeping the rest', () => {
-			const raw = {
-				overlayTextContrastCache: {
-					'Backgrounds/keep.png': {
-						mtime: 123,
-						dominantColor: '#ff8800',
-						overlayTextColor: '#1a1a1a',
-					},
-					'Backgrounds/bad-mtime.png': {
-						mtime: 'not a number',
-						dominantColor: '#ff8800',
-						overlayTextColor: '#1a1a1a',
-					},
+			const raw = {overlayTextContrastCache: {
+				'Backgrounds/keep.png': {
+					mtime: 123,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
 				},
-			};
+				'Backgrounds/bad-mtime.png': {
+					mtime: 'not a number',
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
+				},
+			}};
 
 			const result = normalizeSettings(raw);
 
-			expect(result.overlayTextContrastCache).toEqual({
-				'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'],
-			});
+			expect(result.overlayTextContrastCache).toEqual({ 'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'] });
 		});
 
 		it('drops only the entry missing overlayTextColor, keeping the rest', () => {
-			const raw = {
-				overlayTextContrastCache: {
-					'Backgrounds/keep.png': {
-						mtime: 123,
-						dominantColor: '#ff8800',
-						overlayTextColor: '#1a1a1a',
-					},
-					'Backgrounds/incomplete.png': {
-						mtime: 456,
-						dominantColor: '#ff8800',
-					},
+			const raw = {overlayTextContrastCache: {
+				'Backgrounds/keep.png': {
+					mtime: 123,
+					dominantColor: '#ff8800',
+					overlayTextColor: '#1a1a1a',
 				},
-			};
+				'Backgrounds/incomplete.png': {
+					mtime: 456,
+					dominantColor: '#ff8800',
+				},
+			}};
 
 			const result = normalizeSettings(raw);
 
-			expect(result.overlayTextContrastCache).toEqual({
-				'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'],
-			});
+			expect(result.overlayTextContrastCache).toEqual({ 'Backgrounds/keep.png': raw.overlayTextContrastCache['Backgrounds/keep.png'] });
 		});
 	});
 
 	describe('search providers', () => {
-		const providerFields = ['topLeftSearchProvider', 'inlineSearchProvider'] as const;
+		const providerFields = [
+			'topLeftSearchProvider',
+			'inlineSearchProvider'
+		] as const;
 
 		it.each(providerFields)('passes through a valid provider for %s', (field) => {
-			const raw = {
-				[field]: { command: 'omnisearch:open', display: 'Omnisearch' },
-			};
+			const raw = {[field]: {
+				command: 'omnisearch:open',
+				display: 'Omnisearch'
+			}};
 
 			const result = normalizeSettings(raw);
 
@@ -542,7 +571,11 @@ describe('normalizeSettings', () => {
 		const raw = {
 			replaceEmptyTabsWithTabCandy: 'yes please',
 			backgroundTheme: 'a theme that got renamed away',
-			backgroundFiles: ['fine.png', 7, 'also-fine.jpg'],
+			backgroundFiles: [
+				'fine.png',
+				7,
+				'also-fine.jpg'
+			],
 			customQuotes: 'not even an array',
 			topLeftSearchProvider: { command: 'switcher:open' },
 			showQuote: false,

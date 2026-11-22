@@ -1,4 +1,7 @@
-import { App, Notice } from 'obsidian';
+import {
+	App,
+	Notice
+} from 'obsidian';
 import { SearchProvider } from '../types';
 
 /**
@@ -14,12 +17,8 @@ interface AppWithPrivateRegistries extends App {
 		commands: Record<string, RegisteredCommand | undefined>;
 		executeCommandById(id: string): boolean;
 	};
-	plugins: {
-		plugins: Record<string, unknown>;
-	};
-	internalPlugins: {
-		plugins: Record<string, { enabled?: boolean } | undefined>;
-	};
+	plugins: { plugins: Record<string, unknown>; };
+	internalPlugins: { plugins: Record<string, { enabled?: boolean } | undefined>; };
 }
 
 /**
@@ -40,12 +39,13 @@ const withPrivateRegistries = (app: App): AppWithPrivateRegistries =>
  * missing or malformed.
  */
 const isPluginEnabled = (app: App, pluginId: string): boolean => {
-	const { plugins, internalPlugins } = withPrivateRegistries(app);
+	const {
+		plugins,
+		internalPlugins
+	} = withPrivateRegistries(app);
 
-	return Boolean(
-		plugins?.plugins?.[pluginId] ??
-			internalPlugins?.plugins?.[pluginId]?.enabled
-	);
+	return Boolean(plugins?.plugins?.[pluginId] ??
+			internalPlugins?.plugins?.[pluginId]?.enabled);
 };
 
 /**
@@ -60,10 +60,11 @@ const isPluginEnabled = (app: App, pluginId: string): boolean => {
 export function executeEnabledPluginCommand(app: App, command: string): void {
 	const pluginID = command.split(':')[0];
 
-	if (!isPluginEnabled(app, pluginID)) {
-		new Notice(
-			`Plugin ${pluginID} is not enabled. Please enable it in the settings.`
-		);
+	if (!isPluginEnabled(
+		app,
+		pluginID
+	)) {
+		new Notice(`Plugin ${pluginID} is not enabled. Please enable it in the settings.`);
 		return;
 	}
 
@@ -95,9 +96,11 @@ export function listSearchProviderCommands(
 
 	return Object.entries(commands)
 		.filter(([commandId]) =>
-			allowedPluginIds.includes(commandId.split(':')[0])
-		)
-		.map(([commandId, command]) => ({
+			allowedPluginIds.includes(commandId.split(':')[0]))
+		.map(([
+			commandId,
+			command
+		]) => ({
 			command: commandId,
 			display: command?.name ?? commandId,
 		}));

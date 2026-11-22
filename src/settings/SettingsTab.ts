@@ -39,9 +39,7 @@ const capitalizeFirstLetter = (string: string) =>
 // input, not a discrete pick like a toggle/dropdown/folder suggestion).
 // Routed through the debounced writer so typing doesn't fire a disk write
 // per character; everything else writes immediately.
-const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set([
-	'greetingText',
-]);
+const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set(['greetingText']);
 
 export default class TabCandySettingTab extends PluginSettingTab {
 	plugin: TabCandyPlugin;
@@ -50,12 +48,13 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	// getSettingDefinitions() (which reruns on every render), so debounced
 	// keystrokes across a rerender still collapse into the same timer
 	// instead of each rerender silently starting a new one.
-	private readonly debouncedUpdateSettings: (
-		patch: Partial<TabCandySettings>
-	) => void;
+	private readonly debouncedUpdateSettings: (patch: Partial<TabCandySettings>) => void;
 
 	constructor(app: App, plugin: TabCandyPlugin) {
-		super(app, plugin);
+		super(
+			app,
+			plugin
+		);
 		this.plugin = plugin;
 		this.debouncedUpdateSettings = debounce(
 			(patch: Partial<TabCandySettings>) => {
@@ -78,7 +77,10 @@ export default class TabCandySettingTab extends PluginSettingTab {
 		try {
 			await this.plugin.settingsStore.update(patch);
 		} catch (error) {
-			console.error('Tab Candy: failed to save settings', error);
+			console.error(
+				'Tab Candy: failed to save settings',
+				error
+			);
 			new Notice('Tab Candy: failed to save your settings. Please try again.');
 			return;
 		}
@@ -96,9 +98,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	 * narrower type is sound covariance, so `key`'s indexed-access type
 	 * gives an honest, non-cast return type instead.
 	 */
-	getControlValue(
-		key: keyof TabCandySettings
-	): TabCandySettings[keyof TabCandySettings] {
+	getControlValue(key: keyof TabCandySettings): TabCandySettings[keyof TabCandySettings] {
 		return this.plugin.settingsStore.get()[key];
 	}
 
@@ -138,7 +138,10 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			this.debouncedUpdateSettings(patch);
 			return;
 		}
-		return this.updateSettings(patch, { redraw: true });
+		return this.updateSettings(
+			patch,
+			{ redraw: true }
+		);
 	}
 
 	private getDesignPageStatus(
@@ -161,9 +164,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			: null;
 	}
 
-	getSettingDefinitions(): SettingDefinitionItem<
-		keyof TabCandySettings
-	>[] {
+	getSettingDefinitions(): SettingDefinitionItem<keyof TabCandySettings>[] {
 		// Filtered defensively at render time rather than trusting settings
 		// as-is: a file recorded here can be deleted or renamed outside of
 		// a vault event the plugin caught (most commonly, while Obsidian
@@ -182,30 +183,28 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			this.plugin.settings.backgroundFiles
 		);
 
-		const functionGroups: SettingDefinitionItem<keyof TabCandySettings>[] = [
-			{
-				type: 'group',
-				heading: 'New tab behavior',
-				items: [
-					{
-						name: 'Replace new empty tabs',
-						desc: `Automatically show Tab Candy whenever an empty new tab is opened. Turn this off to only open Tab Candy on demand, via the "open new tab" command.`,
-						control: {
-							type: 'toggle',
-							key: 'replaceEmptyTabsWithTabCandy',
-						},
+		const functionGroups: SettingDefinitionItem<keyof TabCandySettings>[] = [{
+			type: 'group',
+			heading: 'New tab behavior',
+			items: [
+				{
+					name: 'Replace new empty tabs',
+					desc: `Automatically show Tab Candy whenever an empty new tab is opened. Turn this off to only open Tab Candy on demand, via the "open new tab" command.`,
+					control: {
+						type: 'toggle',
+						key: 'replaceEmptyTabsWithTabCandy',
 					},
-					{
-						name: 'Switch to notes that are already open',
-						desc: "When you click a note in the recent files, bookmarks, or recently closed tabs lists and it's already open in another tab, switch to that tab instead of opening it in this one.",
-						control: {
-							type: 'toggle',
-							key: 'dashboardFocusesOpenTab',
-						},
+				},
+				{
+					name: 'Switch to notes that are already open',
+					desc: "When you click a note in the recent files, bookmarks, or recently closed tabs lists and it's already open in another tab, switch to that tab instead of opening it in this one.",
+					control: {
+						type: 'toggle',
+						key: 'dashboardFocusesOpenTab',
 					},
-				],
-			},
-		];
+				},
+			],
+		}];
 
 		const designGroups: SettingDefinitionItem<keyof TabCandySettings>[] = [
 			{
@@ -218,13 +217,11 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						control: {
 							type: 'dropdown',
 							key: 'backgroundTheme',
-							options: Object.fromEntries(
-								Object.values(BackgroundTheme).map((theme) => [
-									theme,
-									capitalizeFirstLetter(theme),
-								])
-							),
-						},
+							options: Object.fromEntries(Object.values(BackgroundTheme).map((theme) => [
+								theme,
+								capitalizeFirstLetter(theme),
+							]))
+						}
 					},
 					{
 						name: 'Custom background image',
@@ -237,9 +234,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 							key: 'customBackground',
 							placeholder: 'E.g. Assets/background.png',
 							filter: (file) =>
-								BACKGROUND_IMAGE_EXTENSIONS.includes(
-									file.extension.toLowerCase()
-								),
+								BACKGROUND_IMAGE_EXTENSIONS.includes(file.extension.toLowerCase()),
 						},
 					},
 					{
@@ -279,16 +274,15 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						// addClass is idempotent) turns the stack of one-image-
 						// per-row settings into a responsive CSS grid, without
 						// touching how each row itself is defined or rendered.
-						group.listEl.addClass(
-							'tabcandy-settings-localbackgrounds-grid'
-						);
-						setting.settingEl.addClass(
-							'tabcandy-settings-localbackgrounds-background'
-						);
+						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
+						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
 							cls: 'tabcandy-settings-localbackgrounds-background-image',
 							attr: {
-								src: getBackgroundResourcePath(this.app, filePath),
+								src: getBackgroundResourcePath(
+									this.app,
+									filePath
+								),
 								title: filePath,
 							},
 						});
@@ -308,21 +302,15 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						// this appends to an array field, not a single
 						// scalar settings key.
 						new ChooseImageSuggestModal(this.app, (result) => {
-							if (
-								this.plugin.settings.manualBackgroundFiles.includes(
-									result.path
-								)
-							) {
+							if (this.plugin.settings.manualBackgroundFiles.includes(result.path)) {
 								return;
 							}
 							void this.updateSettings(
-								{
-									manualBackgroundFiles: [
-										...this.plugin.settings
-											.manualBackgroundFiles,
-										result.path,
-									],
-								},
+								{ manualBackgroundFiles: [
+									...this.plugin.settings
+										.manualBackgroundFiles,
+									result.path,
+								] },
 								{ redraw: true }
 							);
 						}).open();
@@ -337,12 +325,8 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					const filePath = existingManualBackgroundFiles[index];
 					if (!filePath) {return;}
 					void this.updateSettings(
-						{
-							manualBackgroundFiles:
-								this.plugin.settings.manualBackgroundFiles.filter(
-									(path) => path !== filePath
-								),
-						},
+						{manualBackgroundFiles:
+							this.plugin.settings.manualBackgroundFiles.filter((path) => path !== filePath)},
 						{ redraw: true }
 					);
 				},
@@ -354,16 +338,15 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						// class so these rows wrap into a grid too, while
 						// leaving addItem/onDelete/keyboard-delete (which are
 						// wired to each row by index) completely untouched.
-						group.listEl.addClass(
-							'tabcandy-settings-localbackgrounds-grid'
-						);
-						setting.settingEl.addClass(
-							'tabcandy-settings-localbackgrounds-background'
-						);
+						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
+						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
 							cls: 'tabcandy-settings-localbackgrounds-background-image',
 							attr: {
-								src: getBackgroundResourcePath(this.app, filePath),
+								src: getBackgroundResourcePath(
+									this.app,
+									filePath
+								),
 								title: filePath,
 							},
 						});
@@ -373,19 +356,17 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			{
 				type: 'group',
 				heading: 'Style customization',
-				items: [
-					{
-						name: 'Auto-contrast overlay text',
-						desc: 'Extracts the active background image\'s own dominant color and uses a contrast-adjusted version of it for the overlay text, instead of a fixed neutral tone.',
-						visible: () =>
-							this.plugin.settings.backgroundTheme === BackgroundTheme.CUSTOM ||
-							this.plugin.settings.backgroundTheme === BackgroundTheme.LOCAL,
-						control: {
-							type: 'toggle',
-							key: 'autoContrastOverlayText',
-						},
+				items: [{
+					name: 'Auto-contrast overlay text',
+					desc: 'Extracts the active background image\'s own dominant color and uses a contrast-adjusted version of it for the overlay text, instead of a fixed neutral tone.',
+					visible: () =>
+						this.plugin.settings.backgroundTheme === BackgroundTheme.CUSTOM ||
+						this.plugin.settings.backgroundTheme === BackgroundTheme.LOCAL,
+					control: {
+						type: 'toggle',
+						key: 'autoContrastOverlayText',
 					},
-				],
+				}]
 			},
 		];
 
@@ -496,16 +477,14 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			{
 				type: 'group',
 				heading: 'Recent file settings',
-				items: [
-					{
-						name: 'Show recent files',
-						desc: `Should recent files in the middle of the new tab screen be displayed?`,
-						control: {
-							type: 'toggle',
-							key: 'showRecentFiles',
-						},
+				items: [{
+					name: 'Show recent files',
+					desc: `Should recent files in the middle of the new tab screen be displayed?`,
+					control: {
+						type: 'toggle',
+						key: 'showRecentFiles',
 					},
-				],
+				}]
 			},
 			{
 				type: 'group',
@@ -540,12 +519,10 @@ export default class TabCandySettingTab extends PluginSettingTab {
 						control: {
 							type: 'dropdown',
 							key: 'bookmarkGroup',
-							options: Object.fromEntries(
-								getBookmarkGroups(this.app).map((group) => [
-									group.title,
-									group.path,
-								])
-							),
+							options: Object.fromEntries(getBookmarkGroups(this.app).map((group) => [
+								group.title,
+								group.path,
+							])),
 						},
 					},
 				],
@@ -553,16 +530,14 @@ export default class TabCandySettingTab extends PluginSettingTab {
 			{
 				type: 'group',
 				heading: 'Recently closed tabs settings',
-				items: [
-					{
-						name: 'Show recently closed tabs',
-						desc: `Should recently closed tabs in the middle of the new tab screen be displayed?`,
-						control: {
-							type: 'toggle',
-							key: 'showRecentlyClosedTabs',
-						},
+				items: [{
+					name: 'Show recently closed tabs',
+					desc: `Should recently closed tabs in the middle of the new tab screen be displayed?`,
+					control: {
+						type: 'toggle',
+						key: 'showRecentlyClosedTabs',
 					},
-				],
+				}],
 			},
 			{
 				type: 'group',

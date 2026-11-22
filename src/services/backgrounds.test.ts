@@ -24,32 +24,42 @@ import {
 } from './backgrounds';
 
 function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
-	return new SettingsStore(buildSettings(overrides), async () => {});
+	return new SettingsStore(
+		buildSettings(overrides),
+		async () => {}
+	);
 }
 
 describe('listBackgroundFilesInFolder', () => {
 	it('returns an empty array without touching the vault when the folder path is empty', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const listSpy = vi.spyOn(app.vault.adapter, 'list');
+		const listSpy = vi.spyOn(
+			app.vault.adapter,
+			'list'
+		);
 
-		const result = await listBackgroundFilesInFolder(app, '');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			''
+		);
 
 		expect(result).toEqual([]);
 		expect(listSpy).not.toHaveBeenCalled();
 	});
 
 	it('returns only image files, sorted, dropping non-image files in the same folder', async () => {
-		const app = createConfiguredApp({
-			files: {
-				'Backgrounds/sunset.png': '',
-				'Backgrounds/notes.md': '',
-				'Backgrounds/forest.jpg': '',
-				'Backgrounds/readme.txt': '',
-				'Backgrounds/apple.webp': '',
-			},
-		});
+		const app = createConfiguredApp({ files: {
+			'Backgrounds/sunset.png': '',
+			'Backgrounds/notes.md': '',
+			'Backgrounds/forest.jpg': '',
+			'Backgrounds/readme.txt': '',
+			'Backgrounds/apple.webp': '',
+		} });
 
-		const result = await listBackgroundFilesInFolder(app, 'Backgrounds');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			'Backgrounds'
+		);
 
 		expect(result).toEqual([
 			'Backgrounds/apple.webp',
@@ -59,24 +69,26 @@ describe('listBackgroundFilesInFolder', () => {
 	});
 
 	it('matches image extensions case-insensitively', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/loud.PNG': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/loud.PNG': '' } });
 
-		const result = await listBackgroundFilesInFolder(app, 'Backgrounds');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			'Backgrounds'
+		);
 
 		expect(result).toEqual(['Backgrounds/loud.PNG']);
 	});
 
 	it('is non-recursive: ignores images nested inside a subfolder', async () => {
-		const app = createConfiguredApp({
-			files: {
-				'Backgrounds/top-level.png': '',
-				'Backgrounds/Nested/deep.png': '',
-			},
-		});
+		const app = createConfiguredApp({ files: {
+			'Backgrounds/top-level.png': '',
+			'Backgrounds/Nested/deep.png': '',
+		} });
 
-		const result = await listBackgroundFilesInFolder(app, 'Backgrounds');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			'Backgrounds'
+		);
 
 		expect(result).toEqual(['Backgrounds/top-level.png']);
 	});
@@ -84,33 +96,45 @@ describe('listBackgroundFilesInFolder', () => {
 	it('returns an empty array for a folder that does not exist in the vault', async () => {
 		const app = createConfiguredApp({ files: {} });
 
-		const result = await listBackgroundFilesInFolder(app, 'Nonexistent');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			'Nonexistent'
+		);
 
 		expect(result).toEqual([]);
 	});
 
 	it('degrades to an empty array (and logs) when the adapter throws for a malformed path', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
-		vi.spyOn(app.vault.adapter, 'list').mockRejectedValue(
-			new Error('ENOTDIR: not a directory')
-		);
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		vi.spyOn(
+			app.vault.adapter,
+			'list'
+		).mockRejectedValue(new Error('ENOTDIR: not a directory'));
+		const consoleSpy = vi.spyOn(
+			console,
+			'error'
+		).mockImplementation(() => {});
 
-		const result = await listBackgroundFilesInFolder(app, 'Backgrounds');
+		const result = await listBackgroundFilesInFolder(
+			app,
+			'Backgrounds'
+		);
 
 		expect(result).toEqual([]);
 		expect(consoleSpy).toHaveBeenCalledOnce();
 	});
 
 	it('normalizes the folder path before listing (trailing slash, backslashes)', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
-		const listSpy = vi.spyOn(app.vault.adapter, 'list');
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
+		const listSpy = vi.spyOn(
+			app.vault.adapter,
+			'list'
+		);
 
-		await listBackgroundFilesInFolder(app, 'Backgrounds\\/');
+		await listBackgroundFilesInFolder(
+			app,
+			'Backgrounds\\/'
+		);
 
 		expect(listSpy).toHaveBeenCalledWith('Backgrounds');
 	});
@@ -118,21 +142,23 @@ describe('listBackgroundFilesInFolder', () => {
 
 describe('getBackgroundResourcePath', () => {
 	it('resolves a vault-relative path to a resource URL', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 
-		const result = getBackgroundResourcePath(app, 'Backgrounds/sunset.png');
+		const result = getBackgroundResourcePath(
+			app,
+			'Backgrounds/sunset.png'
+		);
 
 		expect(result).toBe('app://local/Backgrounds/sunset.png');
 	});
 
 	it('normalizes the path before resolving it', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 
-		const result = getBackgroundResourcePath(app, '/Backgrounds/sunset.png/');
+		const result = getBackgroundResourcePath(
+			app,
+			'/Backgrounds/sunset.png/'
+		);
 
 		expect(result).toBe('app://local/Backgrounds/sunset.png');
 	});
@@ -140,11 +166,12 @@ describe('getBackgroundResourcePath', () => {
 
 describe('filterExistingFiles', () => {
 	it('keeps paths that resolve to a real file', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 
-		const result = filterExistingFiles(app, ['Backgrounds/sunset.png']);
+		const result = filterExistingFiles(
+			app,
+			['Backgrounds/sunset.png']
+		);
 
 		expect(result).toEqual(['Backgrounds/sunset.png']);
 	});
@@ -152,17 +179,21 @@ describe('filterExistingFiles', () => {
 	it('drops a path that no longer resolves to anything (deleted mid-session)', () => {
 		const app = createConfiguredApp({ files: {} });
 
-		const result = filterExistingFiles(app, ['Backgrounds/deleted.png']);
+		const result = filterExistingFiles(
+			app,
+			['Backgrounds/deleted.png']
+		);
 
 		expect(result).toEqual([]);
 	});
 
 	it('drops a path that resolves to a folder rather than a file', () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/Nested/': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/Nested/': '' } });
 
-		const result = filterExistingFiles(app, ['Backgrounds/Nested']);
+		const result = filterExistingFiles(
+			app,
+			['Backgrounds/Nested']
+		);
 
 		expect(result).toEqual([]);
 	});
@@ -170,18 +201,19 @@ describe('filterExistingFiles', () => {
 	it('returns an empty array unchanged', () => {
 		const app = createConfiguredApp({ files: {} });
 
-		const result = filterExistingFiles(app, []);
+		const result = filterExistingFiles(
+			app,
+			[]
+		);
 
 		expect(result).toEqual([]);
 	});
 
 	it('preserves the relative order of the surviving paths', () => {
-		const app = createConfiguredApp({
-			files: {
-				'Backgrounds/a.png': '',
-				'Backgrounds/c.png': '',
-			},
-		});
+		const app = createConfiguredApp({ files: {
+			'Backgrounds/a.png': '',
+			'Backgrounds/c.png': '',
+		} });
 
 		const result = filterExistingFiles(app, [
 			'Backgrounds/a.png',
@@ -189,18 +221,22 @@ describe('filterExistingFiles', () => {
 			'Backgrounds/c.png',
 		]);
 
-		expect(result).toEqual(['Backgrounds/a.png', 'Backgrounds/c.png']);
+		expect(result).toEqual([
+			'Backgrounds/a.png',
+			'Backgrounds/c.png'
+		]);
 	});
 });
 
 describe('syncBackgroundsFolder', () => {
 	it('scans the configured folder and writes the result to settings.backgroundFiles', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const store = buildStore({ backgroundsFolder: 'Backgrounds' });
 
-		await syncBackgroundsFolder(app, store);
+		await syncBackgroundsFolder(
+			app,
+			store
+		);
 
 		expect(store.get().backgroundFiles).toEqual(['Backgrounds/sunset.png']);
 	});
@@ -209,20 +245,24 @@ describe('syncBackgroundsFolder', () => {
 		const app = createConfiguredApp({ files: {} });
 		const store = buildStore({ backgroundsFolder: '' });
 
-		await expect(syncBackgroundsFolder(app, store)).resolves.toBeUndefined();
+		await expect(syncBackgroundsFolder(
+			app,
+			store
+		)).resolves.toBeUndefined();
 		expect(store.get().backgroundFiles).toEqual([]);
 	});
 
 	it('overwrites a previously-synced list rather than merging with it', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/new.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/new.png': '' } });
 		const store = buildStore({
 			backgroundsFolder: 'Backgrounds',
 			backgroundFiles: ['Backgrounds/stale.png'],
 		});
 
-		await syncBackgroundsFolder(app, store);
+		await syncBackgroundsFolder(
+			app,
+			store
+		);
 
 		expect(store.get().backgroundFiles).toEqual(['Backgrounds/new.png']);
 	});
@@ -230,26 +270,32 @@ describe('syncBackgroundsFolder', () => {
 
 describe('pruneMissingManualBackgroundFiles', () => {
 	it('drops manualBackgroundFiles entries that no longer resolve and persists the result', async () => {
-		const app = createConfiguredApp({
-			files: { 'Pictures/keep.png': '' },
-		});
-		const store = buildStore({
-			manualBackgroundFiles: ['Pictures/keep.png', 'Pictures/gone.png'],
-		});
+		const app = createConfiguredApp({ files: { 'Pictures/keep.png': '' } });
+		const store = buildStore({ manualBackgroundFiles: [
+			'Pictures/keep.png',
+			'Pictures/gone.png'
+		] });
 
-		await pruneMissingManualBackgroundFiles(app, store);
+		await pruneMissingManualBackgroundFiles(
+			app,
+			store
+		);
 
 		expect(store.get().manualBackgroundFiles).toEqual(['Pictures/keep.png']);
 	});
 
 	it('does not write to the store when nothing needed pruning', async () => {
-		const app = createConfiguredApp({
-			files: { 'Pictures/keep.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Pictures/keep.png': '' } });
 		const store = buildStore({ manualBackgroundFiles: ['Pictures/keep.png'] });
-		const updateSpy = vi.spyOn(store, 'update');
+		const updateSpy = vi.spyOn(
+			store,
+			'update'
+		);
 
-		await pruneMissingManualBackgroundFiles(app, store);
+		await pruneMissingManualBackgroundFiles(
+			app,
+			store
+		);
 
 		expect(updateSpy).not.toHaveBeenCalled();
 	});
@@ -258,48 +304,42 @@ describe('pruneMissingManualBackgroundFiles', () => {
 describe('pruneStaleOverlayContrastCache', () => {
 	it('drops an entry whose backing file no longer exists', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const store = buildStore({
-			overlayTextContrastCache: {
-				'Backgrounds/deleted.png': {
-					mtime: 100,
-					dominantColor: '#ff8800',
-					overlayTextColor: '#1a1a1a',
-				},
-			},
-		});
+		const store = buildStore({ overlayTextContrastCache: { 'Backgrounds/deleted.png': {
+			mtime: 100,
+			dominantColor: '#ff8800',
+			overlayTextColor: '#1a1a1a',
+		} } });
 
-		await pruneStaleOverlayContrastCache(app, store);
+		await pruneStaleOverlayContrastCache(
+			app,
+			store
+		);
 
 		expect(store.get().overlayTextContrastCache).toEqual({});
 	});
 
 	it('drops an entry whose mtime has moved past what was cached', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
 		if (!(file instanceof TFile)) {
 			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
 		}
-		const store = buildStore({
-			overlayTextContrastCache: {
-				'Backgrounds/sunset.png': {
-					mtime: file.stat.mtime - 1000,
-					dominantColor: '#ff8800',
-					overlayTextColor: '#1a1a1a',
-				},
-			},
-		});
+		const store = buildStore({ overlayTextContrastCache: { 'Backgrounds/sunset.png': {
+			mtime: file.stat.mtime - 1000,
+			dominantColor: '#ff8800',
+			overlayTextColor: '#1a1a1a',
+		} } });
 
-		await pruneStaleOverlayContrastCache(app, store);
+		await pruneStaleOverlayContrastCache(
+			app,
+			store
+		);
 
 		expect(store.get().overlayTextContrastCache).toEqual({});
 	});
 
 	it('keeps an entry whose file still exists with a matching mtime', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
 		if (!(file instanceof TFile)) {
 			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
@@ -309,37 +349,36 @@ describe('pruneStaleOverlayContrastCache', () => {
 			dominantColor: '#ff8800',
 			overlayTextColor: '#1a1a1a',
 		};
-		const store = buildStore({
-			overlayTextContrastCache: { 'Backgrounds/sunset.png': entry },
-		});
+		const store = buildStore({ overlayTextContrastCache: { 'Backgrounds/sunset.png': entry } });
 
-		await pruneStaleOverlayContrastCache(app, store);
+		await pruneStaleOverlayContrastCache(
+			app,
+			store
+		);
 
-		expect(store.get().overlayTextContrastCache).toEqual({
-			'Backgrounds/sunset.png': entry,
-		});
+		expect(store.get().overlayTextContrastCache).toEqual({ 'Backgrounds/sunset.png': entry });
 	});
 
 	it('does not write to the store when nothing needed pruning', async () => {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/sunset.png': '' },
-		});
+		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const file = app.vault.getAbstractFileByPath('Backgrounds/sunset.png');
 		if (!(file instanceof TFile)) {
 			throw new Error('Expected Backgrounds/sunset.png to resolve to a TFile');
 		}
-		const store = buildStore({
-			overlayTextContrastCache: {
-				'Backgrounds/sunset.png': {
-					mtime: file.stat.mtime,
-					dominantColor: '#ff8800',
-					overlayTextColor: '#1a1a1a',
-				},
-			},
-		});
-		const updateSpy = vi.spyOn(store, 'update');
+		const store = buildStore({ overlayTextContrastCache: { 'Backgrounds/sunset.png': {
+			mtime: file.stat.mtime,
+			dominantColor: '#ff8800',
+			overlayTextColor: '#1a1a1a',
+		} } });
+		const updateSpy = vi.spyOn(
+			store,
+			'update'
+		);
 
-		await pruneStaleOverlayContrastCache(app, store);
+		await pruneStaleOverlayContrastCache(
+			app,
+			store
+		);
 
 		expect(updateSpy).not.toHaveBeenCalled();
 	});
@@ -355,13 +394,22 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	function setUp(overrides: Parameters<typeof buildSettings>[0] = {}) {
-		const app = createConfiguredApp({
-			files: { 'Backgrounds/existing.png': '' },
+		const app = createConfiguredApp({ files: { 'Backgrounds/existing.png': '' } });
+		const store = buildStore({
+			backgroundsFolder: 'Backgrounds',
+			...overrides
 		});
-		const store = buildStore({ backgroundsFolder: 'Backgrounds', ...overrides });
 		const registerEvent = vi.fn();
-		registerBackgroundVaultWatchers(app, store, registerEvent);
-		return { app, store, registerEvent };
+		registerBackgroundVaultWatchers(
+			app,
+			store,
+			registerEvent
+		);
+		return {
+			app,
+			store,
+			registerEvent
+		};
 	}
 
 	it('registers exactly one listener each for create, modify, delete, and rename', () => {
@@ -371,9 +419,15 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('re-syncs the backgrounds folder 500ms after a file is created inside it', async () => {
-		const { app, store } = setUp();
+		const {
+			app,
+			store
+		} = setUp();
 
-		await app.vault.create('Backgrounds/new.png', '');
+		await app.vault.create(
+			'Backgrounds/new.png',
+			''
+		);
 		expect(store.get().backgroundFiles).not.toContain('Backgrounds/new.png');
 
 		await vi.advanceTimersByTimeAsync(500);
@@ -385,38 +439,68 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('does not re-sync when a file is created outside the configured folder', async () => {
-		const { app, store } = setUp();
+		const {
+			app,
+			store
+		} = setUp();
 		// backgroundFiles starts at the settings default (empty) - it's only
 		// ever populated by a sync, and registering watchers doesn't sync on
 		// its own. A no-op watcher should leave it exactly there.
 		expect(store.get().backgroundFiles).toEqual([]);
 
-		await app.vault.create('Elsewhere/new.png', '');
+		await app.vault.create(
+			'Elsewhere/new.png',
+			''
+		);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([]);
 	});
 
 	it('re-syncs after a file inside the folder is modified', async () => {
-		const { app, store } = setUp();
+		const {
+			app,
+			store
+		} = setUp();
 
-		await app.vault.adapter.write('Backgrounds/existing.png', 'new bytes');
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
+		await app.vault.adapter.write(
+			'Backgrounds/existing.png',
+			'new bytes'
+		);
+		const file = getExistingFile(
+			app,
+			'Backgrounds/existing.png'
+		);
 
-		app.vault.trigger('modify', file);
+		app.vault.trigger(
+			'modify',
+			file
+		);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual(['Backgrounds/existing.png']);
 	});
 
 	it('collapses a burst of create events into a single debounced sync', async () => {
-		const { app, store } = setUp();
+		const {
+			app,
+			store
+		} = setUp();
 
-		await app.vault.create('Backgrounds/one.png', '');
+		await app.vault.create(
+			'Backgrounds/one.png',
+			''
+		);
 		vi.advanceTimersByTime(200);
-		await app.vault.create('Backgrounds/two.png', '');
+		await app.vault.create(
+			'Backgrounds/two.png',
+			''
+		);
 		vi.advanceTimersByTime(200);
-		await app.vault.create('Backgrounds/three.png', '');
+		await app.vault.create(
+			'Backgrounds/three.png',
+			''
+		);
 
 		await vi.advanceTimersByTimeAsync(500);
 
@@ -429,11 +513,18 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('removes a deleted file from manualBackgroundFiles', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/picture.png'],
-		});
-		await app.vault.create('Elsewhere/picture.png', '');
-		const file = getExistingFile(app, 'Elsewhere/picture.png');
+		const {
+			app,
+			store
+		} = setUp({ manualBackgroundFiles: ['Elsewhere/picture.png'] });
+		await app.vault.create(
+			'Elsewhere/picture.png',
+			''
+		);
+		const file = getExistingFile(
+			app,
+			'Elsewhere/picture.png'
+		);
 
 		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
 		// what fires the 'delete' event this test exercises, not a
@@ -444,11 +535,18 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('leaves manualBackgroundFiles untouched when the deleted file was not in it', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/keep.png'],
-		});
-		await app.vault.create('Elsewhere/other.png', '');
-		const file = getExistingFile(app, 'Elsewhere/other.png');
+		const {
+			app,
+			store
+		} = setUp({ manualBackgroundFiles: ['Elsewhere/keep.png'] });
+		await app.vault.create(
+			'Elsewhere/other.png',
+			''
+		);
+		const file = getExistingFile(
+			app,
+			'Elsewhere/other.png'
+		);
 
 		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
 		// what fires the 'delete' event this test exercises, not a
@@ -459,8 +557,14 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('re-syncs when a file inside the configured folder is deleted', async () => {
-		const { app, store } = setUp();
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
+		const {
+			app,
+			store
+		} = setUp();
+		const file = getExistingFile(
+			app,
+			'Backgrounds/existing.png'
+		);
 
 		// Vault.delete() (not FileManager.trashFile()) is deliberate: it's
 		// what fires the 'delete' event this test exercises, not a
@@ -472,25 +576,45 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('updates a manualBackgroundFiles entry to its new path on rename', async () => {
-		const { app, store } = setUp({
-			manualBackgroundFiles: ['Elsewhere/old-name.png'],
-		});
-		await app.vault.create('Elsewhere/old-name.png', '');
-		const file = getExistingFile(app, 'Elsewhere/old-name.png');
+		const {
+			app,
+			store
+		} = setUp({ manualBackgroundFiles: ['Elsewhere/old-name.png'] });
+		await app.vault.create(
+			'Elsewhere/old-name.png',
+			''
+		);
+		const file = getExistingFile(
+			app,
+			'Elsewhere/old-name.png'
+		);
 
-		await app.vault.rename(file, 'Elsewhere/new-name.png');
+		await app.vault.rename(
+			file,
+			'Elsewhere/new-name.png'
+		);
 
-		expect(store.get().manualBackgroundFiles).toEqual([
-			'Elsewhere/new-name.png',
-		]);
+		expect(store.get().manualBackgroundFiles).toEqual(['Elsewhere/new-name.png']);
 	});
 
 	it('re-syncs when a file is renamed into the configured folder', async () => {
-		const { app, store } = setUp();
-		await app.vault.create('Elsewhere/incoming.png', '');
-		const file = getExistingFile(app, 'Elsewhere/incoming.png');
+		const {
+			app,
+			store
+		} = setUp();
+		await app.vault.create(
+			'Elsewhere/incoming.png',
+			''
+		);
+		const file = getExistingFile(
+			app,
+			'Elsewhere/incoming.png'
+		);
 
-		await app.vault.rename(file, 'Backgrounds/incoming.png');
+		await app.vault.rename(
+			file,
+			'Backgrounds/incoming.png'
+		);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([
@@ -500,10 +624,19 @@ describe('registerBackgroundVaultWatchers', () => {
 	});
 
 	it('re-syncs when a file is renamed out of the configured folder', async () => {
-		const { app, store } = setUp();
-		const file = getExistingFile(app, 'Backgrounds/existing.png');
+		const {
+			app,
+			store
+		} = setUp();
+		const file = getExistingFile(
+			app,
+			'Backgrounds/existing.png'
+		);
 
-		await app.vault.rename(file, 'Elsewhere/existing.png');
+		await app.vault.rename(
+			file,
+			'Elsewhere/existing.png'
+		);
 		await vi.advanceTimersByTimeAsync(500);
 
 		expect(store.get().backgroundFiles).toEqual([]);

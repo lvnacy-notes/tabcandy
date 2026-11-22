@@ -11,7 +11,10 @@ import {
 	render,
 	screen
 } from '@testing-library/react';
-import { App as ObsidianApp, WorkspaceLeaf } from 'obsidian';
+import {
+	App as ObsidianApp,
+	WorkspaceLeaf
+} from 'obsidian';
 import {
 	createConfiguredApp,
 	withEmptyPrivateRegistries
@@ -60,7 +63,10 @@ describe('settings save -> reload -> render round trip', () => {
 	it('renders a freshly loaded store reflecting a value saved by an earlier one', async () => {
 		const app = buildApp();
 		const disk = buildFakeDisk(normalizeSettings({}));
-		const firstRunStore = new SettingsStore(await disk.load(), disk.save);
+		const firstRunStore = new SettingsStore(
+			await disk.load(),
+			disk.save
+		);
 
 		// Simulates a settings change made in one Obsidian session...
 		await act(async () => {
@@ -70,10 +76,11 @@ describe('settings save -> reload -> render round trip', () => {
 		// ...followed by a fresh plugin load in a later session: a brand new
 		// SettingsStore instance, built the same way the real plugin builds
 		// one at startup, reading back whatever the first store persisted.
-		const reloadedStore = new SettingsStore(await disk.load(), disk.save);
-		render(
-			<ReactApp app = { app } settingsStore = { reloadedStore } leaf = { buildLeaf(app) } />
+		const reloadedStore = new SettingsStore(
+			await disk.load(),
+			disk.save
 		);
+		render(<ReactApp app = { app } settingsStore = { reloadedStore } leaf = { buildLeaf(app) } />);
 
 		expect(screen.getByText(/Ahoy, Sailor!/)).not.toBeNull();
 	});
@@ -81,10 +88,11 @@ describe('settings save -> reload -> render round trip', () => {
 	it('re-renders live when the same store is updated after mount', async () => {
 		const app = buildApp();
 		const disk = buildFakeDisk(normalizeSettings({}));
-		const settingsStore = new SettingsStore(await disk.load(), disk.save);
-		render(
-			<ReactApp app = { app } settingsStore = { settingsStore } leaf = { buildLeaf(app) } />
+		const settingsStore = new SettingsStore(
+			await disk.load(),
+			disk.save
 		);
+		render(<ReactApp app = { app } settingsStore = { settingsStore } leaf = { buildLeaf(app) } />);
 		expect(screen.queryByText(/Ahoy, Sailor!/)).toBeNull();
 
 		await act(async () => {
@@ -97,10 +105,11 @@ describe('settings save -> reload -> render round trip', () => {
 	it('persists the change to disk as part of the same round trip', async () => {
 		const app = buildApp();
 		const disk = buildFakeDisk(normalizeSettings({}));
-		const settingsStore = new SettingsStore(await disk.load(), disk.save);
-		render(
-			<ReactApp app = { app } settingsStore = { settingsStore } leaf = { buildLeaf(app) } />
+		const settingsStore = new SettingsStore(
+			await disk.load(),
+			disk.save
 		);
+		render(<ReactApp app = { app } settingsStore = { settingsStore } leaf = { buildLeaf(app) } />);
 
 		await act(async () => {
 			await settingsStore.update({ greetingText: 'Ahoy, Sailor!' });
@@ -113,10 +122,11 @@ describe('settings save -> reload -> render round trip', () => {
 	it('removes a rendered section when the setting toggling it off is saved and reloaded', async () => {
 		const app = buildApp();
 		const disk = buildFakeDisk(normalizeSettings({}));
-		const firstRunStore = new SettingsStore(await disk.load(), disk.save);
-		render(
-			<ReactApp app = { app } settingsStore = { firstRunStore } leaf = { buildLeaf(app) } />
+		const firstRunStore = new SettingsStore(
+			await disk.load(),
+			disk.save
 		);
+		render(<ReactApp app = { app } settingsStore = { firstRunStore } leaf = { buildLeaf(app) } />);
 		expect(document.querySelector('.tabcandy-time')).not.toBeNull();
 
 		await act(async () => {
@@ -124,10 +134,11 @@ describe('settings save -> reload -> render round trip', () => {
 		});
 		cleanup();
 
-		const reloadedStore = new SettingsStore(await disk.load(), disk.save);
-		render(
-			<ReactApp app = { app } settingsStore = { reloadedStore } leaf = { buildLeaf(app) } />
+		const reloadedStore = new SettingsStore(
+			await disk.load(),
+			disk.save
 		);
+		render(<ReactApp app = { app } settingsStore = { reloadedStore } leaf = { buildLeaf(app) } />);
 
 		expect(document.querySelector('.tabcandy-time')).toBeNull();
 	});

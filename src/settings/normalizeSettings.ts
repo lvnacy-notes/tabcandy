@@ -44,9 +44,7 @@ function isStringArray(value: unknown): value is string[] {
 	return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-function isValidOverlayContrastCacheEntry(
-	value: unknown
-): value is OverlayContrastCacheEntry {
+function isValidOverlayContrastCacheEntry(value: unknown): value is OverlayContrastCacheEntry {
 	return (
 		isPlainObject(value) &&
 		typeof value.mtime === 'number' &&
@@ -62,15 +60,16 @@ function isValidOverlayContrastCacheEntry(
  * an ordered list, so one bad entry says nothing about the trustworthiness
  * of the others.
  */
-function normalizeOverlayTextContrastCache(
-	value: unknown
-): Record<string, OverlayContrastCacheEntry> {
+function normalizeOverlayTextContrastCache(value: unknown): Record<string, OverlayContrastCacheEntry> {
 	if (!isPlainObject(value)) {
 		return {};
 	}
 
 	const normalized: Record<string, OverlayContrastCacheEntry> = {};
-	for (const [path, entry] of Object.entries(value)) {
+	for (const [
+		path,
+		entry
+	] of Object.entries(value)) {
 		if (isValidOverlayContrastCacheEntry(entry)) {
 			normalized[path] = entry;
 		}
@@ -158,22 +157,22 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	 * whatever string happens to be on disk (a hand-edited data.json, an
 	 * old enum value from a since-renamed member, etc).
 	 */
-	if (
-		typeof data.backgroundTheme === 'string' &&
-		isEnumValue(BackgroundTheme, data.backgroundTheme)
-	) {
+	if (typeof data.backgroundTheme === 'string' && isEnumValue(
+		BackgroundTheme,
+		data.backgroundTheme
+	)) {
 		normalized.backgroundTheme = data.backgroundTheme;
 	}
-	if (
-		typeof data.timeFormat === 'string' &&
-		isEnumValue(TIME_FORMAT, data.timeFormat)
-	) {
+	if (typeof data.timeFormat === 'string' && isEnumValue(
+		TIME_FORMAT,
+		data.timeFormat
+	)) {
 		normalized.timeFormat = data.timeFormat;
 	}
-	if (
-		typeof data.bookmarkSource === 'string' &&
-		isEnumValue(BOOKMARK_SOURCE, data.bookmarkSource)
-	) {
+	if (typeof data.bookmarkSource === 'string' && isEnumValue(
+		BOOKMARK_SOURCE,
+		data.bookmarkSource
+	)) {
 		normalized.bookmarkSource = data.bookmarkSource;
 	}
 
@@ -214,9 +213,7 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	 * normalizeOverlayTextContrastCache(). This degrades to {}, matching
      * DEFAULT_SETTINGS for a missing or non-object field on its own.
 	 */
-	normalized.overlayTextContrastCache = normalizeOverlayTextContrastCache(
-		data.overlayTextContrastCache
-	);
+	normalized.overlayTextContrastCache = normalizeOverlayTextContrastCache(data.overlayTextContrastCache);
 
 	normalized.settingsVersion = CURRENT_SETTINGS_VERSION;
 

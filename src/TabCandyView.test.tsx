@@ -5,8 +5,14 @@ import {
 	vi
 } from 'vitest';
 import { act } from 'react';
-import { App, WorkspaceLeaf } from 'obsidian';
-import { buildSettings, createConfiguredApp } from './test/fakes';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
+import {
+	buildSettings,
+	createConfiguredApp
+} from './test/fakes';
 import SettingsStore from './settings/SettingsStore';
 
 // Tells React it's safe to batch/flush effects synchronously inside act()
@@ -23,9 +29,10 @@ import SettingsStore from './settings/SettingsStore';
 // view's own contract: does onOpen() mount something into contentEl, does
 // onClose() actually unmount it, and does that hold up across repeated
 // open/close and multiple leaves.
-vi.mock('./app/App', () => ({
-	default: () => <div data-testid = 'tabcandy-app-marker' />,
-}));
+vi.mock(
+	'./app/App',
+	() => ({ default: () => <div data-testid = 'tabcandy-app-marker' /> })
+);
 
 // Imported after the mock so the mocked module is what TabCandyView's own
 // import resolves to.
@@ -36,10 +43,16 @@ function buildLeaf(app: App): WorkspaceLeaf {
 }
 
 function buildView(app: App) {
-	const settingsStore = new SettingsStore(buildSettings(), async () => {});
+	const settingsStore = new SettingsStore(
+		buildSettings(),
+		async () => {}
+	);
 	const leaf = buildLeaf(app);
 
-	return new TabCandyView(settingsStore, leaf);
+	return new TabCandyView(
+		settingsStore,
+		leaf
+	);
 }
 
 // createRoot()'s render is scheduled, not synchronous, under React 18's

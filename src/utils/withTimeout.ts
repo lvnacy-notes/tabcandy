@@ -10,9 +10,10 @@ export default function withTimeout<T>(
 	timeoutMs: number
 ): Promise<T> {
 	return new Promise<T>((resolve, reject) => {
-		const timer = window.setTimeout(() => {
-			reject(new Error(`Timed out after ${timeoutMs}ms`));
-		}, timeoutMs);
+		const timer = window.setTimeout(
+			() => { reject(new Error(`Timed out after ${timeoutMs}ms`)); },
+			timeoutMs
+		);
 
 		promise.then(
 			(value) => {

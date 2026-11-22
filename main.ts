@@ -2,7 +2,10 @@ import { Plugin } from 'obsidian';
 import { TabCandyView } from './src/TabCandyView';
 import SettingsStore from './src/settings/SettingsStore';
 import TabCandySettingTab from './src/settings/SettingsTab';
-import { TAB_CANDY_VIEW_TYPE, TabCandySettings } from './src/types';
+import {
+	TAB_CANDY_VIEW_TYPE,
+	TabCandySettings
+} from './src/types';
 import { normalizeSettings } from './src/settings/normalizeSettings';
 import {
 	pruneMissingManualBackgroundFiles,
@@ -11,7 +14,10 @@ import {
 	syncBackgroundsFolder,
 } from './src/services/backgrounds';
 import { checkForPluginUpdates } from './src/services/versionCheck';
-import { registerQuotesVaultWatcher, syncQuotesFile } from './src/services/quotes';
+import {
+	registerQuotesVaultWatcher,
+	syncQuotesFile
+} from './src/services/quotes';
 import { registerNewTabHijack } from './src/services/newTabHijack';
 import { registerStackedTabPanes } from './src/services/stackedTabPanes';
 import { registerTabCommands } from './src/services/tabCommands';
@@ -65,7 +71,10 @@ export default class TabCandyPlugin extends Plugin {
 		// Refreshes the list of synced files on every load/reload/restart so
 		// background images are available immediately, without requiring an
 		// explicit "Sync now" click first.
-		await syncBackgroundsFolder(this.app, this.settingsStore);
+		await syncBackgroundsFolder(
+			this.app,
+			this.settingsStore
+		);
 
 		// Catches deletions/renames of individually-added images that
 		// happened while the plugin wasn't loaded to see the vault event
@@ -73,12 +82,18 @@ export default class TabCandyPlugin extends Plugin {
 		// an ordinary flow, not an edge case). Deletions/renames that
 		// happen while the plugin is running are instead caught live by
 		// the event listeners registered below.
-		await pruneMissingManualBackgroundFiles(this.app, this.settingsStore);
+		await pruneMissingManualBackgroundFiles(
+			this.app,
+			this.settingsStore
+		);
 
 		// Same rationale as pruneMissingManualBackgroundFiles above: catches
 		// overlayTextContrastCache entries whose backing file was deleted or
 		// edited while the plugin wasn't loaded to see the vault event.
-		await pruneStaleOverlayContrastCache(this.app, this.settingsStore);
+		await pruneStaleOverlayContrastCache(
+			this.app,
+			this.settingsStore
+		);
 
 		registerBackgroundVaultWatchers(
 			this.app,
@@ -90,7 +105,10 @@ export default class TabCandyPlugin extends Plugin {
 		// rationale as syncBackgroundsFolder above - quotes are
 		// available immediately rather than only after the first vault
 		// event or a manual "Sync now" click.
-		await syncQuotesFile(this.app, this.settingsStore);
+		await syncQuotesFile(
+			this.app,
+			this.settingsStore
+		);
 
 		registerQuotesVaultWatcher(
 			this.app,
@@ -100,10 +118,16 @@ export default class TabCandyPlugin extends Plugin {
 
 		this.registerView(
 			TAB_CANDY_VIEW_TYPE,
-			(leaf) => new TabCandyView(this.settingsStore, leaf)
+			(leaf) => new TabCandyView(
+				this.settingsStore,
+				leaf
+			)
 		);
 
-		this.addSettingTab(new TabCandySettingTab(this.app, this));
+		this.addSettingTab(new TabCandySettingTab(
+			this.app,
+			this
+		));
 
 		registerNewTabHijack(
 			this.app,

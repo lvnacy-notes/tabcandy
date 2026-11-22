@@ -1,4 +1,7 @@
-import { ViewState, WorkspaceLeaf } from 'obsidian';
+import {
+	ViewState,
+	WorkspaceLeaf
+} from 'obsidian';
 import { OverlayContrastResult } from './services/overlayContrast';
 
 // The number of entries kept in the closed-tabs ring, and shown in the

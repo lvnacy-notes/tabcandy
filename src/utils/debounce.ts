@@ -16,6 +16,9 @@ export default function debounce<Args extends unknown[]>(
 		if (timeoutId !== undefined) {
 			window.clearTimeout(timeoutId);
 		}
-		timeoutId = window.setTimeout(() => fn(...args), waitMs);
+		timeoutId = window.setTimeout(
+			() => fn(...args),
+			waitMs
+		);
 	};
 }

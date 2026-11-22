@@ -45,7 +45,10 @@ export async function activateView(app: App): Promise<void> {
 	}
 
 	const leaf = workspace.getLeaf(true);
-	await setLeafToTabCandy(app, leaf);
+	await setLeafToTabCandy(
+		app,
+		leaf
+	);
 }
 
 /**
@@ -75,16 +78,17 @@ export function registerNewTabHijack(
 	settingsStore: SettingsStore,
 	registerEvent: (eventRef: EventRef) => void
 ): void {
-	registerEvent(
-		app.workspace.on('layout-change', () => {
-			if (!settingsStore.get().replaceEmptyTabsWithTabCandy) {
-				return;
-			}
+	registerEvent(app.workspace.on('layout-change', () => {
+		if (!settingsStore.get().replaceEmptyTabsWithTabCandy) {
+			return;
+		}
 
-			const leaf = app.workspace.getMostRecentLeaf();
-			if (leaf?.getViewState().type === 'empty') {
-				void setLeafToTabCandy(app, leaf);
-			}
-		})
-	);
+		const leaf = app.workspace.getMostRecentLeaf();
+		if (leaf?.getViewState().type === 'empty') {
+			void setLeafToTabCandy(
+				app,
+				leaf
+			);
+		}
+	}));
 }

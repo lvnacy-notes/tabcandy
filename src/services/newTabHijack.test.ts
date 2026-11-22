@@ -20,7 +20,10 @@ describe('activateView', () => {
 
 	it('reveals the newly created leaf', async () => {
 		const app = createConfiguredApp({ files: {} });
-		const revealLeaf = vi.spyOn(app.workspace, 'revealLeaf');
+		const revealLeaf = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		);
 
 		await activateView(app);
 
@@ -40,7 +43,10 @@ describe('activateView', () => {
 	it('reveals the existing leaf on reuse rather than skipping activation entirely', async () => {
 		const app = createConfiguredApp({ files: {} });
 		await activateView(app);
-		const revealLeaf = vi.spyOn(app.workspace, 'revealLeaf');
+		const revealLeaf = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		);
 
 		await activateView(app);
 
@@ -50,7 +56,10 @@ describe('activateView', () => {
 	it('does not disturb an unrelated existing leaf when creating the Tab Candy one', async () => {
 		const app = createConfiguredApp({ files: {} });
 		const otherLeaf = app.workspace.getLeaf(true);
-		await otherLeaf.setViewState({ type: 'markdown', active: false });
+		await otherLeaf.setViewState({
+			type: 'markdown',
+			active: false
+		});
 
 		await activateView(app);
 

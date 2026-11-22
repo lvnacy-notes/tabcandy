@@ -17,7 +17,10 @@ import {
 	removeClosedTab,
 	reopenClosedTab,
 } from '../services/tabNavigation';
-import { BackgroundTheme, ClosedTabEntry } from '../types';
+import {
+	BackgroundTheme,
+	ClosedTabEntry
+} from '../types';
 import { getTimeOfDayGreeting } from './utils/time';
 import {
 	useBackground,
@@ -48,11 +51,25 @@ const App = ({
 }) => {
 	const settings = useSettings(settingsStore);
 	const time = useClock(settings.timeFormat);
-	const quote = useQuote(settings.customQuotes, settings.fileQuotes);
-	const background = useBackground(app, settings);
-	const overlayTextColor = useOverlayContrast(app, settingsStore, settings, background);
+	const quote = useQuote(
+		settings.customQuotes,
+		settings.fileQuotes
+	);
+	const background = useBackground(
+		app,
+		settings
+	);
+	const overlayTextColor = useOverlayContrast(
+		app,
+		settingsStore,
+		settings,
+		background
+	);
 	const recentFiles = useRecentFiles(app);
-	const bookmarks = useBookmarks(app, settings);
+	const bookmarks = useBookmarks(
+		app,
+		settings
+	);
 	const mainDivRef = useRef<HTMLDivElement>(null);
 
 	/**
@@ -74,10 +91,12 @@ const App = ({
 	 * switch to instead.
 	 */ 
 	const openFile = (file: TFile) => {
-		if (
-			settings.dashboardFocusesOpenTab &&
-			focusOpenLeaf(app, file.path, leaf)
-		) {
+		if (settings.dashboardFocusesOpenTab &&
+			focusOpenLeaf(
+				app,
+				file.path,
+				leaf
+			)) {
 			return;
 		}
 		void leaf.openFile(file);
@@ -92,19 +111,28 @@ const App = ({
 	 */
 	const reopenTab = (entry: ClosedTabEntry) => {
 		const path = getViewStateFilePath(entry.viewState);
-		if (
-			settings.dashboardFocusesOpenTab &&
+		if (settings.dashboardFocusesOpenTab &&
 			path !== null &&
-			focusOpenLeaf(app, path, leaf)
-		) {
+			focusOpenLeaf(
+				app,
+				path,
+				leaf
+			)) {
 			removeClosedTab(entry);
 			return;
 		}
-		void reopenClosedTab(app, entry, leaf);
+		void reopenClosedTab(
+			app,
+			entry,
+			leaf
+		);
 	};
 
 	const runInlineSearch = () =>
-		executeEnabledPluginCommand(app, settings.inlineSearchProvider.command);
+		executeEnabledPluginCommand(
+			app,
+			settings.inlineSearchProvider.command
+		);
 
 	const handleContainerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
 		if (!event.ctrlKey && !event.altKey && /^[A-Za-z0-9]$/.test(event.key)) {

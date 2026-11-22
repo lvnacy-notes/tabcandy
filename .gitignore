@@ -39,7 +39,7 @@ dist/
 
 # Remove test files, directories, and temp shit
 Roadmap/
-tab-candy-images/
+tabcandy/
 quotes.md
 **/temp.md
 **/updates.js
