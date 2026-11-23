@@ -18,9 +18,10 @@ import {
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('../app/App', () => ({
-	default: () => <div data-testid = 'tabcandy-app-marker' />,
-}));
+vi.mock(
+	'../app/App',
+	() => ({ default: () => <div data-testid = 'tabcandy-app-marker' /> })
+);
 
 const { TabCandyView } = await import('./TabCandyView');
 

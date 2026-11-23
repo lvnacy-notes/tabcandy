@@ -235,10 +235,10 @@ importers:
         version: 1.14.4(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
       obsidian-test-mocks:
         specifier: ^7.3.0
-        version: 7.3.0(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)(moment@2.29.4)(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0)
+        version: 7.3.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(moment@2.31.0)(obsidian@1.14.4(@codemirror/state@6.7.6)(@codemirror/view@6.43.13))(vitest@5.1.1)
       obsidian-typings:
         specifier: ^6.36.0
-        version: 6.61.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
+        version: 6.63.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
       tslib:
         specifier: ^2.8.1
         version: 2.9.1
@@ -261,8 +261,8 @@ packages:
     resolution: {integrity: sha512-+JNLVlzePs1XiBT5s9aVkEjOePRoB//tk3bc69BGdzQCz7EICVSQuVPZu6tjc7vAJxBx5fama67LbOltwnXzPQ==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@asamuzakjp/dom-selector@10.0.6':
-    resolution: {integrity: sha512-thWv2/7bV1vrCp+tNo8eR8GfpmFh5PhYmDPMNqoYQsPyhLSd8UhV+IZTpKIQ1TGvKKTIV0h9xwEgx7mpx81Zjw==}
+  '@asamuzakjp/dom-selector@10.0.7':
+    resolution: {integrity: sha512-fWUO6pa4z2WBAWbcHsfWIT7SVqjzxi/kqd0M92naZNEcgKO7RQ57IuMTesH5+3bnhO+b41nT6qGYTB8Di4JRUw==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   '@babel/code-frame@7.29.7':
@@ -304,14 +304,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
 
-  '@codemirror/state@6.5.0':
-    resolution: {integrity: sha512-MwBHVK60IiIHDcoMet78lxt6iw5gJOGSbNbOIVBHWVXIH4/Nq1+GQgLLGgI1KlnN86WDXsPudVaqYHKBIx7Eyw==}
-
   '@codemirror/state@6.7.6':
     resolution: {integrity: sha512-kAz+AncRtKuIknedxT1bq4XwXv4UowhbkHU1myPrtVb/jZtImWuV5BXzv5vK6i3kYACsdiZiQKFQQ5Mq7elW8w==}
-
-  '@codemirror/view@6.38.6':
-    resolution: {integrity: sha512-qiS0z1bKs5WOvHIAC0Cybmv4AJSkAXgX5aD6Mqd2epSLlVJsQl8NG23jCVouIgkh4All/mrbdsf2UOLFnJw0tw==}
 
   '@codemirror/view@6.43.13':
     resolution: {integrity: sha512-sihaFrUzAsYBQsL9J2t69y8nfMQGwcYmggAZsk+kjPbjYZMyuf2hU8tUNTZ+P+isb6XRr8JE22TZlJxBoVdH1A==}
@@ -647,15 +641,15 @@ packages:
       '@emnapi/core': ^1.7.1 || 2.0.0-beta.2
       '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2
 
-  '@obsidian-typings/obsidian-public-1.15.1@1.2.0':
-    resolution: {integrity: sha512-nxiPwB9YcwTdFKQpEoak6SBxND6N/TwvXHqkcqD7w+JY8K9tzDaYRcykuix5bq1N+EPnODva76NhJH0Iw422zg==}
+  '@obsidian-typings/obsidian-public-1.15.1@1.4.0':
+    resolution: {integrity: sha512-8VW9DW4H87jGZrwqFzRQfjy+wUJXyJo9ChH5ubPS9fYS+1uxroGPyNkHp65yCI3p+yxeEZQIi4PZI0UpY57z6g==}
     peerDependencies:
       '@codemirror/state': ^6.7.6
       '@codemirror/view': ^6.43.13
       '@types/node': '>=16.0.0'
 
-  '@obsidian-typings/obsidian-public-latest@6.61.0':
-    resolution: {integrity: sha512-KDSvmlLvDqJDf51vHDM8na6ttr2UJhTybotr4E/0falk5W6JQXcKuCgbuUNpHhZMq0tpURX3iQyhgiGFOtf55Q==}
+  '@obsidian-typings/obsidian-public-latest@6.63.0':
+    resolution: {integrity: sha512-MFJbrVgUqlEIcSej6Qnh4ZNvF9LxHIbBb3h3Ty/359SO637spl8zyQQaJm6+bPD07EiVFfograzV82d9P4tRYg==}
 
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
@@ -1693,8 +1687,8 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  js-tokens@10.0.0:
-    resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
+  js-tokens@10.0.1:
+    resolution: {integrity: sha512-XMt+uh+yEs6srFvEb/pEe4IMvbtoXVdNxF7lZFU+I9sdWI641L97L+gXQMTGm1x3RjPUVizNVjHueclXr0U7sw==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -1863,9 +1857,6 @@ packages:
   module-replacements@2.11.0:
     resolution: {integrity: sha512-j5sNQm3VCpQQ7nTqGeOZtoJtV3uKERgCBm9QRhmGRiXiqkf7iRFOkfxdJRZWLkqYY8PNf4cDQF/WfXUYLENrRA==}
 
-  moment@2.29.4:
-    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
-
   moment@2.31.0:
     resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
 
@@ -1939,8 +1930,8 @@ packages:
       vitest:
         optional: true
 
-  obsidian-typings@6.61.0:
-    resolution: {integrity: sha512-pKYK1onrpqIc5fk4HuMMs6JuJ+Ki++fyznU4TyKmRhAXP/XLSuuY7ca/QjJHi+/URNPMDvmMAWCFRi9tWj4F2Q==}
+  obsidian-typings@6.63.0:
+    resolution: {integrity: sha512-81mgsZzKg0Fty4yOlqLAikvaS3l/8MHokfRiKLMuB+l8ZJxqaWVi1MZ2nrBUJhPpEH+x5EKglD+fpgwhs8fqHA==}
 
   obsidian@1.14.4:
     resolution: {integrity: sha512-Kyo+5t0wFW2On5irLOPrgtwWDnaJsvE9n/P1OVvdPytx+NqeHJXvxVqADNOqLp9bU1+I64B6i+dHb0fxR/ss3w==}
@@ -2453,11 +2444,6 @@ packages:
     resolution: {integrity: sha512-odxVsHAkZYYglR30aPYRY4nUGJnoJ2y1ww2HDvZALo0BDETv9kWbi16J52eHs+PWRNmF4ub6nZqfVOeesOvntg==}
     engines: {node: ^14.17.0 || >=16.0.0}
 
-  yaml@2.9.0:
-    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
-
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
@@ -2477,7 +2463,7 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.3
       lru-cache: 11.5.3
 
-  '@asamuzakjp/dom-selector@10.0.6':
+  '@asamuzakjp/dom-selector@10.0.7':
     dependencies:
       bidi-js: 1.1.0
       css-tree: 3.2.1
@@ -2523,20 +2509,9 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@codemirror/state@6.5.0':
-    dependencies:
-      '@marijn/find-cluster-break': 1.0.4
-
   '@codemirror/state@6.7.6':
     dependencies:
       '@marijn/find-cluster-break': 1.0.4
-
-  '@codemirror/view@6.38.6':
-    dependencies:
-      '@codemirror/state': 6.5.0
-      crelt: 1.0.7
-      style-mod: 4.1.5
-      w3c-keyname: 2.2.8
 
   '@codemirror/view@6.43.13':
     dependencies:
@@ -2778,15 +2753,15 @@ snapshots:
       '@tybys/wasm-util': 0.10.5
     optional: true
 
-  '@obsidian-typings/obsidian-public-1.15.1@1.2.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)':
+  '@obsidian-typings/obsidian-public-1.15.1@1.4.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)':
     dependencies:
       '@codemirror/state': 6.7.6
       '@codemirror/view': 6.43.13
       '@types/node': 24.19.2
 
-  '@obsidian-typings/obsidian-public-latest@6.61.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)':
+  '@obsidian-typings/obsidian-public-latest@6.63.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)':
     dependencies:
-      '@obsidian-typings/obsidian-public-1.15.1': 1.2.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
+      '@obsidian-typings/obsidian-public-1.15.1': 1.4.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
     transitivePeerDependencies:
       - '@codemirror/state'
       - '@codemirror/view'
@@ -3259,7 +3234,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       estree-walker: 3.0.3
-      js-tokens: 10.0.0
+      js-tokens: 10.0.1
 
   async-function@1.0.0: {}
 
@@ -4112,14 +4087,14 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  js-tokens@10.0.0: {}
+  js-tokens@10.0.1: {}
 
   js-tokens@4.0.0: {}
 
   jsdom@30.1.3:
     dependencies:
       '@asamuzakjp/css-color': 7.2.0
-      '@asamuzakjp/dom-selector': 10.0.6
+      '@asamuzakjp/dom-selector': 10.0.7
       '@bramus/specificity': 2.4.3
       '@csstools/css-syntax-patches-for-csstree': 1.1.17(css-tree@3.2.1)
       '@exodus/bytes': 1.16.0
@@ -4274,8 +4249,6 @@ snapshots:
 
   module-replacements@2.11.0: {}
 
-  moment@2.29.4: {}
-
   moment@2.31.0: {}
 
   mrmime@2.0.1: {}
@@ -4340,20 +4313,20 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.1.2
 
-  obsidian-test-mocks@7.3.0(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)(moment@2.29.4)(obsidian@1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))(vitest@5.0.0):
+  obsidian-test-mocks@7.3.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(moment@2.31.0)(obsidian@1.14.4(@codemirror/state@6.7.6)(@codemirror/view@6.43.13))(vitest@5.1.1):
     dependencies:
-      '@codemirror/state': 6.5.0
-      '@codemirror/view': 6.38.6
-      moment: 2.29.4
-      obsidian: 1.13.1(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
-      turndown: 7.2.4
+      '@codemirror/state': 6.7.6
+      '@codemirror/view': 6.43.13
+      moment: 2.31.0
+      obsidian: 1.14.4(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
+      turndown: 7.2.5
       yaml: 2.9.1
     optionalDependencies:
       vitest: 5.1.1(@types/node@24.19.2)(@vitest/coverage-v8@5.1.1)(@vitest/ui@5.1.1)(jsdom@30.1.3)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(yaml@2.9.1))
 
-  obsidian-typings@6.61.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2):
+  obsidian-typings@6.63.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2):
     dependencies:
-      '@obsidian-typings/obsidian-public-latest': 6.61.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
+      '@obsidian-typings/obsidian-public-latest': 6.63.0(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)(@types/node@24.19.2)
     transitivePeerDependencies:
       - '@codemirror/state'
       - '@codemirror/view'
@@ -4920,8 +4893,6 @@ snapshots:
     dependencies:
       eslint-visitor-keys: 3.4.3
       yaml: 2.9.1
-
-  yaml@2.9.0: {}
 
   yaml@2.9.1: {}
 

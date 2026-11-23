@@ -80,9 +80,7 @@ function isStringArray(value: unknown): value is string[] {
  * @param value - Value to test.
  * @returns True when `value` has a numeric `mtime` and string `dominantColor` and `overlayTextColor`.
  */
-function isValidOverlayContrastCacheEntry(
-	value: unknown
-): value is OverlayContrastCacheEntry {
+function isValidOverlayContrastCacheEntry(value: unknown): value is OverlayContrastCacheEntry {
 	return (
 		isPlainObject(value) &&
 		typeof value.mtime === 'number' &&
@@ -166,26 +164,41 @@ function normalizeClusters(value: unknown): TabCandyClusters {
 	}
 
 	const read: TabCandyClusters = {};
-	for (const [key, entry] of Object.entries(value)) {
+	for (const [
+		key,
+		entry
+	] of Object.entries(value)) {
 		// Assigning to `__proto__` would replace the prototype instead of adding a key.
 		if (key === '__proto__') {
 			continue;
 		}
-		const cluster = normalizeCluster(key, entry);
+		const cluster = normalizeCluster(
+			key,
+			entry
+		);
 		if (cluster !== null) {
 			read[key] = cluster;
 		}
 	}
 
 	const normalized: TabCandyClusters = {};
-	for (const [key, cluster] of Object.entries(read)) {
+	for (const [
+		key,
+		cluster
+	] of Object.entries(read)) {
 		const partnerId = cluster.pairedWith;
 		const isReciprocal =
 			partnerId !== null &&
 			partnerId !== key &&
-			Boolean(Object.prototype.hasOwnProperty.call(read, partnerId)) &&
+			Boolean(Object.prototype.hasOwnProperty.call(
+				read,
+				partnerId
+			)) &&
 			read[partnerId].pairedWith === key;
-		normalized[key] = isReciprocal ? cluster : { ...cluster, pairedWith: null };
+		normalized[key] = isReciprocal ? cluster : {
+			...cluster,
+			pairedWith: null
+		};
 	}
 	return normalized;
 }
@@ -265,10 +278,10 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	}
 
 	/** Enum fields: accepted when the value is a member of the enum. */
-	if (
-		typeof data.backgroundTheme === 'string' &&
-		isEnumValue(BackgroundTheme, data.backgroundTheme)
-	) {
+	if (typeof data.backgroundTheme === 'string' && isEnumValue(
+		BackgroundTheme,
+		data.backgroundTheme
+	)) {
 		normalized.backgroundTheme = data.backgroundTheme;
 	}
 	if (typeof data.timeFormat === 'string' && isEnumValue(
@@ -307,9 +320,7 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	}
 
 	/** Overlay contrast cache: bad entries drop individually. */
-	normalized.overlayTextContrastCache = normalizeOverlayTextContrastCache(
-		data.overlayTextContrastCache
-	);
+	normalized.overlayTextContrastCache = normalizeOverlayTextContrastCache(data.overlayTextContrastCache);
 
 	/** Clusters: bad entries are repaired or dropped individually. */
 	normalized.clusters = normalizeClusters(data.clusters);

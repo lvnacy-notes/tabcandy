@@ -1,4 +1,7 @@
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { closeTabsInFolder } from '../tabs/tabNavigation';
 import ChooseFolderModal from '../ui/ChooseFolderModal';
 import SettingsStore from '../settings/SettingsStore';

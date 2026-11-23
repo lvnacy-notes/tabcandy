@@ -7,7 +7,10 @@ import {
 import { vi } from 'vitest';
 import { addRootLeaf } from './FakeWorkspace';
 import { createFakeLeaf } from './FakeWorkspaceLeaf';
-import { buildClusters, buildSettings } from './fakes';
+import {
+	buildClusters,
+	buildSettings
+} from './fakes';
 import SettingsStore from '../settings/SettingsStore';
 import {
 	ClusterDraft,
@@ -34,16 +37,35 @@ export async function addFileTab(
 	pane: object
 ): Promise<WorkspaceLeaf> {
 	if (app.vault.getAbstractFileByPath(file) === null) {
-		const folder = file.includes('/') ? file.slice(0, file.lastIndexOf('/')) : '';
+		const folder = file.includes('/') ? file.slice(
+			0,
+			file.lastIndexOf('/')
+		) : '';
 		if (folder !== '' && app.vault.getAbstractFileByPath(folder) === null) {
 			await app.vault.createFolder(folder);
 		}
-		await app.vault.create(file, '');
+		await app.vault.create(
+			file,
+			''
+		);
 	}
 	const leaf = createFakeLeaf(app);
-	await leaf.setViewState({ type: 'markdown', state: { file } });
-	Object.defineProperty(leaf, 'parent', { value: pane, configurable: true });
-	addRootLeaf(app, leaf);
+	await leaf.setViewState({
+		type: 'markdown',
+		state: { file }
+	});
+	Object.defineProperty(
+		leaf,
+		'parent',
+		{
+			value: pane,
+			configurable: true
+		}
+	);
+	addRootLeaf(
+		app,
+		leaf
+	);
 	return leaf;
 }
 
@@ -56,9 +78,22 @@ export async function addFileTab(
  */
 export async function addNonFileTab(app: App, pane: object): Promise<WorkspaceLeaf> {
 	const leaf = createFakeLeaf(app);
-	await leaf.setViewState({ type: 'tabcandy-react-view', state: {} });
-	Object.defineProperty(leaf, 'parent', { value: pane, configurable: true });
-	addRootLeaf(app, leaf);
+	await leaf.setViewState({
+		type: 'tabcandy-react-view',
+		state: {}
+	});
+	Object.defineProperty(
+		leaf,
+		'parent',
+		{
+			value: pane,
+			configurable: true
+		}
+	);
+	addRootLeaf(
+		app,
+		leaf
+	);
 	return leaf;
 }
 
@@ -69,7 +104,10 @@ export async function addNonFileTab(app: App, pane: object): Promise<WorkspaceLe
  * @returns The store.
  */
 export function buildStoreWith(...clusters: TabCandyCluster[]): SettingsStore {
-	return new SettingsStore(buildSettings({ clusters: buildClusters(...clusters) }), async () => {});
+	return new SettingsStore(
+		buildSettings({ clusters: buildClusters(...clusters) }),
+		async () => {}
+	);
 }
 
 /**
@@ -82,7 +120,10 @@ export function cancelling(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForCluster>();
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -94,8 +135,16 @@ export function confirming(): {
 	prompt: PromptForConfirmation;
 	spy: ReturnType<typeof vi.fn>;
 } {
-	const spy = vi.fn((_title: string, _text: string, _confirmLabel: string, onConfirm: () => void) => onConfirm());
-	return { prompt: spy, spy };
+	const spy = vi.fn((
+		_title: string,
+		_text: string,
+		_confirmLabel: string,
+		onConfirm: () => void
+	) => onConfirm());
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -108,7 +157,10 @@ export function confirmingNothing(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForConfirmation>();
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -121,8 +173,14 @@ export function choosing(id: string): {
 	prompt: PromptForClusterChoice;
 	spy: ReturnType<typeof vi.fn>;
 } {
-	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (id: string) => void) => onSubmit(id));
-	return { prompt: spy, spy };
+	const spy = vi.fn((
+		_clusters: TabCandyCluster[],
+		onSubmit: (id: string) => void
+	) => onSubmit(id));
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -135,7 +193,10 @@ export function choosingNothing(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForClusterChoice>();
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -159,8 +220,20 @@ export function pairing(sourceId: string, targetId: string): {
 	prompt: PromptForClusterPair;
 	spy: ReturnType<typeof vi.fn>;
 } {
-	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (sourceId: string, targetId: string) => void) => onSubmit(sourceId, targetId));
-	return { prompt: spy, spy };
+	const spy = vi.fn((
+		_clusters: TabCandyCluster[],
+		onSubmit: (
+			sourceId: string,
+			targetId: string
+		) => void
+	) => onSubmit(
+		sourceId,
+		targetId
+	));
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -173,7 +246,10 @@ export function pairingNothing(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForClusterPair>();
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -186,8 +262,14 @@ export function selecting(ids: string[]): {
 	prompt: PromptForClusterRemoval;
 	spy: ReturnType<typeof vi.fn>;
 } {
-	const spy = vi.fn((_clusters: TabCandyCluster[], onSubmit: (ids: string[]) => void) => onSubmit(ids));
-	return { prompt: spy, spy };
+	const spy = vi.fn((
+		_clusters: TabCandyCluster[],
+		onSubmit: (ids: string[]) => void
+	) => onSubmit(ids));
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -200,7 +282,10 @@ export function selectingNothing(): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn<PromptForClusterRemoval>();
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }
 
 /**
@@ -214,5 +299,8 @@ export function submitting(draft: ClusterDraft): {
 	spy: ReturnType<typeof vi.fn>;
 } {
 	const spy = vi.fn((onSubmit: (draft: ClusterDraft) => void) => onSubmit(draft));
-	return { prompt: spy, spy };
+	return {
+		prompt: spy,
+		spy
+	};
 }

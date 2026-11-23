@@ -1,7 +1,10 @@
 /** @file Wires the plugin's features together. */
 import type { EventRef } from 'obsidian';
 import { promptAndCreate } from './clusters/clusterCreation';
-import { promptAndPair, promptAndUnlink } from './clusters/clusterPairing';
+import {
+	promptAndPair,
+	promptAndUnlink
+} from './clusters/clusterPairing';
 import { buildCommands } from './commands/commandRegistry';
 import {
 	pruneMissingManualBackgroundFiles,
@@ -49,7 +52,10 @@ import {
  * @param plugin - The plugin, with `settingsStore` already assigned.
  */
 export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
-	const { app, settingsStore } = plugin;
+	const {
+		app,
+		settingsStore
+	} = plugin;
 	/**
 	 * Registers an event with the plugin.
 	 *
@@ -64,13 +70,22 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 	// Tells Style Settings to re-scan this plugin's `@settings` block.
 	app.workspace.trigger('parse-style-settings');
 
-	await syncBackgroundsFolder(app, settingsStore);
+	await syncBackgroundsFolder(
+		app,
+		settingsStore
+	);
 
 	// Drops manually added images deleted or renamed while the plugin wasn't running.
-	await pruneMissingManualBackgroundFiles(app, settingsStore);
+	await pruneMissingManualBackgroundFiles(
+		app,
+		settingsStore
+	);
 
 	// Drops contrast cache entries whose image was deleted or edited while the plugin wasn't running.
-	await pruneStaleOverlayContrastCache(app, settingsStore);
+	await pruneStaleOverlayContrastCache(
+		app,
+		settingsStore
+	);
 
 	registerBackgroundVaultWatchers(
 		app,
@@ -78,7 +93,10 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		registerEvent
 	);
 
-	await syncQuotesFile(app, settingsStore);
+	await syncQuotesFile(
+		app,
+		settingsStore
+	);
 
 	registerQuotesVaultWatcher(
 		app,
@@ -95,10 +113,16 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 
 	plugin.registerView(
 		TAB_CANDY_VIEW_TYPE,
-		(leaf) => new TabCandyView(settingsStore, leaf)
+		(leaf) => new TabCandyView(
+			settingsStore,
+			leaf
+		)
 	);
 
-	plugin.addSettingTab(new TabCandySettingTab(app, plugin));
+	plugin.addSettingTab(new TabCandySettingTab(
+		app,
+		plugin
+	));
 
 	registerNewTabHijack(
 		app,
@@ -107,7 +131,10 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 	);
 
 	const promptForCluster: PromptForCluster = (onSubmit) => {
-		new CreateClusterModal(app, onSubmit).open();
+		new CreateClusterModal(
+			app,
+			onSubmit
+		).open();
 	};
 
 	const promptForClusterChoice: PromptForClusterChoice = (clusters, onSubmit, labels) => {
@@ -120,7 +147,11 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 	};
 
 	const promptForClusterRemoval: PromptForClusterRemoval = (clusters, onSubmit) => {
-		new RemoveFromClustersModal(app, clusters, onSubmit).open();
+		new RemoveFromClustersModal(
+			app,
+			clusters,
+			onSubmit
+		).open();
 	};
 
 	const promptForClusterPair: PromptForClusterPair = (clusters, onSubmit) => {
@@ -141,6 +172,37 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		).open();
 	};
 
+	/**
+	 * Starts pairing a Cluster.
+	 *
+	 * @param id - Id of the Cluster.
+	 */
+	const onPair = (id: string): void => {
+		promptAndPair(
+			settingsStore,
+			promptForClusterChoice,
+			promptForConfirmation,
+			id
+		);
+	};
+
+	/**
+	 * Starts unlinking a Cluster, after a confirmation.
+	 *
+	 * @param id - Id of the Cluster.
+	 */
+	const onConfirmUnlink = (id: string): void => {
+		const cluster = settingsStore.get().clusters[id];
+		if (cluster !== undefined) {
+			promptAndUnlink(
+				settingsStore,
+				promptForClusterChoice,
+				promptForConfirmation,
+				[cluster]
+			);
+		}
+	};
+
 	plugin.registerView(
 		CLUSTER_SIDEBAR_VIEW_TYPE,
 		(leaf) => new ClusterSidebarView(
@@ -152,30 +214,16 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 					[]
 				);
 			},
-			(id) => {
-				promptAndPair(
-					settingsStore,
-					promptForClusterChoice,
-					promptForConfirmation,
-					id
-				);
-			},
-			(id) => {
-				const cluster = settingsStore.get().clusters[id];
-				if (cluster !== undefined) {
-					promptAndUnlink(
-						settingsStore,
-						promptForClusterChoice,
-						promptForConfirmation,
-						[cluster]
-					);
-				}
-			},
+			onPair,
+			onConfirmUnlink,
 			leaf
 		)
 	);
 
-	const trayReturn = new TrayReturnTracker(app, settingsStore);
+	const trayReturn = new TrayReturnTracker(
+		app,
+		settingsStore
+	);
 	registerEvent(app.workspace.on('layout-change', () => {
 		void trayReturn.handleLayoutChange();
 	}));
@@ -185,6 +233,8 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		(leaf) => new ClusterTrayView(
 			settingsStore,
 			trayReturn,
+			onPair,
+			onConfirmUnlink,
 			leaf
 		)
 	);

@@ -31,11 +31,17 @@ export default class RemoveFromClustersModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl('h2', { text: 'Remove from cluster' });
+		contentEl.createEl(
+			'h2',
+			{ text: 'Remove from cluster' }
+		);
 
 		for (const cluster of this._clusters) {
 			const setting = new Setting(contentEl).setName(cluster.name);
-			const checkbox = setting.controlEl.createEl('input', { type: 'checkbox' });
+			const checkbox = setting.controlEl.createEl(
+				'input',
+				{ type: 'checkbox' }
+			);
 			checkbox.addEventListener('change', () => {
 				if (checkbox.checked) {
 					this._selectedIds.add(cluster.id);

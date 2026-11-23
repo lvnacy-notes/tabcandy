@@ -26,12 +26,25 @@ describe('create-cluster-from-active-tab command', () => {
 			cancelling().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['create-cluster-from-active-tab', 'Create cluster from active tab']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'create-cluster-from-active-tab',
+			'Create cluster from active tab'
+		]);
 	});
 
 	it('is available when the most recent tab is file-backed', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -43,7 +56,13 @@ describe('create-cluster-from-active-tab command', () => {
 
 	it('is unavailable when the most recent tab has no file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -55,7 +74,10 @@ describe('create-cluster-from-active-tab command', () => {
 
 	it('is unavailable when there is no most recent tab', () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, null);
+		setMostRecentLeaf(
+			app,
+			null
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -67,8 +89,18 @@ describe('create-cluster-from-active-tab command', () => {
 
 	it('does not prompt when only checking availability', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const { prompt, spy } = cancelling();
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
+		const {
+			prompt,
+			spy
+		} = cancelling();
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -83,8 +115,19 @@ describe('create-cluster-from-active-tab command', () => {
 	it('creates a Cluster holding only the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'sibling.md', pane);
-		setMostRecentLeaf(app, await addFileTab(app, 'active.md', pane));
+		await addFileTab(
+			app,
+			'sibling.md',
+			pane
+		);
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'active.md',
+				pane
+			)
+		);
 		const store = buildStore();
 		const command = buildInvokeCommand(
 			app,

@@ -28,13 +28,22 @@ function openModal(): {
 	const modal = new RemoveFromClustersModal(
 		createConfiguredApp(),
 		[
-			buildCluster({ id: 'one', name: 'One' }),
-			buildCluster({ id: 'two', name: 'Two' }),
+			buildCluster({
+				id: 'one',
+				name: 'One'
+			}),
+			buildCluster({
+				id: 'two',
+				name: 'Two'
+			}),
 		],
 		onSubmit
 	);
 	modal.open();
-	return { modal, onSubmit };
+	return {
+		modal,
+		onSubmit
+	};
 }
 
 /**
@@ -71,48 +80,109 @@ describe('RemoveFromClustersModal', () => {
 	});
 
 	it('submits the ids of the checked Clusters', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		setChecked(modal, 1, true);
-		findButton(modal, 'Remove from selected').click();
+		setChecked(
+			modal,
+			1,
+			true
+		);
+		findButton(
+			modal,
+			'Remove from selected'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith(['two']);
 	});
 
 	it('submits several checked Clusters', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		setChecked(modal, 0, true);
-		setChecked(modal, 1, true);
-		findButton(modal, 'Remove from selected').click();
+		setChecked(
+			modal,
+			0,
+			true
+		);
+		setChecked(
+			modal,
+			1,
+			true
+		);
+		findButton(
+			modal,
+			'Remove from selected'
+		).click();
 
-		expect(onSubmit).toHaveBeenCalledWith(['one', 'two']);
+		expect(onSubmit).toHaveBeenCalledWith([
+			'one',
+			'two'
+		]);
 	});
 
 	it('leaves out a Cluster that was checked and then unchecked', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		setChecked(modal, 0, true);
-		setChecked(modal, 0, false);
-		setChecked(modal, 1, true);
-		findButton(modal, 'Remove from selected').click();
+		setChecked(
+			modal,
+			0,
+			true
+		);
+		setChecked(
+			modal,
+			0,
+			false
+		);
+		setChecked(
+			modal,
+			1,
+			true
+		);
+		findButton(
+			modal,
+			'Remove from selected'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith(['two']);
 	});
 
 	it('does not submit when none are checked', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Remove from selected').click();
+		findButton(
+			modal,
+			'Remove from selected'
+		).click();
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
 
 	it('does not submit when cancelled', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		setChecked(modal, 0, true);
-		findButton(modal, 'Cancel').click();
+		setChecked(
+			modal,
+			0,
+			true
+		);
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
@@ -120,7 +190,10 @@ describe('RemoveFromClustersModal', () => {
 	it('empties its content when closed', () => {
 		const { modal } = openModal();
 
-		findButton(modal, 'Cancel').click();
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});

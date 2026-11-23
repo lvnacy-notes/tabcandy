@@ -34,66 +34,67 @@ export function registerBackgroundVaultWatchers(
 	registerEvent: (eventRef: EventRef) => void
 ): void {
 	const debouncedSync = debounce(() => {
-		void syncBackgroundsFolder(app, settingsStore);
+		void syncBackgroundsFolder(
+			app,
+			settingsStore
+		);
 	}, SYNC_DEBOUNCE_MS);
 
-	registerEvent(
-		app.vault.on('create', (file) => {
-			if (isInBackgroundsFolder(file, settingsStore.get().backgroundsFolder)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('create', (file) => {
+		if (isInBackgroundsFolder(
+			file,
+			settingsStore.get().backgroundsFolder
+		)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('modify', (file) => {
-			if (isInBackgroundsFolder(file, settingsStore.get().backgroundsFolder)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('modify', (file) => {
+		if (isInBackgroundsFolder(
+			file,
+			settingsStore.get().backgroundsFolder
+		)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('delete', (file) => {
-			const settings = settingsStore.get();
-			if (settings.manualBackgroundFiles.includes(file.path)) {
-				void settingsStore.update({
-					manualBackgroundFiles: settings.manualBackgroundFiles.filter(
-						(path) => path !== file.path
-					),
-				});
-			}
-			if (isInBackgroundsFolder(file, settings.backgroundsFolder)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('delete', (file) => {
+		const settings = settingsStore.get();
+		if (settings.manualBackgroundFiles.includes(file.path)) {
+			void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.filter((path) =>
+				path !== file.path) });
+		}
+		if (isInBackgroundsFolder(
+			file,
+			settings.backgroundsFolder
+		)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('rename', (file, oldPath) => {
-			const settings = settingsStore.get();
-			if (
-				file instanceof TFile &&
-				settings.manualBackgroundFiles.includes(oldPath)
-			) {
-				void settingsStore.update({
-					manualBackgroundFiles: settings.manualBackgroundFiles.map(
-						(path) => (path === oldPath ? file.path : path)
-					),
-				});
-			}
-			const oldParentPath = oldPath.includes('/')
-				? oldPath.slice(0, oldPath.lastIndexOf('/'))
-				: '';
-			if (
-				isInBackgroundsFolder(file, settings.backgroundsFolder) ||
-				(settings.backgroundsFolder &&
-					oldParentPath === normalizePath(settings.backgroundsFolder))
-			) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('rename', (file, oldPath) => {
+		const settings = settingsStore.get();
+		if (file instanceof TFile &&
+			settings.manualBackgroundFiles.includes(oldPath))
+		{
+			void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.map((path) =>
+				(path === oldPath ? file.path : path)) });
+		}
+		const oldParentPath = oldPath.includes('/')
+			? oldPath.slice(
+				0,
+				oldPath.lastIndexOf('/')
+			)
+			: '';
+		if (isInBackgroundsFolder(
+			file,
+			settings.backgroundsFolder
+		) || (settings.backgroundsFolder &&
+				oldParentPath === normalizePath(settings.backgroundsFolder)))
+		{
+			debouncedSync();
+		}
+	}));
 }
 
 /**
@@ -109,19 +110,17 @@ export function registerClusterRenameWatcher(
 	settingsStore: SettingsStore,
 	registerEvent: (eventRef: EventRef) => void
 ): void {
-	registerEvent(
-		app.vault.on('rename', (file, oldPath) => {
-			const { clusters } = settingsStore.get();
-			const next = replaceMemberPath(
-				clusters,
-				oldPath,
-				file.path
-			);
-			if (next !== clusters) {
-				void settingsStore.update({ clusters: next });
-			}
-		})
-	);
+	registerEvent(app.vault.on('rename', (file, oldPath) => {
+		const { clusters } = settingsStore.get();
+		const next = replaceMemberPath(
+			clusters,
+			oldPath,
+			file.path
+		);
+		if (next !== clusters) {
+			void settingsStore.update({ clusters: next });
+		}
+	}));
 }
 
 /**
@@ -144,38 +143,32 @@ export function registerQuotesVaultWatcher(
 	};
 
 	const debouncedSync = debounce(() => {
-		void syncQuotesFile(app, settingsStore);
+		void syncQuotesFile(
+			app,
+			settingsStore
+		);
 	}, SYNC_DEBOUNCE_MS);
 
-	registerEvent(
-		app.vault.on('create', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('create', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			debouncedSync();
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('modify', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				debouncedSync();
-			}
-		})
-	);
+	registerEvent(app.vault.on('modify', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			debouncedSync();
+		} }));
 
-	registerEvent(
-		app.vault.on('delete', (file) => {
-			if (isConfiguredQuotesFile(file.path)) {
-				void settingsStore.update({ fileQuotes: [] });
-			}
-		})
-	);
+	registerEvent(app.vault.on('delete', (file) => {
+		if (isConfiguredQuotesFile(file.path)) {
+			void settingsStore.update({ fileQuotes: [] });
+		}
+	}));
 
-	registerEvent(
-		app.vault.on('rename', (file, oldPath) => {
-			if (isConfiguredQuotesFile(oldPath)) {
-				void settingsStore.update({ quotesFilePath: file.path });
-			}
-		})
-	);
+	registerEvent(app.vault.on('rename', (file, oldPath) => {
+		if (isConfiguredQuotesFile(oldPath)) {
+			void settingsStore.update({ quotesFilePath: file.path });
+		}
+	}));
 }

@@ -6,7 +6,10 @@ import {
 	TFile
 } from 'obsidian';
 import FileInputSuggest from './FileInputSuggest';
-import { removeMissingMembers, resolveMissingMember } from '../clusters/clusterMembership';
+import {
+	removeMissingMembers,
+	resolveMissingMember
+} from '../clusters/clusterMembership';
 import { getMissingMembers } from '../clusters/clusters';
 import SettingsStore from '../settings/SettingsStore';
 
@@ -41,7 +44,10 @@ export default class ResolveMissingModal extends Modal {
 			return [];
 		}
 
-		return getMissingMembers(cluster, (path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile);
+		return getMissingMembers(
+			cluster,
+			(path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile
+		);
 	}
 
 	/** Clears the modal's content. */
@@ -75,7 +81,10 @@ export default class ResolveMissingModal extends Modal {
 			return;
 		}
 
-		contentEl.createEl('h2', { text: 'Resolve missing members' });
+		contentEl.createEl(
+			'h2',
+			{ text: 'Resolve missing members' }
+		);
 
 		for (const path of missing) {
 			new Setting(contentEl)
@@ -87,7 +96,10 @@ export default class ResolveMissingModal extends Modal {
 						this.app,
 						text.inputEl,
 						(file) => {
-							void this.resolve(path, file);
+							void this.resolve(
+								path,
+								file
+							);
 						}
 					);
 					if (path === this._focusPath) {

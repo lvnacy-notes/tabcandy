@@ -5,7 +5,10 @@ import {
 	it
 } from 'vitest';
 import { buildInvokeCommand } from './pairClusterWith';
-import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import {
 	addFileTab,
 	addNonFileTab,
@@ -15,7 +18,10 @@ import {
 	confirming,
 	isAvailable
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 
 describe('pair-cluster-with command', () => {
 	it('has its id and name', () => {
@@ -26,12 +32,25 @@ describe('pair-cluster-with command', () => {
 			confirming().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['pair-cluster-with', 'Pair cluster with…']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'pair-cluster-with',
+			'Pair cluster with…'
+		]);
 	});
 
 	it('is available when a Cluster holds the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -46,7 +65,14 @@ describe('pair-cluster-with command', () => {
 
 	it('is unavailable when no Cluster holds the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['other.md'] })),
@@ -61,7 +87,13 @@ describe('pair-cluster-with command', () => {
 
 	it('is unavailable when the most recent tab has no file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -76,8 +108,18 @@ describe('pair-cluster-with command', () => {
 
 	it('does not prompt when only checking availability', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const { prompt, spy } = choosingNothing();
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -92,8 +134,18 @@ describe('pair-cluster-with command', () => {
 
 	it('pairs the only Cluster holding the file with the chosen one', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }), buildCluster({ id: 'two' }));
+		setMostRecentLeaf(app, await addFileTab(
+			app,
+			'a.md',
+			{}
+		));
+		const store = buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({ id: 'two' })
+		);
 		const command = buildInvokeCommand(
 			app,
 			store,
@@ -103,18 +155,40 @@ describe('pair-cluster-with command', () => {
 
 		command.checkCallback?.(false);
 
-		expect([store.get().clusters['one'].pairedWith, store.get().clusters['two'].pairedWith]).toEqual(['two', 'one']);
+		expect([
+			store.get().clusters['one'].pairedWith,
+			store.get().clusters['two'].pairedWith
+		]).toEqual([
+			'two',
+			'one'
+		]);
 	});
 
 	it('asks which Cluster first when several hold the file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] }),
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			}),
 			buildCluster({ id: 'three' })
 		);
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const command = buildInvokeCommand(
 			app,
 			store,
@@ -124,6 +198,9 @@ describe('pair-cluster-with command', () => {
 
 		command.checkCallback?.(false);
 
-		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual(['one', 'two']);
+		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual([
+			'one',
+			'two'
+		]);
 	});
 });

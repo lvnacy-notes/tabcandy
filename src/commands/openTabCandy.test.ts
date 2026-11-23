@@ -23,7 +23,13 @@ describe('open-tab-candy command', () => {
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createConfiguredApp({ files: {} }));
 
-		expect([command.id, command.name]).toEqual(['open-tab-candy', 'Open new tab']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'open-tab-candy',
+			'Open new tab'
+		]);
 	});
 
 	it('opens a Tab Candy leaf', async () => {

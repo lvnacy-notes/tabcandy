@@ -1,4 +1,7 @@
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { closeOtherTabs } from '../tabs/tabNavigation';
 
 /**

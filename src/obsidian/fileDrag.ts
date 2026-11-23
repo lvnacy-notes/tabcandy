@@ -13,7 +13,10 @@ interface Draggable {
 
 interface DragManager {
 	draggable?: Draggable | null;
-	dragFile?: (event: DragEvent, file: TFile) => unknown;
+	dragFile?: (
+		event: DragEvent,
+		file: TFile
+	) => unknown;
 }
 
 /**
@@ -58,6 +61,9 @@ export function startFileDrag(
 ): void {
 	const file = app.vault.getAbstractFileByPath(path);
 	if (file instanceof TFile) {
-		getDragManager(app)?.dragFile?.(event, file);
+		getDragManager(app)?.dragFile?.(
+			event,
+			file
+		);
 	}
 }

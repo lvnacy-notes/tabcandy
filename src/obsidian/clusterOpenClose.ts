@@ -6,7 +6,10 @@ import {
 	WorkspaceLeaf
 } from 'obsidian';
 import { getTabPath } from '../clusters/clusterCreation';
-import { setLayoutSnapshot, touchCluster } from '../clusters/clusters';
+import {
+	setLayoutSnapshot,
+	touchCluster
+} from '../clusters/clusters';
 import {
 	flattenPlan,
 	getPlanPaths,
@@ -14,7 +17,10 @@ import {
 	pruneLayout
 } from '../clusters/layoutSnapshot';
 import SettingsStore from '../settings/SettingsStore';
-import type { RestorePlan, TabCandyCluster } from '../types';
+import type {
+	RestorePlan,
+	TabCandyCluster
+} from '../types';
 import { isRecord } from '../utils/typeGuards';
 
 /**
@@ -33,7 +39,10 @@ async function captureLayout(
 ): Promise<void> {
 	const layout: unknown = app.workspace.getLayout();
 	const snapshot = isRecord(layout)
-		? pruneLayout(layout['main'], (path) => openPaths.has(path))
+		? pruneLayout(
+			layout['main'],
+			(path) => openPaths.has(path)
+		)
 		: null;
 	if (snapshot === null) {
 		return;
@@ -62,7 +71,10 @@ export async function closeCluster(
 	settingsStore: SettingsStore,
 	clusterId: string
 ): Promise<void> {
-	const { clusters, keepPairedClustersInSync } = settingsStore.get();
+	const {
+		clusters,
+		keepPairedClustersInSync
+	} = settingsStore.get();
 	const cluster = clusters[clusterId];
 	if (cluster === undefined) {
 		return;
@@ -99,7 +111,10 @@ async function closeOne(
 		return;
 	}
 
-	const open = getOpenMembers(app, cluster);
+	const open = getOpenMembers(
+		app,
+		cluster
+	);
 	if (open.size === 0) {
 		return;
 	}
@@ -141,7 +156,13 @@ export function getOpenMembers(app: App, cluster: TabCandyCluster): Map<string, 
 	app.workspace.iterateRootLeaves((leaf) => {
 		const path = getTabPath(leaf);
 		if (path !== null && members.has(path)) {
-			open.set(path, [...open.get(path) ?? [], leaf]);
+			open.set(
+				path,
+				[
+					...open.get(path) ?? [],
+					leaf
+				]
+			);
 		}
 	});
 	return open;
@@ -159,7 +180,10 @@ export async function openCluster(
 	settingsStore: SettingsStore,
 	clusterId: string
 ): Promise<void> {
-	const { clusters, keepPairedClustersInSync } = settingsStore.get();
+	const {
+		clusters,
+		keepPairedClustersInSync
+	} = settingsStore.get();
 	const cluster = clusters[clusterId];
 	if (cluster === undefined) {
 		return;
@@ -191,7 +215,10 @@ async function openOne(
 	settingsStore: SettingsStore,
 	clusterId: string
 ): Promise<void> {
-	const { clusters, jumpToExistingCluster } = settingsStore.get();
+	const {
+		clusters,
+		jumpToExistingCluster
+	} = settingsStore.get();
 	const cluster = clusters[clusterId];
 	if (cluster === undefined) {
 		return;
@@ -199,7 +226,10 @@ async function openOne(
 
 	const present = cluster.members.filter((path) => app.vault.getAbstractFileByPath(path) instanceof TFile);
 	const missing = cluster.members.length - present.length;
-	const alreadyOpen = getOpenMembers(app, cluster);
+	const alreadyOpen = getOpenMembers(
+		app,
+		cluster
+	);
 	const toOpen = present.filter((path) => !(jumpToExistingCluster && alreadyOpen.has(path)));
 
 	await placeMembers(
@@ -208,14 +238,23 @@ async function openOne(
 		toOpen
 	);
 
-	const nowOpen = getOpenMembers(app, cluster);
+	const nowOpen = getOpenMembers(
+		app,
+		cluster
+	);
 	const first = cluster.members.find((path) => nowOpen.has(path));
 	const firstLeaf = first === undefined ? undefined : nowOpen.get(first)?.[0];
 	if (firstLeaf !== undefined) {
-		app.workspace.setActiveLeaf(firstLeaf, { focus: true });
+		app.workspace.setActiveLeaf(
+			firstLeaf,
+			{ focus: true }
+		);
 	}
 
-	await settingsStore.update({ clusters: touchCluster(settingsStore.get().clusters, clusterId) });
+	await settingsStore.update({ clusters: touchCluster(
+		settingsStore.get().clusters,
+		clusterId
+	) });
 
 	const openedText = `Opened ${ toOpen.length } ${ toOpen.length === 1 ? 'tab' : 'tabs' }.`;
 	new Notice(missing === 0 ? openedText : `${ openedText } ${ missing } missing skipped.`);
@@ -235,7 +274,10 @@ async function openPath(
 ): Promise<void> {
 	const file = app.vault.getAbstractFileByPath(path);
 	if (file instanceof TFile) {
-		await leaf.openFile(file, { active: false });
+		await leaf.openFile(
+			file,
+			{ active: false }
+		);
 	}
 }
 
@@ -252,7 +294,10 @@ async function placeAsTabs(
 	paths: string[]
 ): Promise<void> {
 	if (after !== null && paths.length > 0) {
-		app.workspace.setActiveLeaf(after, { focus: false });
+		app.workspace.setActiveLeaf(
+			after,
+			{ focus: false }
+		);
 	}
 	for (const path of paths) {
 		await openPath(
@@ -281,7 +326,10 @@ async function placeMembers(
 
 	const plan = cluster.layoutSnapshot === undefined
 		? null
-		: planRestore(cluster.layoutSnapshot, new Set(paths));
+		: planRestore(
+			cluster.layoutSnapshot,
+			new Set(paths)
+		);
 	if (plan === null) {
 		await placeAsTabs(
 			app,
@@ -291,7 +339,10 @@ async function placeMembers(
 		return;
 	}
 
-	for (const attempt of [plan, flattenPlan(plan)]) {
+	for (const attempt of [
+		plan,
+		flattenPlan(plan)
+	]) {
 		const created: WorkspaceLeaf[] = [];
 		try {
 			const last = await placePlan(
@@ -342,9 +393,15 @@ async function placePlan(
 	}
 	if (plan.kind === 'tabs') {
 		let last = anchor;
-		for (const [index, path] of plan.paths.entries()) {
+		for (const [
+			index,
+			path
+		] of plan.paths.entries()) {
 			if (index > 0) {
-				app.workspace.setActiveLeaf(last, { focus: false });
+				app.workspace.setActiveLeaf(
+					last,
+					{ focus: false }
+				);
 				last = app.workspace.getLeaf('tab');
 				created.push(last);
 			}
@@ -359,11 +416,17 @@ async function placePlan(
 
 	let previous = anchor;
 	let last = anchor;
-	for (const [index, child] of plan.children.entries()) {
+	for (const [
+		index,
+		child
+	] of plan.children.entries()) {
 		let childAnchor = previous;
 		if (index > 0) {
 			// Typed by Obsidian as always returning a leaf; a failed split returns nothing at runtime.
-			const split = app.workspace.createLeafBySplit(previous, plan.direction) as WorkspaceLeaf | undefined;
+			const split = app.workspace.createLeafBySplit(
+				previous,
+				plan.direction
+			) as WorkspaceLeaf | undefined;
 			if (split === undefined) {
 				throw new Error('Could not split the layout.');
 			}

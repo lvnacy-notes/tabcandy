@@ -1,4 +1,7 @@
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { goToAdjacentTab } from '../tabs/tabNavigation';
 
 /**
@@ -13,7 +16,10 @@ export function buildInvokeCommand(app: App): Command {
 		id: 'previous-tab-across-groups',
 		name: 'Go to previous tab across groups',
 		callback: () => {
-			goToAdjacentTab(app, -1);
+			goToAdjacentTab(
+				app,
+				-1
+			);
 		},
 	};
 }

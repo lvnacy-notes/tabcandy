@@ -92,7 +92,10 @@ export type PromptForConfirmation = (
 /** Asks the user to pick two different `clusters`; calls `onSubmit` once with the source id and the target id, or never if cancelled. */
 export type PromptForClusterPair = (
 	clusters: TabCandyCluster[],
-	onSubmit: (sourceId: string, targetId: string) => void
+	onSubmit: (
+		sourceId: string,
+		targetId: string
+	) => void
 ) => void;
 
 /** Asks the user to pick any of `clusters`; calls `onSubmit` once with their ids, or never if cancelled. */
@@ -134,9 +137,15 @@ export interface ClusterDraft {
 /** What can be done to the members of one Cluster from a list of them. */
 export interface ClusterMemberActions {
 	/** Starts dragging a member so that dropping it on a pane opens it there. */
-	dragMember: (path: string, event: DragEvent) => void;
+	dragMember: (
+		path: string,
+		event: DragEvent
+	) => void;
 	/** Moves a member from one position to another. */
-	moveMember: (fromIndex: number, toIndex: number) => void;
+	moveMember: (
+		fromIndex: number,
+		toIndex: number
+	) => void;
 	/** Opens a member in the active pane. */
 	openMember: (path: string) => void;
 	/** Removes a member. */

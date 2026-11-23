@@ -65,7 +65,9 @@ const getBookmarkItems = (app: App | undefined): BookmarkItem[] => {
 	const bookmarksPlugin = (app as AppWithInternalPlugins).internalPlugins
 		?.plugins?.bookmarks;
 
-	if (!bookmarksPlugin?.enabled) {return [];}
+	if (!bookmarksPlugin?.enabled) {
+		return [];
+	}
 
 	const items = bookmarksPlugin.instance?.items;
 

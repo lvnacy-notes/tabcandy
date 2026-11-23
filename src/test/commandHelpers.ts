@@ -1,4 +1,7 @@
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 
 /**
  * Collects the root leaves of a workspace.

@@ -91,7 +91,10 @@ export default class FakeWorkspaceLeaf extends WorkspaceLeafMock {
 				state: {}
 			};
 		}
-		return { ...super.getViewState(), ...this.extraState };
+		return {
+			...super.getViewState(),
+			...this.extraState
+		};
 	}
 
 	/**

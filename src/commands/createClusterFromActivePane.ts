@@ -1,6 +1,12 @@
 /** @file The command that creates a Cluster from the active pane's tabs. */
-import { App, Command } from 'obsidian';
-import { getPanePaths, promptAndCreate } from '../clusters/clusterCreation';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	getPanePaths,
+	promptAndCreate
+} from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForCluster } from '../types';
 
@@ -23,7 +29,10 @@ export function buildInvokeCommand(
 		name: 'Create cluster from active pane',
 		checkCallback: (checking) => {
 			const leaf = app.workspace.getMostRecentLeaf();
-			const paths = leaf === null ? [] : getPanePaths(app, leaf);
+			const paths = leaf === null ? [] : getPanePaths(
+				app,
+				leaf
+			);
 			if (paths.length === 0) {
 				return false;
 			}

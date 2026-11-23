@@ -23,9 +23,15 @@ function openModal(): {
 	onSubmit: Mock<(draft: ClusterDraft) => void>;
 } {
 	const onSubmit = vi.fn<(draft: ClusterDraft) => void>();
-	const modal = new CreateClusterModal(createConfiguredApp(), onSubmit);
+	const modal = new CreateClusterModal(
+		createConfiguredApp(),
+		onSubmit
+	);
 	modal.open();
-	return { modal, onSubmit };
+	return {
+		modal,
+		onSubmit
+	};
 }
 
 /**
@@ -83,9 +89,15 @@ afterEach(() => {
 
 describe('CreateClusterModal', () => {
 	it('submits a blank name and no Flavor when nothing is entered', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Create').click();
+		findButton(
+			modal,
+			'Create'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith({
 			name: '',
@@ -94,10 +106,19 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('submits the entered name with surrounding whitespace trimmed', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		typeName(modal, '  Reading list  ');
-		findButton(modal, 'Create').click();
+		typeName(
+			modal,
+			'  Reading list  '
+		);
+		findButton(
+			modal,
+			'Create'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith({
 			name: 'Reading list',
@@ -106,10 +127,19 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('submits the picked Flavor', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		pickColor(modal, '#ff0000');
-		findButton(modal, 'Create').click();
+		pickColor(
+			modal,
+			'#ff0000'
+		);
+		findButton(
+			modal,
+			'Create'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith({
 			name: '',
@@ -118,11 +148,20 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('submits no Flavor after the picked color is cleared', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		pickColor(modal, '#ff0000');
+		pickColor(
+			modal,
+			'#ff0000'
+		);
 		clearColor(modal);
-		findButton(modal, 'Create').click();
+		findButton(
+			modal,
+			'Create'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith({
 			name: '',
@@ -131,10 +170,19 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('submits when Enter is pressed in the name field', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		const input = typeName(modal, 'Reading');
-		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+		const input = typeName(
+			modal,
+			'Reading'
+		);
+		input.dispatchEvent(new KeyboardEvent(
+			'keydown',
+			{ key: 'Enter' }
+		));
 
 		expect(onSubmit).toHaveBeenCalledWith({
 			name: 'Reading',
@@ -143,9 +191,15 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('does not submit when Enter confirms an IME composition', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		const input = typeName(modal, 'Reading');
+		const input = typeName(
+			modal,
+			'Reading'
+		);
 		input.dispatchEvent(new KeyboardEvent('keydown', {
 			key: 'Enter',
 			isComposing: true,
@@ -155,19 +209,37 @@ describe('CreateClusterModal', () => {
 	});
 
 	it('does not submit on other keys', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		const input = typeName(modal, 'Reading');
-		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+		const input = typeName(
+			modal,
+			'Reading'
+		);
+		input.dispatchEvent(new KeyboardEvent(
+			'keydown',
+			{ key: 'a' }
+		));
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
 
 	it('does not submit when cancelled', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		typeName(modal, 'Reading');
-		findButton(modal, 'Cancel').click();
+		typeName(
+			modal,
+			'Reading'
+		);
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
@@ -175,7 +247,10 @@ describe('CreateClusterModal', () => {
 	it('empties its content when closed', () => {
 		const { modal } = openModal();
 
-		findButton(modal, 'Cancel').click();
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});
@@ -183,7 +258,10 @@ describe('CreateClusterModal', () => {
 	it('empties its content after submitting', () => {
 		const { modal } = openModal();
 
-		findButton(modal, 'Create').click();
+		findButton(
+			modal,
+			'Create'
+		).click();
 
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});

@@ -37,18 +37,14 @@ const capitalizeFirstLetter = (string: string) =>
 	string.charAt(0).toUpperCase() + string.slice(1);
 
 /** Settings that commit on every keystroke, so their writes are debounced. */
-const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set([
-	'greetingText',
-]);
+const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set(['greetingText',]);
 
 /** Tab Candy's settings tab, split into Function and Design pages. */
 export default class TabCandySettingTab extends PluginSettingTab {
 	plugin: TabCandyPlugin;
 
 	/** Created once so debounced keystrokes share one timer across re-renders. */
-	private readonly debouncedUpdateSettings: (
-		patch: Partial<TabCandySettings>
-	) => void;
+	private readonly debouncedUpdateSettings: (patch: Partial<TabCandySettings>) => void;
 
 	/**
 	 * @param app - The Obsidian app instance.
@@ -167,9 +163,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	 *
 	 * @returns The two settings pages.
 	 */
-	getSettingDefinitions(): SettingDefinitionItem<
-		keyof TabCandySettings
-	>[] {
+	getSettingDefinitions(): SettingDefinitionItem<keyof TabCandySettings>[] {
 		/**
 		 * Display-only filter: hides recorded files that no longer exist.
 		 * Persisted pruning happens on load and on vault events.
@@ -270,12 +264,8 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
 						/** Rows share one `group.listEl`; tag it so they lay out as a grid. */
-						group.listEl.addClass(
-							'tabcandy-settings-localbackgrounds-grid'
-						);
-						setting.settingEl.addClass(
-							'tabcandy-settings-localbackgrounds-background'
-						);
+						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
+						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
 							cls: 'tabcandy-settings-localbackgrounds-background-image',
 							attr: {
@@ -325,12 +315,8 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
 						/** Same grid layout as the synced-folder group above. */
-						group.listEl.addClass(
-							'tabcandy-settings-localbackgrounds-grid'
-						);
-						setting.settingEl.addClass(
-							'tabcandy-settings-localbackgrounds-background'
-						);
+						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
+						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
 							cls: 'tabcandy-settings-localbackgrounds-background-image',
 							attr: {

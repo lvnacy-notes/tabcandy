@@ -1,5 +1,8 @@
 /** @file Pairing Clusters, unlinking them and finding the Cluster the user is working in. */
-import { App, Notice } from 'obsidian';
+import {
+	App,
+	Notice
+} from 'obsidian';
 import { getTabPath } from './clusterCreation';
 import {
 	getClustersContainingPath,
@@ -30,11 +33,23 @@ export function describeUnlinks(
 	target: TabCandyCluster
 ): string {
 	const sentences: string[] = [];
-	const sides: Array<{ cluster: TabCandyCluster; other: TabCandyCluster }> = [
-		{ cluster: source, other: target },
-		{ cluster: target, other: source },
+	const sides: Array<{
+		cluster: TabCandyCluster;
+		other: TabCandyCluster
+	}> = [
+		{
+			cluster: source,
+			other: target
+		},
+		{
+			cluster: target,
+			other: source
+		},
 	];
-	for (const { cluster, other } of sides) {
+	for (const {
+		cluster,
+		other
+	} of sides) {
 		const third = cluster.pairedWith === null ? undefined : clusters[cluster.pairedWith];
 		if (third !== undefined && third.id !== other.id) {
 			sentences.push(`${ cluster.name } is paired with ${ third.name }. Pairing it with ${ other.name } unlinks ${ third.name }.`);
@@ -64,7 +79,10 @@ export function getActiveClusters(app: App, settingsStore: SettingsStore): TabCa
 	}
 
 	const path = getTabPath(leaf);
-	return path === null ? [] : getClustersContainingPath(clusters, path);
+	return path === null ? [] : getClustersContainingPath(
+		clusters,
+		path
+	);
 }
 
 /**
@@ -160,7 +178,10 @@ export function promptAndPair(
 				targetId
 			);
 		},
-		{ action: 'Pair', title: `Pair ${ source.name } with` }
+		{
+			action: 'Pair',
+			title: `Pair ${ source.name } with`
+		}
 	);
 }
 
@@ -203,7 +224,10 @@ export function promptAndUnlink(
 			`Unlink ${ cluster.name } from ${ partner.name }?`,
 			'Unlink',
 			() => {
-				void unlinkCluster(settingsStore, id);
+				void unlinkCluster(
+					settingsStore,
+					id
+				);
 			}
 		);
 	};
@@ -215,7 +239,10 @@ export function promptAndUnlink(
 	promptChoice(
 		paired,
 		unlinkConfirmed,
-		{ action: 'Unlink', title: 'Unlink which cluster?' }
+		{
+			action: 'Unlink',
+			title: 'Unlink which cluster?'
+		}
 	);
 }
 
@@ -228,12 +255,18 @@ export function promptAndUnlink(
  */
 export async function unlinkCluster(settingsStore: SettingsStore, id: string): Promise<boolean> {
 	const { clusters } = settingsStore.get();
-	const next = unpairCluster(clusters, id);
+	const next = unpairCluster(
+		clusters,
+		id
+	);
 	if (next === clusters) {
 		return false;
 	}
 
-	const { name, pairedWith } = clusters[id];
+	const {
+		name,
+		pairedWith
+	} = clusters[id];
 	const partner = pairedWith === null ? undefined : clusters[pairedWith];
 	await settingsStore.update({ clusters: next });
 	new Notice(partner === undefined ? `Unlinked ${ name }.` : `Unlinked ${ name } from ${ partner.name }.`);

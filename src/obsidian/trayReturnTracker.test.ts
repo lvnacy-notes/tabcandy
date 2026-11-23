@@ -12,11 +12,17 @@ import {
 import TrayReturnTracker from './TrayReturnTracker';
 import { buildStoreWith } from '../test/clusterHelpers';
 import { buildCluster } from '../test/fakes';
-import { createFakeWorkspaceApp, setLayoutReady } from '../test/FakeWorkspace';
+import {
+	createFakeWorkspaceApp,
+	setLayoutReady
+} from '../test/FakeWorkspace';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 interface StubLeaf {
-	getViewState: () => { type: string; state: Record<string, unknown> };
+	getViewState: () => {
+		type: string;
+		state: Record<string, unknown>
+	};
 	openFile: ReturnType<typeof vi.fn>;
 	parent: object;
 	setViewState: ReturnType<typeof vi.fn>;
@@ -31,7 +37,10 @@ interface StubLeaf {
  */
 function buildLeaf(parent: object, type = 'markdown'): StubLeaf {
 	return {
-		getViewState: () => ({ type, state: {} }),
+		getViewState: () => ({
+			type,
+			state: {}
+		}),
 		openFile: vi.fn().mockResolvedValue(undefined),
 		parent,
 		setViewState: vi.fn().mockResolvedValue(undefined),
@@ -48,13 +57,22 @@ function buildLeaf(parent: object, type = 'markdown'): StubLeaf {
 function buildTracker(leaves: StubLeaf[], clusterId: string | null = 'one') {
 	const app = createFakeWorkspaceApp({ files: { 'a.md': '' } });
 	setLayoutReady(app);
-	vi.spyOn(app.workspace, 'iterateAllLeaves').mockImplementation((callback) => {
+	vi.spyOn(
+		app.workspace,
+		'iterateAllLeaves'
+	).mockImplementation((callback) => {
 		for (const leaf of leaves) {
 			callback(leaf as unknown as WorkspaceLeaf);
 		}
 	});
-	const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf').mockImplementation(() => {});
-	const getLeaf = vi.spyOn(app.workspace, 'getLeaf');
+	const setActiveLeaf = vi.spyOn(
+		app.workspace,
+		'setActiveLeaf'
+	).mockImplementation(() => {});
+	const getLeaf = vi.spyOn(
+		app.workspace,
+		'getLeaf'
+	);
 	const store = clusterId === null ? buildStoreWith() : buildStoreWith(buildCluster({ id: clusterId }));
 	const file = app.vault.getAbstractFileByPath('a.md');
 	if (clusterId !== null && !(file instanceof TFile)) {
@@ -64,7 +82,10 @@ function buildTracker(leaves: StubLeaf[], clusterId: string | null = 'one') {
 	return {
 		getLeaf,
 		setActiveLeaf,
-		tracker: new TrayReturnTracker(app, store),
+		tracker: new TrayReturnTracker(
+			app,
+			store
+		),
 	};
 }
 
@@ -75,7 +96,10 @@ function buildTracker(leaves: StubLeaf[], clusterId: string | null = 'one') {
  * @param leaf - The leaf to remove.
  */
 function close(leaves: StubLeaf[], leaf: StubLeaf): void {
-	leaves.splice(leaves.indexOf(leaf), 1);
+	leaves.splice(
+		leaves.indexOf(leaf),
+		1
+	);
 }
 
 describe('TrayReturnTracker', () => {
@@ -111,9 +135,20 @@ describe('TrayReturnTracker', () => {
 		const before = buildLeaf(parent);
 		const tray = buildLeaf(parent);
 		const after = buildLeaf(parent);
-		const leaves = [before, tray, after];
-		const newTab = buildLeaf(parent, 'empty');
-		const { tracker, getLeaf, setActiveLeaf } = buildTracker(leaves);
+		const leaves = [
+			before,
+			tray,
+			after
+		];
+		const newTab = buildLeaf(
+			parent,
+			'empty'
+		);
+		const {
+			tracker,
+			getLeaf,
+			setActiveLeaf
+		} = buildTracker(leaves);
 		getLeaf.mockReturnValue(newTab as unknown as WorkspaceLeaf);
 		await tracker.openMember(
 			tray as unknown as WorkspaceLeaf,
@@ -121,10 +156,16 @@ describe('TrayReturnTracker', () => {
 			'a.md'
 		);
 
-		close(leaves, tray);
+		close(
+			leaves,
+			tray
+		);
 		await tracker.handleLayoutChange();
 
-		expect(setActiveLeaf).toHaveBeenCalledWith(before, { focus: false });
+		expect(setActiveLeaf).toHaveBeenCalledWith(
+			before,
+			{ focus: false }
+		);
 		expect(newTab.setViewState).toHaveBeenCalledWith({
 			type: CLUSTER_TRAY_VIEW_TYPE,
 			active: true,
@@ -136,15 +177,24 @@ describe('TrayReturnTracker', () => {
 		const parent = {};
 		const tray = buildLeaf(parent);
 		const leaves = [tray];
-		const { tracker, getLeaf } = buildTracker(leaves);
+		const {
+			tracker,
+			getLeaf
+		} = buildTracker(leaves);
 		await tracker.openMember(
 			tray as unknown as WorkspaceLeaf,
 			'one',
 			'a.md'
 		);
-		const empty = buildLeaf(parent, 'empty');
+		const empty = buildLeaf(
+			parent,
+			'empty'
+		);
 
-		close(leaves, tray);
+		close(
+			leaves,
+			tray
+		);
 		leaves.push(empty);
 		await tracker.handleLayoutChange();
 
@@ -154,7 +204,10 @@ describe('TrayReturnTracker', () => {
 
 	it('does nothing while the member\'s tab is still open', async () => {
 		const tray = buildLeaf({});
-		const { tracker, getLeaf } = buildTracker([tray]);
+		const {
+			tracker,
+			getLeaf
+		} = buildTracker([tray]);
 		await tracker.openMember(
 			tray as unknown as WorkspaceLeaf,
 			'one',
@@ -171,15 +224,24 @@ describe('TrayReturnTracker', () => {
 		const parent = {};
 		const tray = buildLeaf(parent);
 		const leaves = [tray];
-		const empty = buildLeaf(parent, 'empty');
-		const { tracker } = buildTracker(leaves, null);
+		const empty = buildLeaf(
+			parent,
+			'empty'
+		);
+		const { tracker } = buildTracker(
+			leaves,
+			null
+		);
 		await tracker.openMember(
 			tray as unknown as WorkspaceLeaf,
 			'one',
 			'a.md'
 		);
 
-		close(leaves, tray);
+		close(
+			leaves,
+			tray
+		);
 		leaves.push(empty);
 		await tracker.handleLayoutChange();
 
@@ -190,7 +252,10 @@ describe('TrayReturnTracker', () => {
 		const parent = {};
 		const tray = buildLeaf(parent);
 		const leaves = [tray];
-		const empty = buildLeaf(parent, 'empty');
+		const empty = buildLeaf(
+			parent,
+			'empty'
+		);
 		const { tracker } = buildTracker(leaves);
 		await tracker.openMember(
 			tray as unknown as WorkspaceLeaf,
@@ -198,7 +263,10 @@ describe('TrayReturnTracker', () => {
 			'a.md'
 		);
 
-		close(leaves, tray);
+		close(
+			leaves,
+			tray
+		);
 		leaves.push(empty);
 		await tracker.handleLayoutChange();
 		await tracker.handleLayoutChange();

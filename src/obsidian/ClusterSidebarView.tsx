@@ -1,6 +1,12 @@
 /** @file The Obsidian view that hosts the Cluster sidebar. */
-import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { Root, createRoot } from 'react-dom/client';
+import {
+	ItemView,
+	WorkspaceLeaf
+} from 'obsidian';
+import {
+	Root,
+	createRoot
+} from 'react-dom/client';
 import ClusterSidebar from '../app/ClusterSidebar';
 import SettingsStore from '../settings/SettingsStore';
 import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
@@ -62,15 +68,13 @@ export class ClusterSidebarView extends ItemView {
 		this.contentEl.empty();
 
 		this.root = createRoot(this.contentEl);
-		this.root.render(
-			<ClusterSidebar
-				app = { this.app }
-				settingsStore = { this.settingsStore }
-				onConfirmUnlink = { this.onConfirmUnlink }
-				onCreateCluster = { this.onCreateCluster }
-				onPair = { this.onPair }
-			/>
-		);
+		this.root.render(<ClusterSidebar
+			app = { this.app }
+			settingsStore = { this.settingsStore }
+			onConfirmUnlink = { this.onConfirmUnlink }
+			onCreateCluster = { this.onCreateCluster }
+			onPair = { this.onPair }
+		/>);
 		this.containerEl.addClass('tabcandy-sidebar');
 
 		return Promise.resolve();

@@ -21,13 +21,14 @@ export function registerStackedTabPanes(
 	register: (cleanup: () => void) => void
 ): void {
 	const apply = (enabled: boolean): void => {
-		document.body.toggleClass(WIDEN_STACKED_PANES_CLASS, enabled);
+		document.body.toggleClass(
+			WIDEN_STACKED_PANES_CLASS,
+			enabled
+		);
 	};
 
 	apply(settingsStore.get().widenStackedTabPanes);
-	const unsubscribe = settingsStore.subscribe(
-		(settings) => apply(settings.widenStackedTabPanes)
-	);
+	const unsubscribe = settingsStore.subscribe((settings) => apply(settings.widenStackedTabPanes));
 
 	register(() => {
 		unsubscribe();

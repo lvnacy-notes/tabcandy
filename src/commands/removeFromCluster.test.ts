@@ -5,7 +5,10 @@ import {
 	it
 } from 'vitest';
 import { buildInvokeCommand } from './removeFromCluster';
-import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import {
 	addFileTab,
 	addNonFileTab,
@@ -14,7 +17,10 @@ import {
 	selecting,
 	selectingNothing
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 
 describe('remove-from-cluster command', () => {
 	it('has its id and name', () => {
@@ -24,12 +30,25 @@ describe('remove-from-cluster command', () => {
 			selectingNothing().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['remove-from-cluster', 'Remove from cluster']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'remove-from-cluster',
+			'Remove from cluster'
+		]);
 	});
 
 	it('is available when a Cluster holds the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -43,7 +62,14 @@ describe('remove-from-cluster command', () => {
 
 	it('is unavailable when no Cluster holds the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['other.md'] })),
@@ -57,7 +83,13 @@ describe('remove-from-cluster command', () => {
 
 	it('is unavailable when the most recent tab has no file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -71,7 +103,14 @@ describe('remove-from-cluster command', () => {
 
 	it('does not remove anything when only checking availability', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const store = buildStoreWith(buildCluster({ members: ['a.md'] }));
 		const command = buildInvokeCommand(
 			app,
@@ -86,7 +125,14 @@ describe('remove-from-cluster command', () => {
 
 	it('removes the file from the only Cluster holding it', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const store = buildStoreWith(buildCluster({ members: ['a.md'] }));
 		const command = buildInvokeCommand(
 			app,
@@ -101,10 +147,23 @@ describe('remove-from-cluster command', () => {
 
 	it('removes the file from the Clusters the prompt selects when several hold it', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 		const command = buildInvokeCommand(
 			app,
@@ -114,6 +173,12 @@ describe('remove-from-cluster command', () => {
 
 		command.checkCallback?.(false);
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([[], ['a.md']]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			[],
+			['a.md']
+		]);
 	});
 });

@@ -1,7 +1,13 @@
 /** @file The remove-from-cluster command. */
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { getClustersContainingPath } from '../clusters/clusters';
-import { getActiveTabPath, promptAndRemove } from '../clusters/clusterMembership';
+import {
+	getActiveTabPath,
+	promptAndRemove
+} from '../clusters/clusterMembership';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterRemoval } from '../types';
 
@@ -24,10 +30,10 @@ export function buildInvokeCommand(
 		name: 'Remove from cluster',
 		checkCallback: (checking) => {
 			const path = getActiveTabPath(app);
-			if (
-				path === null ||
-				getClustersContainingPath(settingsStore.get().clusters, path).length === 0
-			) {
+			if (path === null || getClustersContainingPath(
+				settingsStore.get().clusters,
+				path
+			).length === 0) {
 				return false;
 			}
 			if (!checking) {

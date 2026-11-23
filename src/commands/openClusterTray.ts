@@ -1,5 +1,8 @@
 /** @file The command that opens a Tray for a chosen Cluster. */
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { openClusterTray } from '../obsidian/trayLeaves';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice } from '../types';
@@ -36,7 +39,10 @@ export function buildInvokeCommand(
 							id
 						);
 					},
-					{ action: 'Open', title: 'Open a cluster tray' }
+					{
+						action: 'Open',
+						title: 'Open a cluster tray'
+					}
 				);
 			}
 			return true;

@@ -1,5 +1,8 @@
 /** @file Tests for finding and opening Tray leaves. */
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 import {
 	describe,
 	expect,
@@ -12,7 +15,10 @@ import {
 	openClusterTrayAt
 } from './trayLeaves';
 import { buildStoreWith } from '../test/clusterHelpers';
-import { buildCluster, createConfiguredApp } from '../test/fakes';
+import {
+	buildCluster,
+	createConfiguredApp
+} from '../test/fakes';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 /**
@@ -21,11 +27,17 @@ import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
  * @param state - The view state's `state`.
  * @returns The leaf and its spy.
  */
-function buildLeaf(state: unknown): { leaf: WorkspaceLeaf; setViewState: ReturnType<typeof vi.fn> } {
+function buildLeaf(state: unknown): {
+	leaf: WorkspaceLeaf;
+	setViewState: ReturnType<typeof vi.fn>
+} {
 	const setViewState = vi.fn().mockResolvedValue(undefined);
 	return {
 		leaf: {
-			getViewState: () => ({ type: CLUSTER_TRAY_VIEW_TYPE, state }),
+			getViewState: () => ({
+				type: CLUSTER_TRAY_VIEW_TYPE,
+				state
+			}),
 			setViewState,
 		} as unknown as WorkspaceLeaf,
 		setViewState,
@@ -45,9 +57,18 @@ function stubWorkspace(
 	existing: WorkspaceLeaf[],
 	newTab: WorkspaceLeaf
 ): ReturnType<typeof vi.fn> {
-	vi.spyOn(app.workspace, 'getLeavesOfType').mockReturnValue(existing);
-	vi.spyOn(app.workspace, 'getLeaf').mockReturnValue(newTab);
-	return vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
+	vi.spyOn(
+		app.workspace,
+		'getLeavesOfType'
+	).mockReturnValue(existing);
+	vi.spyOn(
+		app.workspace,
+		'getLeaf'
+	).mockReturnValue(newTab);
+	return vi.spyOn(
+		app.workspace,
+		'revealLeaf'
+	).mockResolvedValue(undefined);
 }
 
 describe('getTrayClusterId', () => {
@@ -79,7 +100,10 @@ describe('getTrayClusterId', () => {
 describe('openClusterTray', () => {
 	it('opens the Tray in a new tab', async () => {
 		const app = createConfiguredApp();
-		const { leaf, setViewState } = buildLeaf({});
+		const {
+			leaf,
+			setViewState
+		} = buildLeaf({});
 		stubWorkspace(
 			app,
 			[],
@@ -129,7 +153,10 @@ describe('openClusterTray', () => {
 			[],
 			buildLeaf({}).leaf
 		);
-		const store = buildStoreWith(buildCluster({ id: 'one', lastTouchedAt: 1 }));
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			lastTouchedAt: 1
+		}));
 
 		await openClusterTray(
 			app,
@@ -147,7 +174,10 @@ describe('openClusterTray', () => {
 		const newTab = buildLeaf({});
 		const reveal = stubWorkspace(
 			app,
-			[other.leaf, open.leaf],
+			[
+				other.leaf,
+				open.leaf
+			],
 			newTab.leaf
 		);
 		const store = buildStoreWith(buildCluster({ id: 'one' }));
@@ -215,10 +245,16 @@ describe('openClusterTrayAt', () => {
 	function stubPane(app: App) {
 		const element = createDiv();
 		const pane = { view: { containerEl: element } } as unknown as WorkspaceLeaf;
-		vi.spyOn(app.workspace, 'iterateRootLeaves').mockImplementation((callback) => {
+		vi.spyOn(
+			app.workspace,
+			'iterateRootLeaves'
+		).mockImplementation((callback) => {
 			callback(pane);
 		});
-		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf').mockImplementation(() => {});
+		const setActiveLeaf = vi.spyOn(
+			app.workspace,
+			'setActiveLeaf'
+		).mockImplementation(() => {});
 		const newTab = buildLeaf({});
 		stubWorkspace(
 			app,
@@ -235,7 +271,12 @@ describe('openClusterTrayAt', () => {
 
 	it('opens the Tray as a new tab in the pane under the drop', async () => {
 		const app = createConfiguredApp();
-		const { element, newTab, pane, setActiveLeaf } = stubPane(app);
+		const {
+			element,
+			newTab,
+			pane,
+			setActiveLeaf
+		} = stubPane(app);
 		const inside = element.appendChild(createSpan());
 
 		await openClusterTrayAt(
@@ -245,13 +286,19 @@ describe('openClusterTrayAt', () => {
 			inside
 		);
 
-		expect(setActiveLeaf).toHaveBeenCalledWith(pane, { focus: true });
+		expect(setActiveLeaf).toHaveBeenCalledWith(
+			pane,
+			{ focus: true }
+		);
 		expect(newTab.setViewState).toHaveBeenCalledTimes(1);
 	});
 
 	it('does nothing when the drop landed outside every pane', async () => {
 		const app = createConfiguredApp();
-		const { newTab, setActiveLeaf } = stubPane(app);
+		const {
+			newTab,
+			setActiveLeaf
+		} = stubPane(app);
 
 		await openClusterTrayAt(
 			app,

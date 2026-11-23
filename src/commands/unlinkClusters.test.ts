@@ -5,7 +5,10 @@ import {
 	it
 } from 'vitest';
 import { buildInvokeCommand } from './unlinkClusters';
-import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import {
 	addFileTab,
 	buildStoreWith,
@@ -14,7 +17,10 @@ import {
 	confirmingNothing,
 	isAvailable
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 
 describe('unlink-clusters command', () => {
 	it('has its id and name', () => {
@@ -25,15 +31,38 @@ describe('unlink-clusters command', () => {
 			confirming().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['unlink-clusters', 'Unlink clusters']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'unlink-clusters',
+			'Unlink clusters'
+		]);
 	});
 
 	it('is available when a paired Cluster holds the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
-			buildStoreWith(buildCluster({ id: 'one', members: ['a.md'], pairedWith: 'two' }), buildCluster({ id: 'two', pairedWith: 'one' })),
+			buildStoreWith(
+				buildCluster({
+					id: 'one',
+					members: ['a.md'],
+					pairedWith: 'two'
+				}),
+				buildCluster({
+					id: 'two',
+					pairedWith: 'one'
+				})
+			),
 			choosingNothing().prompt,
 			confirming().prompt
 		);
@@ -45,7 +74,14 @@ describe('unlink-clusters command', () => {
 
 	it('is unavailable when the Cluster holding the file is not paired', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -60,11 +96,31 @@ describe('unlink-clusters command', () => {
 
 	it('does not ask for confirmation when only checking availability', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const { prompt, spy } = confirmingNothing();
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 		const command = buildInvokeCommand(
 			app,
-			buildStoreWith(buildCluster({ id: 'one', members: ['a.md'], pairedWith: 'two' }), buildCluster({ id: 'two', pairedWith: 'one' })),
+			buildStoreWith(
+				buildCluster({
+					id: 'one',
+					members: ['a.md'],
+					pairedWith: 'two'
+				}),
+				buildCluster({
+					id: 'two',
+					pairedWith: 'one'
+				})
+			),
 			choosingNothing().prompt,
 			prompt
 		);
@@ -76,8 +132,25 @@ describe('unlink-clusters command', () => {
 
 	it('unlinks the Clusters once confirmed', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'], pairedWith: 'two' }), buildCluster({ id: 'two', pairedWith: 'one' }));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
+		const store = buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md'],
+				pairedWith: 'two'
+			}),
+			buildCluster({
+				id: 'two',
+				pairedWith: 'one'
+			})
+		);
 		const command = buildInvokeCommand(
 			app,
 			store,
@@ -87,13 +160,36 @@ describe('unlink-clusters command', () => {
 
 		command.checkCallback?.(false);
 
-		expect([store.get().clusters['one'].pairedWith, store.get().clusters['two'].pairedWith]).toEqual([null, null]);
+		expect([
+			store.get().clusters['one'].pairedWith,
+			store.get().clusters['two'].pairedWith
+		]).toEqual([
+			null,
+			null
+		]);
 	});
 
 	it('keeps the Pairing when the confirmation is declined', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'], pairedWith: 'two' }), buildCluster({ id: 'two', pairedWith: 'one' }));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
+		const store = buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md'],
+				pairedWith: 'two'
+			}),
+			buildCluster({
+				id: 'two',
+				pairedWith: 'one'
+			})
+		);
 		const command = buildInvokeCommand(
 			app,
 			store,

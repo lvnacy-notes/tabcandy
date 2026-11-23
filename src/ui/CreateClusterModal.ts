@@ -32,7 +32,10 @@ export default class CreateClusterModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl('h2', { text: 'Create cluster' });
+		contentEl.createEl(
+			'h2',
+			{ text: 'Create cluster' }
+		);
 
 		new Setting(contentEl)
 			.setName('Name')

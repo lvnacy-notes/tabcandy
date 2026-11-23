@@ -15,11 +15,8 @@ import { BACKGROUND_IMAGE_EXTENSIONS } from '../types';
  * @returns The paths that still resolve, in their original order.
  */
 export function filterExistingFiles(app: App, paths: string[]): string[] {
-	return paths.filter(
-		(path) =>
-			app.vault.getAbstractFileByPath(normalizePath(path)) instanceof
-			TFile
-	);
+	return paths.filter((path) =>
+		app.vault.getAbstractFileByPath(normalizePath(path)) instanceof TFile);
 }
 
 /**
@@ -100,7 +97,10 @@ export async function pruneMissingManualBackgroundFiles(
 	settingsStore: SettingsStore
 ): Promise<void> {
 	const current = settingsStore.get().manualBackgroundFiles;
-	const manualBackgroundFiles = filterExistingFiles(app, current);
+	const manualBackgroundFiles = filterExistingFiles(
+		app,
+		current
+	);
 	if (manualBackgroundFiles.length !== current.length) {
 		await settingsStore.update({ manualBackgroundFiles });
 	}
@@ -122,7 +122,10 @@ export async function pruneStaleOverlayContrastCache(
 	const pruned: typeof current = {};
 	let changed = false;
 
-	for (const [path, entry] of Object.entries(current)) {
+	for (const [
+		path,
+		entry
+	] of Object.entries(current)) {
 		const file = app.vault.getAbstractFileByPath(normalizePath(path));
 		if (file instanceof TFile && file.stat.mtime === entry.mtime) {
 			pruned[path] = entry;

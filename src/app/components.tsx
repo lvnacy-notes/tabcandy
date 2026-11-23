@@ -49,9 +49,15 @@ interface ClusterRowProps {
 	onCloseCluster: () => void;
 	onConfirmUnlink: () => void;
 	onDragCluster: (target: Element | null) => void;
-	onDragMember: (path: string, event: DragEvent) => void;
+	onDragMember: (
+		path: string,
+		event: DragEvent
+	) => void;
 	onDropPath: (path: string) => void;
-	onMoveMember: (fromIndex: number, toIndex: number) => void;
+	onMoveMember: (
+		fromIndex: number,
+		toIndex: number
+	) => void;
 	onOpenCluster: () => void;
 	onOpenMember: (path: string) => void;
 	onOpenTray: () => void;
@@ -66,8 +72,14 @@ interface ClusterRowProps {
 interface MemberListProps {
 	cluster: TabCandyCluster;
 	isFilePresent: (path: string) => boolean;
-	onDragMember: (path: string, event: DragEvent) => void;
-	onMoveMember: (fromIndex: number, toIndex: number) => void;
+	onDragMember: (
+		path: string,
+		event: DragEvent
+	) => void;
+	onMoveMember: (
+		fromIndex: number,
+		toIndex: number
+	) => void;
 	onOpenMember: (path: string) => void;
 	onRemoveMember: (path: string) => void;
 	onResolveMissing: (focusPath?: string) => void;
@@ -80,7 +92,10 @@ interface MemberRowProps {
 	path: string;
 	exists: boolean;
 	onDragOut: (event: DragEvent) => void;
-	onMove: (fromIndex: number, toIndex: number) => void;
+	onMove: (
+		fromIndex: number,
+		toIndex: number
+	) => void;
 	onOpen: () => void;
 	onRemove: () => void;
 	onResolve: () => void;
@@ -161,7 +176,8 @@ export function BackgroundSurface({
  * @param props.onOpen - Called with the clicked file.
  */
 export function Bookmarks({
-	files, onOpen
+	files,
+	onOpen
 }: BookmarksProps) {
 	return (
 		<div className = 'tabcandy-dashboard-centeredrow'>
@@ -229,7 +245,10 @@ export function ClusterRow({
 	onUnlink,
 	pairedName,
 }: ClusterRowProps) {
-	const [dragOver, setDragOver] = useState(false);
+	const [
+		dragOver,
+		setDragOver
+	] = useState(false);
 	const menuActions: ClusterMenuActions = {
 		hasOpenMember,
 		onCloseCluster,
@@ -240,7 +259,10 @@ export function ClusterRow({
 		pairedName,
 	};
 
-	const headerClasses = ['workspace-tab-header', 'tabcandy-cluster-header'];
+	const headerClasses = [
+		'workspace-tab-header',
+		'tabcandy-cluster-header'
+	];
 	if (cluster.flavor !== undefined) {
 		headerClasses.push('tabcandy-cluster-header--flavored');
 	}
@@ -260,10 +282,16 @@ export function ClusterRow({
 				draggable
 				onContextMenu = { (event: ReactMouseEvent<HTMLDivElement>) => {
 					event.preventDefault();
-					openClusterMenu(event.nativeEvent, menuActions);
+					openClusterMenu(
+						event.nativeEvent,
+						menuActions
+					);
 				} }
 				onDragEnd = { (event: ReactDragEvent<HTMLDivElement>) => {
-					onDragCluster(event.currentTarget.ownerDocument.elementFromPoint(event.clientX, event.clientY));
+					onDragCluster(event.currentTarget.ownerDocument.elementFromPoint(
+						event.clientX,
+						event.clientY
+					));
 				} }
 				onDragLeave = { () => setDragOver(false) }
 				onDragOver = { (event: ReactDragEvent<HTMLDivElement>) => {
@@ -274,7 +302,10 @@ export function ClusterRow({
 					}
 				} }
 				onDragStart = { (event: ReactDragEvent<HTMLDivElement>) => {
-					event.dataTransfer.setData('text/plain', cluster.name);
+					event.dataTransfer.setData(
+						'text/plain',
+						cluster.name
+					);
 					event.dataTransfer.effectAllowed = 'copy';
 				} }
 				onDrop = { (event: ReactDragEvent<HTMLDivElement>) => {
@@ -317,7 +348,10 @@ export function ClusterRow({
 						aria-label = 'Cluster options'
 						onClick = { (event: ReactMouseEvent<HTMLButtonElement>) => {
 							event.stopPropagation();
-							openClusterMenu(event.nativeEvent, menuActions);
+							openClusterMenu(
+								event.nativeEvent,
+								menuActions
+							);
 						} }
 						onKeyDown = { (event: KeyboardEvent<HTMLButtonElement>) => {
 							event.stopPropagation();
@@ -418,7 +452,10 @@ export function MemberList({
 					index = { index }
 					path = { path }
 					exists = { isFilePresent(path) }
-					onDragOut = { (event) => onDragMember(path, event) }
+					onDragOut = { (event) => onDragMember(
+						path,
+						event
+					) }
 					onMove = { onMoveMember }
 					onOpen = { () => onOpenMember(path) }
 					onRemove = { () => onRemoveMember(path) }
@@ -455,10 +492,16 @@ export function MemberRow({
 	onRemove,
 	onResolve,
 }: MemberRowProps) {
-	const [dragOver, setDragOver] = useState(false);
+	const [
+		dragOver,
+		setDragOver
+	] = useState(false);
 	const hasMenu = count > 1 || !exists;
 
-	const classes = ['workspace-tab-header', 'tabcandy-member-row'];
+	const classes = [
+		'workspace-tab-header',
+		'tabcandy-member-row'
+	];
 	if (!exists) {
 		classes.push('is-unresolved');
 	}
@@ -492,7 +535,13 @@ export function MemberRow({
 			} }
 			onDragStart = { (event: ReactDragEvent<HTMLDivElement>) => {
 				event.dataTransfer.effectAllowed = 'move';
-				event.dataTransfer.setData(MEMBER_DRAG_TYPE, JSON.stringify({ clusterId, index }));
+				event.dataTransfer.setData(
+					MEMBER_DRAG_TYPE,
+					JSON.stringify({
+						clusterId,
+						index
+					})
+				);
 				onDragOut(event.nativeEvent);
 			} }
 			onDrop = { (event: ReactDragEvent<HTMLDivElement>) => {
@@ -500,7 +549,10 @@ export function MemberRow({
 				const dragged = parseMemberDrag(event.dataTransfer.getData(MEMBER_DRAG_TYPE));
 				if (dragged?.clusterId === clusterId) {
 					event.preventDefault();
-					onMove(dragged.index, index);
+					onMove(
+						dragged.index,
+						index
+					);
 				}
 			} }
 		>
@@ -548,7 +600,10 @@ export function MemberRow({
  * @param props.quote - The quote, or null.
  * @param props.show - Whether to render it.
  */
-export function QuoteDisplay({ quote, show }: QuoteDisplayProps) {
+export function QuoteDisplay({
+	quote,
+	show
+}: QuoteDisplayProps) {
 	return (
 		<div className = 'tabcandy-quote'>
 			{ quote && show && (
@@ -569,7 +624,10 @@ export function QuoteDisplay({ quote, show }: QuoteDisplayProps) {
  * @param props.files - The files to list.
  * @param props.onOpen - Called with the clicked file.
  */
-export function RecentFiles({ files, onOpen }: RecentFilesProps) {
+export function RecentFiles({
+	files,
+	onOpen
+}: RecentFilesProps) {
 	return (
 		<div className = 'tabcandy-dashboard-centeredrow'>
 			{ files.map((file) => (
@@ -596,7 +654,10 @@ export function RecentFiles({ files, onOpen }: RecentFilesProps) {
  * @param props.entries - The closed tabs, in display order.
  * @param props.onOpen - Called with the clicked entry.
  */
-export function RecentlyClosedTabs({ entries, onOpen }: RecentlyClosedTabsProps) {
+export function RecentlyClosedTabs({
+	entries,
+	onOpen
+}: RecentlyClosedTabsProps) {
 	return (
 		<div className = 'tabcandy-dashboard-centeredrow'>
 			{ entries.map((entry, index) => (
@@ -672,7 +733,10 @@ function getFlavorStyle(flavor: string | undefined): CSSProperties | undefined {
 function getMemberLabel(path: string): string {
 	const name = path.slice(path.lastIndexOf('/') + 1);
 	const dot = name.lastIndexOf('.');
-	return dot > 0 ? name.slice(0, dot) : name;
+	return dot > 0 ? name.slice(
+		0,
+		dot
+	) : name;
 }
 
 /**
@@ -722,18 +786,27 @@ function openMemberMenu(
 	index: number,
 	count: number,
 	exists: boolean,
-	onMove: (fromIndex: number, toIndex: number) => void,
+	onMove: (
+		fromIndex: number,
+		toIndex: number
+	) => void,
 	onResolve: () => void
 ): void {
 	const menu = new Menu();
 	if (index > 0) {
 		menu.addItem((item) => {
-			item.setTitle('Move up').setIcon('arrow-up').onClick(() => onMove(index, index - 1));
+			item.setTitle('Move up').setIcon('arrow-up').onClick(() => onMove(
+				index,
+				index - 1
+			));
 		});
 	}
 	if (index < count - 1) {
 		menu.addItem((item) => {
-			item.setTitle('Move down').setIcon('arrow-down').onClick(() => onMove(index, index + 1));
+			item.setTitle('Move down').setIcon('arrow-down').onClick(() => onMove(
+				index,
+				index + 1
+			));
 		});
 	}
 	if (!exists) {
@@ -750,18 +823,22 @@ function openMemberMenu(
  * @param raw - The payload text.
  * @returns The Cluster id and position, or null when the payload isn't one.
  */
-function parseMemberDrag(raw: string): { clusterId: string; index: number } | null {
+function parseMemberDrag(raw: string): {
+	clusterId: string;
+	index: number
+} | null {
 	try {
 		const value: unknown = JSON.parse(raw);
-		if (
-			typeof value === 'object'
+		if (typeof value === 'object'
 			&& value !== null
 			&& 'clusterId' in value
 			&& 'index' in value
 			&& typeof value.clusterId === 'string'
-			&& typeof value.index === 'number'
-		) {
-			return { clusterId: value.clusterId, index: value.index };
+			&& typeof value.index === 'number') {
+			return {
+				clusterId: value.clusterId,
+				index: value.index
+			};
 		}
 	} catch {
 		return null;

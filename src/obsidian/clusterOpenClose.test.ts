@@ -14,9 +14,19 @@ import {
 	openCluster
 } from './clusterOpenClose';
 import SettingsStore from '../settings/SettingsStore';
-import { addFileTab, buildStoreWith } from '../test/clusterHelpers';
-import { buildCluster, buildClusters, buildStore } from '../test/fakes';
-import { createFakeWorkspaceApp, setMostRecentLeaf } from '../test/FakeWorkspace';
+import {
+	addFileTab,
+	buildStoreWith
+} from '../test/clusterHelpers';
+import {
+	buildCluster,
+	buildClusters,
+	buildStore
+} from '../test/fakes';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import FakeWorkspaceLeaf from '../test/FakeWorkspaceLeaf';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
@@ -26,8 +36,17 @@ import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
  * @returns The spy.
  */
 function showFilesOnOpen(): ReturnType<typeof vi.spyOn> {
-	return vi.spyOn(FakeWorkspaceLeaf.prototype, 'openFile').mockImplementation(async function (this: FakeWorkspaceLeaf, file: { path: string }) {
-		await this.setViewState({ type: 'markdown', state: { file: file.path } });
+	return vi.spyOn(
+		FakeWorkspaceLeaf.prototype,
+		'openFile'
+	).mockImplementation(async function (
+		this: FakeWorkspaceLeaf,
+		file: { path: string }
+	) {
+		await this.setViewState({
+			type: 'markdown',
+			state: { file: file.path }
+		});
 	});
 }
 
@@ -44,14 +63,25 @@ function buildLayout(...groups: string[][]): Record<string, unknown> {
 		children: files.map((file) => ({
 			id: `leaf-${ file }`,
 			type: 'leaf',
-			state: { type: 'markdown', state: { file } },
+			state: {
+				type: 'markdown',
+				state: { file }
+			},
 		})),
 	}));
 	return {
 		main: tabs.length === 1
 			? tabs[0]
-			: { id: 'root', type: 'split', direction: 'vertical', children: tabs },
-		left: { type: 'split', children: [] },
+			: {
+				id: 'root',
+				type: 'split',
+				direction: 'vertical',
+				children: tabs
+			},
+		left: {
+			type: 'split',
+			children: []
+		},
 	};
 }
 
@@ -74,7 +104,10 @@ function setLayout(app: App, layout: Record<string, unknown>): void {
  * @returns The open member paths.
  */
 function openPaths(app: App, store: SettingsStore, id: string): string[] {
-	return Array.from(getOpenMembers(app, store.get().clusters[id]).keys()).sort();
+	return Array.from(getOpenMembers(
+		app,
+		store.get().clusters[id]
+	).keys()).sort();
 }
 
 describe('closeCluster', () => {
@@ -89,10 +122,28 @@ describe('closeCluster', () => {
 
 	it('closes every open member and leaves other tabs open', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		await addFileTab(app, 'b.md', {});
-		const other = await addFileTab(app, 'other.md', {});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		await addFileTab(
+			app,
+			'b.md',
+			{}
+		);
+		const other = await addFileTab(
+			app,
+			'other.md',
+			{}
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		await closeCluster(
 			app,
@@ -100,19 +151,43 @@ describe('closeCluster', () => {
 			'one'
 		);
 
-		expect([openPaths(app, store, 'one'), other.getViewState().type]).toEqual([[], 'markdown']);
+		expect([
+			openPaths(
+				app,
+				store,
+				'one'
+			),
+			other.getViewState().type
+		]).toEqual([
+			[],
+			'markdown'
+		]);
 	});
 
 	it('never closes a pinned member', async () => {
 		const app = createFakeWorkspaceApp();
-		const pinned = await addFileTab(app, 'a.md', {});
+		const pinned = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		await pinned.setViewState({
 			type: 'markdown',
 			state: { file: 'a.md' },
 			pinned: true,
 		});
-		await addFileTab(app, 'b.md', {});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		await addFileTab(
+			app,
+			'b.md',
+			{}
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		await closeCluster(
 			app,
@@ -120,18 +195,33 @@ describe('closeCluster', () => {
 			'one'
 		);
 
-		expect(openPaths(app, store, 'one')).toEqual(['a.md']);
+		expect(openPaths(
+			app,
+			store,
+			'one'
+		)).toEqual(['a.md']);
 	});
 
 	it('never closes a Tray', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		const tray = await addFileTab(app, 'tray-stand-in.md', {});
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		const tray = await addFileTab(
+			app,
+			'tray-stand-in.md',
+			{}
+		);
 		await tray.setViewState({
 			type: CLUSTER_TRAY_VIEW_TYPE,
 			state: { clusterId: 'one' },
 		});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }));
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 
 		await closeCluster(
 			app,
@@ -144,10 +234,33 @@ describe('closeCluster', () => {
 
 	it('captures the layout of the open members before closing', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		await addFileTab(app, 'b.md', {});
-		setLayout(app, buildLayout(['a.md', 'other.md'], ['b.md']));
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		await addFileTab(
+			app,
+			'b.md',
+			{}
+		);
+		setLayout(
+			app,
+			buildLayout(
+				[
+					'a.md',
+					'other.md'
+				],
+				['b.md']
+			)
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		await closeCluster(
 			app,
@@ -161,19 +274,34 @@ describe('closeCluster', () => {
 			children: [
 				{
 					type: 'tabs',
-					children: [{ type: 'leaf', state: { type: 'markdown', state: { file: 'a.md' } } }],
+					children: [{
+						type: 'leaf',
+						state: {
+							type: 'markdown',
+							state: { file: 'a.md' }
+						}
+					}]
 				},
 				{
 					type: 'tabs',
-					children: [{ type: 'leaf', state: { type: 'markdown', state: { file: 'b.md' } } }],
-				},
-			],
+					children: [{
+						type: 'leaf',
+						state: {
+							type: 'markdown',
+							state: { file: 'b.md' }
+						}
+					}]
+				}
+			]
 		});
 	});
 
 	it('keeps the existing snapshot when no member is open', async () => {
 		const app = createFakeWorkspaceApp();
-		const snapshot = { type: 'tabs', children: [] };
+		const snapshot = {
+			type: 'tabs',
+			children: []
+		};
 		const store = buildStoreWith(buildCluster({
 			id: 'one',
 			members: ['a.md'],
@@ -191,8 +319,15 @@ describe('closeCluster', () => {
 
 	it('does not change lastTouchedAt', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		setLayout(app, buildLayout(['a.md']));
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		setLayout(
+			app,
+			buildLayout(['a.md'])
+		);
 		const store = buildStoreWith(buildCluster({
 			id: 'one',
 			members: ['a.md'],
@@ -242,16 +377,33 @@ describe('closeCluster', () => {
 						members: ['x.md'],
 						pairedWith: 'one',
 					}),
-					buildCluster({ id: 'three', members: ['q.md'] })
+					buildCluster({
+						id: 'three',
+						members: ['q.md']
+					})
 				),
 			});
 		}
 
 		it('closes the paired Cluster too and captures its layout', async () => {
 			const app = createFakeWorkspaceApp();
-			await addFileTab(app, 'a.md', {});
-			await addFileTab(app, 'x.md', {});
-			setLayout(app, buildLayout(['a.md', 'x.md']));
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			);
+			await addFileTab(
+				app,
+				'x.md',
+				{}
+			);
+			setLayout(
+				app,
+				buildLayout([
+					'a.md',
+					'x.md'
+				])
+			);
 			const store = buildPairedStore(true);
 
 			await closeCluster(
@@ -260,13 +412,31 @@ describe('closeCluster', () => {
 				'one'
 			);
 
-			expect([openPaths(app, store, 'two'), store.get().clusters['two'].layoutSnapshot !== undefined]).toEqual([[], true]);
+			expect([
+				openPaths(
+					app,
+					store,
+					'two'
+				),
+				store.get().clusters['two'].layoutSnapshot !== undefined
+			]).toEqual([
+				[],
+				true
+			]);
 		});
 
 		it('goes one hop and no further', async () => {
 			const app = createFakeWorkspaceApp();
-			await addFileTab(app, 'a.md', {});
-			await addFileTab(app, 'q.md', {});
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			);
+			await addFileTab(
+				app,
+				'q.md',
+				{}
+			);
 			const store = buildPairedStore(true);
 
 			await closeCluster(
@@ -275,13 +445,25 @@ describe('closeCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'three')).toEqual(['q.md']);
+			expect(openPaths(
+				app,
+				store,
+				'three'
+			)).toEqual(['q.md']);
 		});
 
 		it('leaves the paired Cluster open when sync is off', async () => {
 			const app = createFakeWorkspaceApp();
-			await addFileTab(app, 'a.md', {});
-			await addFileTab(app, 'x.md', {});
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			);
+			await addFileTab(
+				app,
+				'x.md',
+				{}
+			);
 			const store = buildPairedStore(false);
 
 			await closeCluster(
@@ -290,7 +472,11 @@ describe('closeCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'two')).toEqual(['x.md']);
+			expect(openPaths(
+				app,
+				store,
+				'two'
+			)).toEqual(['x.md']);
 		});
 	});
 });
@@ -298,22 +484,56 @@ describe('closeCluster', () => {
 describe('getOpenMembers', () => {
 	it('lists the leaves showing each member and ignores other tabs', async () => {
 		const app = createFakeWorkspaceApp();
-		const a = await addFileTab(app, 'a.md', {});
-		await addFileTab(app, 'other.md', {});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		const a = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		await addFileTab(
+			app,
+			'other.md',
+			{}
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
-		const open = getOpenMembers(app, store.get().clusters['one']);
+		const open = getOpenMembers(
+			app,
+			store.get().clusters['one']
+		);
 
-		expect(Array.from(open.entries())).toEqual([['a.md', [a]]]);
+		expect(Array.from(open.entries())).toEqual([[
+			'a.md',
+			[a]
+		]]);
 	});
 
 	it('lists every leaf when a member is open twice', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		await addFileTab(app, 'a.md', {});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }));
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 
-		const open = getOpenMembers(app, store.get().clusters['one']);
+		const open = getOpenMembers(
+			app,
+			store.get().clusters['one']
+		);
 
 		expect(open.get('a.md')).toHaveLength(2);
 	});
@@ -331,8 +551,17 @@ describe('openCluster', () => {
 	});
 
 	it('opens every present member as a tab', async () => {
-		const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		const app = createFakeWorkspaceApp({ files: {
+			'a.md': '',
+			'b.md': ''
+		} });
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		await openCluster(
 			app,
@@ -340,12 +569,25 @@ describe('openCluster', () => {
 			'one'
 		);
 
-		expect(openPaths(app, store, 'one')).toEqual(['a.md', 'b.md']);
+		expect(openPaths(
+			app,
+			store,
+			'one'
+		)).toEqual([
+			'a.md',
+			'b.md'
+		]);
 	});
 
 	it('skips a missing member', async () => {
 		const app = createFakeWorkspaceApp({ files: { 'a.md': '' } });
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'gone.md'] }));
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'gone.md'
+			]
+		}));
 
 		await openCluster(
 			app,
@@ -353,15 +595,36 @@ describe('openCluster', () => {
 			'one'
 		);
 
-		expect(openPaths(app, store, 'one')).toEqual(['a.md']);
+		expect(openPaths(
+			app,
+			store,
+			'one'
+		)).toEqual(['a.md']);
 	});
 
 	it('does not reopen a member that is already open when jumpToExistingCluster is on', async () => {
-		const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-		await addFileTab(app, 'a.md', {});
+		const app = createFakeWorkspaceApp({ files: {
+			'a.md': '',
+			'b.md': ''
+		} });
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		vi.spyOn(
+			app.workspace,
+			'setActiveLeaf'
+		).mockImplementation(() => {});
 		const store = buildStore({
 			jumpToExistingCluster: true,
-			clusters: buildClusters(buildCluster({ id: 'one', members: ['a.md', 'b.md'] })),
+			clusters: buildClusters(buildCluster({
+				id: 'one',
+				members: [
+					'a.md',
+					'b.md'
+				]
+			})),
 		});
 
 		await openCluster(
@@ -370,15 +633,35 @@ describe('openCluster', () => {
 			'one'
 		);
 
-		expect(getOpenMembers(app, store.get().clusters['one']).get('a.md')).toHaveLength(1);
+		expect(getOpenMembers(
+			app,
+			store.get().clusters['one']
+		).get('a.md')).toHaveLength(1);
 	});
 
 	it('opens a member that is already open again when jumpToExistingCluster is off', async () => {
-		const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-		await addFileTab(app, 'a.md', {});
+		const app = createFakeWorkspaceApp({ files: {
+			'a.md': '',
+			'b.md': ''
+		} });
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		vi.spyOn(
+			app.workspace,
+			'setActiveLeaf'
+		).mockImplementation(() => {});
 		const store = buildStore({
 			jumpToExistingCluster: false,
-			clusters: buildClusters(buildCluster({ id: 'one', members: ['a.md', 'b.md'] })),
+			clusters: buildClusters(buildCluster({
+				id: 'one',
+				members: [
+					'a.md',
+					'b.md'
+				]
+			})),
 		});
 
 		await openCluster(
@@ -387,13 +670,28 @@ describe('openCluster', () => {
 			'one'
 		);
 
-		expect(getOpenMembers(app, store.get().clusters['one']).get('a.md')).toHaveLength(2);
+		expect(getOpenMembers(
+			app,
+			store.get().clusters['one']
+		).get('a.md')).toHaveLength(2);
 	});
 
 	it('makes the first open member in members order the active tab', async () => {
-		const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-		const setActiveLeaf = vi.spyOn(app.workspace, 'setActiveLeaf');
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		const app = createFakeWorkspaceApp({ files: {
+			'a.md': '',
+			'b.md': ''
+		} });
+		const setActiveLeaf = vi.spyOn(
+			app.workspace,
+			'setActiveLeaf'
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		await openCluster(
 			app,
@@ -401,14 +699,23 @@ describe('openCluster', () => {
 			'one'
 		);
 
-		const first = getOpenMembers(app, store.get().clusters['one']).get('a.md')?.[0];
-		expect(setActiveLeaf).toHaveBeenLastCalledWith(first, { focus: true });
+		const first = getOpenMembers(
+			app,
+			store.get().clusters['one']
+		).get('a.md')?.[0];
+		expect(setActiveLeaf).toHaveBeenLastCalledWith(
+			first,
+			{ focus: true }
+		);
 	});
 
 	it('bumps lastTouchedAt', async () => {
 		vi.setSystemTime(5000);
 		const app = createFakeWorkspaceApp({ files: { 'a.md': '' } });
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }));
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 
 		await openCluster(
 			app,
@@ -434,13 +741,25 @@ describe('openCluster', () => {
 
 	describe('with a layout snapshot', () => {
 		it('splits off a new pane for a second group, in the split\'s direction', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-			const createLeafBySplit = vi.fn((_leaf: unknown, _direction?: string) => app.workspace.getLeaf('tab'));
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'b.md': ''
+			} });
+			const createLeafBySplit = vi.fn((
+				_leaf: unknown,
+				_direction?: string
+			) => app.workspace.getLeaf('tab'));
 			app.workspace.createLeafBySplit = createLeafBySplit;
 			const store = buildStoreWith(buildCluster({
 				id: 'one',
-				members: ['a.md', 'b.md'],
-				layoutSnapshot: buildLayout(['a.md'], ['b.md'])['main'] as Record<string, unknown>,
+				members: [
+					'a.md',
+					'b.md'
+				],
+				layoutSnapshot: buildLayout(
+					['a.md'],
+					['b.md']
+				)['main'] as Record<string, unknown>,
 			}));
 
 			await openCluster(
@@ -449,17 +768,42 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect([createLeafBySplit.mock.calls.map((call) => call[1]), openPaths(app, store, 'one')]).toEqual([['vertical'], ['a.md', 'b.md']]);
+			expect([
+				createLeafBySplit.mock.calls.map((call) => call[1]),
+				openPaths(
+					app,
+					store,
+					'one'
+				)
+			]).toEqual([
+				['vertical'],
+				[
+					'a.md',
+					'b.md'
+				]
+			]);
 		});
 
 		it('does not split when the snapshot holds one group', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
-			const createLeafBySplit = vi.fn((_leaf: unknown, _direction?: string) => app.workspace.getLeaf('tab'));
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'b.md': ''
+			} });
+			const createLeafBySplit = vi.fn((
+				_leaf: unknown,
+				_direction?: string
+			) => app.workspace.getLeaf('tab'));
 			app.workspace.createLeafBySplit = createLeafBySplit;
 			const store = buildStoreWith(buildCluster({
 				id: 'one',
-				members: ['a.md', 'b.md'],
-				layoutSnapshot: buildLayout(['a.md', 'b.md'])['main'] as Record<string, unknown>,
+				members: [
+					'a.md',
+					'b.md'
+				],
+				layoutSnapshot: buildLayout([
+					'a.md',
+					'b.md'
+				])['main'] as Record<string, unknown>,
 			}));
 
 			await openCluster(
@@ -468,14 +812,33 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect([createLeafBySplit.mock.calls.length, openPaths(app, store, 'one')]).toEqual([0, ['a.md', 'b.md']]);
+			expect([
+				createLeafBySplit.mock.calls.length,
+				openPaths(
+					app,
+					store,
+					'one'
+				)
+			]).toEqual([
+				0,
+				[
+					'a.md',
+					'b.md'
+				]
+			]);
 		});
 
 		it('opens a member the snapshot does not hold', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'b.md': ''
+			} });
 			const store = buildStoreWith(buildCluster({
 				id: 'one',
-				members: ['a.md', 'b.md'],
+				members: [
+					'a.md',
+					'b.md'
+				],
 				layoutSnapshot: buildLayout(['a.md'])['main'] as Record<string, unknown>,
 			}));
 
@@ -485,15 +848,28 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'one')).toEqual(['a.md', 'b.md']);
+			expect(openPaths(
+				app,
+				store,
+				'one'
+			)).toEqual([
+				'a.md',
+				'b.md'
+			]);
 		});
 
 		it('skips a snapshot path that is no longer a member', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'old.md': '' } });
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'old.md': ''
+			} });
 			const store = buildStoreWith(buildCluster({
 				id: 'one',
 				members: ['a.md'],
-				layoutSnapshot: buildLayout(['a.md', 'old.md'])['main'] as Record<string, unknown>,
+				layoutSnapshot: buildLayout([
+					'a.md',
+					'old.md'
+				])['main'] as Record<string, unknown>,
 			}));
 
 			await openCluster(
@@ -502,18 +878,31 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'one')).toEqual(['a.md']);
+			expect(openPaths(
+				app,
+				store,
+				'one'
+			)).toEqual(['a.md']);
 		});
 
 		it('opens every member as a plain tab when splitting fails', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'b.md': '' } });
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'b.md': ''
+			} });
 			app.workspace.createLeafBySplit = () => {
 				throw new Error('no split');
 			};
 			const store = buildStoreWith(buildCluster({
 				id: 'one',
-				members: ['a.md', 'b.md'],
-				layoutSnapshot: buildLayout(['a.md'], ['b.md'])['main'] as Record<string, unknown>,
+				members: [
+					'a.md',
+					'b.md'
+				],
+				layoutSnapshot: buildLayout(
+					['a.md'],
+					['b.md']
+				)['main'] as Record<string, unknown>,
 			}));
 
 			await openCluster(
@@ -522,7 +911,13 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect(Array.from(getOpenMembers(app, store.get().clusters['one']).values()).map((leaves) => leaves.length)).toEqual([1, 1]);
+			expect(Array.from(getOpenMembers(
+				app,
+				store.get().clusters['one']
+			).values()).map((leaves) => leaves.length)).toEqual([
+				1,
+				1
+			]);
 		});
 	});
 
@@ -547,14 +942,24 @@ describe('openCluster', () => {
 						members: ['x.md'],
 						pairedWith: 'one',
 					}),
-					buildCluster({ id: 'three', members: ['q.md'] })
+					buildCluster({
+						id: 'three',
+						members: ['q.md']
+					})
 				),
 			});
 		}
 
 		it('opens the paired Cluster too', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'x.md': '', 'q.md': '' } });
-			setMostRecentLeaf(app, null);
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'x.md': '',
+				'q.md': ''
+			} });
+			setMostRecentLeaf(
+				app,
+				null
+			);
 			const store = buildPairedStore(true);
 
 			await openCluster(
@@ -563,11 +968,29 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect([openPaths(app, store, 'one'), openPaths(app, store, 'two')]).toEqual([['a.md'], ['x.md']]);
+			expect([
+				openPaths(
+					app,
+					store,
+					'one'
+				),
+				openPaths(
+					app,
+					store,
+					'two'
+				)
+			]).toEqual([
+				['a.md'],
+				['x.md']
+			]);
 		});
 
 		it('goes one hop and no further', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'x.md': '', 'q.md': '' } });
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'x.md': '',
+				'q.md': ''
+			} });
 			const store = buildPairedStore(true);
 
 			await openCluster(
@@ -576,11 +999,18 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'three')).toEqual([]);
+			expect(openPaths(
+				app,
+				store,
+				'three'
+			)).toEqual([]);
 		});
 
 		it('leaves the paired Cluster closed when sync is off', async () => {
-			const app = createFakeWorkspaceApp({ files: { 'a.md': '', 'x.md': '' } });
+			const app = createFakeWorkspaceApp({ files: {
+				'a.md': '',
+				'x.md': ''
+			} });
 			const store = buildPairedStore(false);
 
 			await openCluster(
@@ -589,7 +1019,11 @@ describe('openCluster', () => {
 				'one'
 			);
 
-			expect(openPaths(app, store, 'two')).toEqual([]);
+			expect(openPaths(
+				app,
+				store,
+				'two'
+			)).toEqual([]);
 		});
 	});
 });

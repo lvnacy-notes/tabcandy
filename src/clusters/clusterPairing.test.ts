@@ -22,7 +22,10 @@ import {
 	confirming,
 	confirmingNothing
 } from '../test/clusterHelpers';
-import { buildCluster, buildClusters } from '../test/fakes';
+import {
+	buildCluster,
+	buildClusters
+} from '../test/fakes';
 import { createFakeLeaf } from '../test/FakeWorkspaceLeaf';
 import {
 	addRootLeaf,
@@ -33,9 +36,16 @@ import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 describe('describeUnlinks', () => {
 	it('says nothing when neither Cluster is paired', () => {
-		const clusters = buildClusters(buildCluster({ id: 'a' }), buildCluster({ id: 'b' }));
+		const clusters = buildClusters(
+			buildCluster({ id: 'a' }),
+			buildCluster({ id: 'b' })
+		);
 
-		expect(describeUnlinks(clusters, clusters['a'], clusters['b'])).toBe('');
+		expect(describeUnlinks(
+			clusters,
+			clusters['a'],
+			clusters['b']
+		)).toBe('');
 	});
 
 	it('names the Cluster the source is paired with', () => {
@@ -45,7 +55,10 @@ describe('describeUnlinks', () => {
 				name: 'X',
 				pairedWith: 'c',
 			}),
-			buildCluster({ id: 'b', name: 'Z' }),
+			buildCluster({
+				id: 'b',
+				name: 'Z'
+			}),
 			buildCluster({
 				id: 'c',
 				name: 'Y',
@@ -53,12 +66,19 @@ describe('describeUnlinks', () => {
 			})
 		);
 
-		expect(describeUnlinks(clusters, clusters['a'], clusters['b'])).toBe('X is paired with Y. Pairing it with Z unlinks Y.');
+		expect(describeUnlinks(
+			clusters,
+			clusters['a'],
+			clusters['b']
+		)).toBe('X is paired with Y. Pairing it with Z unlinks Y.');
 	});
 
 	it('names the Cluster the target is paired with', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', name: 'X' }),
+			buildCluster({
+				id: 'a',
+				name: 'X'
+			}),
 			buildCluster({
 				id: 'b',
 				name: 'Z',
@@ -71,21 +91,47 @@ describe('describeUnlinks', () => {
 			})
 		);
 
-		expect(describeUnlinks(clusters, clusters['a'], clusters['b'])).toBe('Z is paired with Y. Pairing it with X unlinks Y.');
+		expect(describeUnlinks(
+			clusters,
+			clusters['a'],
+			clusters['b']
+		)).toBe('Z is paired with Y. Pairing it with X unlinks Y.');
 	});
 });
 
 describe('getActiveClusters', () => {
 	it('returns every Cluster holding the active tab\'s file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] }),
-			buildCluster({ id: 'three', members: ['b.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'three',
+				members: ['b.md']
+			})
 		);
 
-		expect(getActiveClusters(app, store).map((cluster) => cluster.id)).toEqual(['one', 'two']);
+		expect(getActiveClusters(
+			app,
+			store
+		).map((cluster) => cluster.id)).toEqual([
+			'one',
+			'two'
+		]);
 	});
 
 	it('returns the Cluster of the active Tray', async () => {
@@ -95,11 +141,23 @@ describe('getActiveClusters', () => {
 			type: CLUSTER_TRAY_VIEW_TYPE,
 			state: { clusterId: 'two' },
 		});
-		addRootLeaf(app, leaf);
-		setMostRecentLeaf(app, leaf);
-		const store = buildStoreWith(buildCluster({ id: 'one' }), buildCluster({ id: 'two' }));
+		addRootLeaf(
+			app,
+			leaf
+		);
+		setMostRecentLeaf(
+			app,
+			leaf
+		);
+		const store = buildStoreWith(
+			buildCluster({ id: 'one' }),
+			buildCluster({ id: 'two' })
+		);
 
-		expect(getActiveClusters(app, store).map((cluster) => cluster.id)).toEqual(['two']);
+		expect(getActiveClusters(
+			app,
+			store
+		).map((cluster) => cluster.id)).toEqual(['two']);
 	});
 
 	it('returns nothing for a Tray whose Cluster is gone', async () => {
@@ -109,31 +167,61 @@ describe('getActiveClusters', () => {
 			type: CLUSTER_TRAY_VIEW_TYPE,
 			state: { clusterId: 'gone' },
 		});
-		addRootLeaf(app, leaf);
-		setMostRecentLeaf(app, leaf);
+		addRootLeaf(
+			app,
+			leaf
+		);
+		setMostRecentLeaf(
+			app,
+			leaf
+		);
 
-		expect(getActiveClusters(app, buildStoreWith(buildCluster({ id: 'one' })))).toEqual([]);
+		expect(getActiveClusters(
+			app,
+			buildStoreWith(buildCluster({ id: 'one' }))
+		)).toEqual([]);
 	});
 
 	it('returns nothing when the active tab has no file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 
-		expect(getActiveClusters(app, buildStoreWith(buildCluster({ members: ['a.md'] })))).toEqual([]);
+		expect(getActiveClusters(
+			app,
+			buildStoreWith(buildCluster({ members: ['a.md'] }))
+		)).toEqual([]);
 	});
 
 	it('returns nothing when there is no active tab', () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, null);
+		setMostRecentLeaf(
+			app,
+			null
+		);
 
-		expect(getActiveClusters(app, buildStoreWith(buildCluster()))).toEqual([]);
+		expect(getActiveClusters(
+			app,
+			buildStoreWith(buildCluster())
+		)).toEqual([]);
 	});
 });
 
 describe('pairWithConfirmation', () => {
 	it('pairs two unpaired Clusters without asking', () => {
-		const store = buildStoreWith(buildCluster({ id: 'a' }), buildCluster({ id: 'b' }));
-		const { prompt, spy } = confirmingNothing();
+		const store = buildStoreWith(
+			buildCluster({ id: 'a' }),
+			buildCluster({ id: 'b' })
+		);
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 
 		pairWithConfirmation(
 			store,
@@ -142,15 +230,32 @@ describe('pairWithConfirmation', () => {
 			'b'
 		);
 
-		expect([store.get().clusters['a'].pairedWith, store.get().clusters['b'].pairedWith, spy.mock.calls.length]).toEqual(['b', 'a', 0]);
+		expect([
+			store.get().clusters['a'].pairedWith,
+			store.get().clusters['b'].pairedWith,
+			spy.mock.calls.length
+		]).toEqual([
+			'b',
+			'a',
+			0
+		]);
 	});
 
 	it('does nothing when they are already paired', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
-		const update = vi.spyOn(store, 'update');
+		const update = vi.spyOn(
+			store,
+			'update'
+		);
 
 		pairWithConfirmation(
 			store,
@@ -169,14 +274,20 @@ describe('pairWithConfirmation', () => {
 				name: 'X',
 				pairedWith: 'c',
 			}),
-			buildCluster({ id: 'b', name: 'Z' }),
+			buildCluster({
+				id: 'b',
+				name: 'Z'
+			}),
 			buildCluster({
 				id: 'c',
 				name: 'Y',
 				pairedWith: 'a',
 			})
 		);
-		const { prompt, spy } = confirmingNothing();
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 
 		pairWithConfirmation(
 			store,
@@ -185,14 +296,26 @@ describe('pairWithConfirmation', () => {
 			'b'
 		);
 
-		expect([spy.mock.calls[0][1], store.get().clusters['a'].pairedWith]).toEqual(['X is paired with Y. Pairing it with Z unlinks Y.', 'c']);
+		expect([
+			spy.mock.calls[0][1],
+			store.get().clusters['a'].pairedWith
+		]).toEqual([
+			'X is paired with Y. Pairing it with Z unlinks Y.',
+			'c'
+		]);
 	});
 
 	it('unlinks the third Cluster once confirmed', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'c' }),
+			buildCluster({
+				id: 'a',
+				pairedWith: 'c'
+			}),
 			buildCluster({ id: 'b' }),
-			buildCluster({ id: 'c', pairedWith: 'a' })
+			buildCluster({
+				id: 'c',
+				pairedWith: 'a'
+			})
 		);
 
 		pairWithConfirmation(
@@ -202,12 +325,23 @@ describe('pairWithConfirmation', () => {
 			'b'
 		);
 
-		expect([store.get().clusters['a'].pairedWith, store.get().clusters['b'].pairedWith, store.get().clusters['c'].pairedWith]).toEqual(['b', 'a', null]);
+		expect([
+			store.get().clusters['a'].pairedWith,
+			store.get().clusters['b'].pairedWith,
+			store.get().clusters['c'].pairedWith
+		]).toEqual([
+			'b',
+			'a',
+			null
+		]);
 	});
 
 	it('does nothing when a Cluster does not exist', () => {
 		const store = buildStoreWith(buildCluster({ id: 'a' }));
-		const update = vi.spyOn(store, 'update');
+		const update = vi.spyOn(
+			store,
+			'update'
+		);
 
 		pairWithConfirmation(
 			store,
@@ -222,8 +356,15 @@ describe('pairWithConfirmation', () => {
 
 describe('promptAndPair', () => {
 	it('offers every Cluster but the source', () => {
-		const store = buildStoreWith(buildCluster({ id: 'a' }), buildCluster({ id: 'b' }), buildCluster({ id: 'c' }));
-		const { prompt, spy } = choosingNothing();
+		const store = buildStoreWith(
+			buildCluster({ id: 'a' }),
+			buildCluster({ id: 'b' }),
+			buildCluster({ id: 'c' })
+		);
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 
 		promptAndPair(
 			store,
@@ -232,11 +373,17 @@ describe('promptAndPair', () => {
 			'a'
 		);
 
-		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual(['b', 'c']);
+		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual([
+			'b',
+			'c'
+		]);
 	});
 
 	it('pairs the source with the chosen Cluster', () => {
-		const store = buildStoreWith(buildCluster({ id: 'a' }), buildCluster({ id: 'b' }));
+		const store = buildStoreWith(
+			buildCluster({ id: 'a' }),
+			buildCluster({ id: 'b' })
+		);
 
 		promptAndPair(
 			store,
@@ -249,7 +396,10 @@ describe('promptAndPair', () => {
 	});
 
 	it('pairs nothing when the prompt is cancelled', () => {
-		const store = buildStoreWith(buildCluster({ id: 'a' }), buildCluster({ id: 'b' }));
+		const store = buildStoreWith(
+			buildCluster({ id: 'a' }),
+			buildCluster({ id: 'b' })
+		);
 
 		promptAndPair(
 			store,
@@ -263,7 +413,10 @@ describe('promptAndPair', () => {
 
 	it('does not prompt when there is no other Cluster', () => {
 		const store = buildStoreWith(buildCluster({ id: 'a' }));
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 
 		promptAndPair(
 			store,
@@ -290,7 +443,10 @@ describe('promptAndUnlink', () => {
 				pairedWith: 'a',
 			})
 		);
-		const { prompt, spy } = confirmingNothing();
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 
 		promptAndUnlink(
 			store,
@@ -304,8 +460,14 @@ describe('promptAndUnlink', () => {
 
 	it('unlinks both once confirmed', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
 		promptAndUnlink(
@@ -315,13 +477,25 @@ describe('promptAndUnlink', () => {
 			[store.get().clusters['a']]
 		);
 
-		expect([store.get().clusters['a'].pairedWith, store.get().clusters['b'].pairedWith]).toEqual([null, null]);
+		expect([
+			store.get().clusters['a'].pairedWith,
+			store.get().clusters['b'].pairedWith
+		]).toEqual([
+			null,
+			null
+		]);
 	});
 
 	it('unlinks nothing when the confirmation is declined', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
 		promptAndUnlink(
@@ -336,23 +510,45 @@ describe('promptAndUnlink', () => {
 
 	it('asks which only among the paired candidates when several are paired', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' }),
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			}),
 			buildCluster({ id: 'c' }),
-			buildCluster({ id: 'd', pairedWith: 'e' }),
-			buildCluster({ id: 'e', pairedWith: 'd' })
+			buildCluster({
+				id: 'd',
+				pairedWith: 'e'
+			}),
+			buildCluster({
+				id: 'e',
+				pairedWith: 'd'
+			})
 		);
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const { clusters } = store.get();
 
 		promptAndUnlink(
 			store,
 			prompt,
 			confirming().prompt,
-			[clusters['a'], clusters['c'], clusters['d']]
+			[
+				clusters['a'],
+				clusters['c'],
+				clusters['d']
+			]
 		);
 
-		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual(['a', 'd']);
+		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual([
+			'a',
+			'd'
+		]);
 	});
 
 	it('confirms after the choice is made', () => {
@@ -378,14 +574,20 @@ describe('promptAndUnlink', () => {
 				pairedWith: 'd',
 			})
 		);
-		const { prompt, spy } = confirmingNothing();
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 		const { clusters } = store.get();
 
 		promptAndUnlink(
 			store,
 			choosing('d').prompt,
 			prompt,
-			[clusters['a'], clusters['d']]
+			[
+				clusters['a'],
+				clusters['d']
+			]
 		);
 
 		expect(spy.mock.calls[0][1]).toBe('Unlink P from Q?');
@@ -393,7 +595,10 @@ describe('promptAndUnlink', () => {
 
 	it('does nothing when no candidate is paired', () => {
 		const store = buildStoreWith(buildCluster({ id: 'a' }));
-		const { prompt, spy } = confirmingNothing();
+		const {
+			prompt,
+			spy
+		} = confirmingNothing();
 
 		promptAndUnlink(
 			store,
@@ -409,21 +614,50 @@ describe('promptAndUnlink', () => {
 describe('unlinkCluster', () => {
 	it('unlinks the Cluster and its partner', async () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
-		const result = await unlinkCluster(store, 'b');
+		const result = await unlinkCluster(
+			store,
+			'b'
+		);
 
-		expect([result, store.get().clusters['a'].pairedWith, store.get().clusters['b'].pairedWith]).toEqual([true, null, null]);
+		expect([
+			result,
+			store.get().clusters['a'].pairedWith,
+			store.get().clusters['b'].pairedWith
+		]).toEqual([
+			true,
+			null,
+			null
+		]);
 	});
 
 	it('saves nothing when the Cluster is not paired', async () => {
 		const store = buildStoreWith(buildCluster({ id: 'a' }));
-		const update = vi.spyOn(store, 'update');
+		const update = vi.spyOn(
+			store,
+			'update'
+		);
 
-		const result = await unlinkCluster(store, 'a');
+		const result = await unlinkCluster(
+			store,
+			'a'
+		);
 
-		expect([result, update.mock.calls.length]).toEqual([false, 0]);
+		expect([
+			result,
+			update.mock.calls.length
+		]).toEqual([
+			false,
+			0
+		]);
 	});
 });

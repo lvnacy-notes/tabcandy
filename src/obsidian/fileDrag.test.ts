@@ -10,7 +10,10 @@ import {
 	it,
 	vi
 } from 'vitest';
-import { getDraggedFilePath, startFileDrag } from './fileDrag';
+import {
+	getDraggedFilePath,
+	startFileDrag
+} from './fileDrag';
 import { setDragManager } from '../test/dragHelpers';
 import { createConfiguredApp } from '../test/fakes';
 
@@ -32,38 +35,57 @@ function getFile(app: App, path: string): TFile {
 describe('getDraggedFilePath', () => {
 	it('reads the path of a dragged file', () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
-		setDragManager(app, { draggable: { file: getFile(app, 'a.md') } });
+		setDragManager(
+			app,
+			{ draggable: { file: getFile(
+				app,
+				'a.md'
+			) } }
+		);
 
 		expect(getDraggedFilePath(app)).toBe('a.md');
 	});
 
 	it('reads the path of a dragged file tab', () => {
 		const app = createConfiguredApp();
-		const leaf = {
-			getViewState: () => ({ type: 'markdown', state: { file: 'b.md' } }),
-		} as unknown as WorkspaceLeaf;
-		setDragManager(app, { draggable: { leaf } });
+		const leaf = { getViewState: () => ({
+			type: 'markdown',
+			state: { file: 'b.md' }
+		}) } as unknown as WorkspaceLeaf;
+		setDragManager(
+			app,
+			{ draggable: { leaf } }
+		);
 
 		expect(getDraggedFilePath(app)).toBe('b.md');
 	});
 
 	it('is null when the drag holds neither a file nor a tab', () => {
 		const app = createConfiguredApp();
-		setDragManager(app, { draggable: { type: 'text' } });
+		setDragManager(
+			app,
+			{ draggable: { type: 'text' } }
+		);
 
 		expect(getDraggedFilePath(app)).toBeNull();
 	});
 
 	it('is null when nothing is being dragged', () => {
 		const app = createConfiguredApp();
-		setDragManager(app, { draggable: null });
+		setDragManager(
+			app,
+			{ draggable: null }
+		);
 
 		expect(getDraggedFilePath(app)).toBeNull();
 	});
 
 	it('is null when there is no drag manager', () => {
 		const app = createConfiguredApp();
-		setDragManager(app, undefined);
+		setDragManager(
+			app,
+			undefined
+		);
 
 		expect(getDraggedFilePath(app)).toBeNull();
 	});
@@ -73,7 +95,10 @@ describe('startFileDrag', () => {
 	it('starts dragging the file', () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
 		const dragFile = vi.fn();
-		setDragManager(app, { dragFile });
+		setDragManager(
+			app,
+			{ dragFile }
+		);
 		const event = new Event('dragstart') as DragEvent;
 
 		startFileDrag(
@@ -82,13 +107,22 @@ describe('startFileDrag', () => {
 			'a.md'
 		);
 
-		expect(dragFile).toHaveBeenCalledWith(event, getFile(app, 'a.md'));
+		expect(dragFile).toHaveBeenCalledWith(
+			event,
+			getFile(
+				app,
+				'a.md'
+			)
+		);
 	});
 
 	it('does nothing for a file that does not exist', () => {
 		const app = createConfiguredApp();
 		const dragFile = vi.fn();
-		setDragManager(app, { dragFile });
+		setDragManager(
+			app,
+			{ dragFile }
+		);
 
 		startFileDrag(
 			app,
@@ -101,7 +135,10 @@ describe('startFileDrag', () => {
 
 	it('does nothing when there is no drag manager', () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
-		setDragManager(app, undefined);
+		setDragManager(
+			app,
+			undefined
+		);
 
 		expect(() => startFileDrag(
 			app,

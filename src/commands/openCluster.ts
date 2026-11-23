@@ -1,5 +1,8 @@
 /** @file The open-cluster command. */
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { openCluster } from '../obsidian/clusterOpenClose';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice } from '../types';
@@ -35,7 +38,10 @@ export function buildInvokeCommand(
 							id
 						);
 					},
-					{ action: 'Open', title: 'Open cluster' }
+					{
+						action: 'Open',
+						title: 'Open cluster'
+					}
 				);
 			}
 			return true;

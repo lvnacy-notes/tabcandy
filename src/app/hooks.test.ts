@@ -502,7 +502,10 @@ describe('useVaultRevision', () => {
 		const { result } = renderHook(() => useVaultRevision(app));
 
 		await act(async () => {
-			await app.vault.create('a.md', '');
+			await app.vault.create(
+				'a.md',
+				''
+			);
 		});
 
 		expect(result.current).toBe(1);
@@ -510,7 +513,10 @@ describe('useVaultRevision', () => {
 
 	it('increases when a file is deleted', async () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
-		const file = getExistingFile(app, 'a.md');
+		const file = getExistingFile(
+			app,
+			'a.md'
+		);
 		const { result } = renderHook(() => useVaultRevision(app));
 
 		await act(async () => {
@@ -522,12 +528,18 @@ describe('useVaultRevision', () => {
 
 	it('increases when a file is renamed', async () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
-		const file = getExistingFile(app, 'a.md');
+		const file = getExistingFile(
+			app,
+			'a.md'
+		);
 		const { result } = renderHook(() => useVaultRevision(app));
 
 		await act(async () => {
 			if (file instanceof TFile) {
-				await app.vault.rename(file, 'b.md');
+				await app.vault.rename(
+					file,
+					'b.md'
+				);
 			}
 		});
 
@@ -536,7 +548,10 @@ describe('useVaultRevision', () => {
 
 	it('stops listening when unmounted', () => {
 		const app = createConfiguredApp();
-		const offref = vi.spyOn(app.vault, 'offref');
+		const offref = vi.spyOn(
+			app.vault,
+			'offref'
+		);
 		const { unmount } = renderHook(() => useVaultRevision(app));
 
 		unmount();

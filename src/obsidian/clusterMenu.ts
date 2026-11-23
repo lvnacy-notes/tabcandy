@@ -9,7 +9,10 @@ import {
 	promptAndCreate
 } from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';
-import { TAB_HEADER_SOURCE, type PromptForCluster } from '../types';
+import {
+	TAB_HEADER_SOURCE,
+	type PromptForCluster
+} from '../types';
 
 /**
  * Adds "Create cluster from tab" and "Create cluster from pane" to a tab
@@ -27,8 +30,14 @@ export function registerClusterCreationMenu(
 	registerEvent: (eventRef: EventRef) => void,
 	prompt: PromptForCluster
 ): void {
-	registerEvent(
-		app.workspace.on('file-menu', (menu, _file, source, leaf) => {
+	registerEvent(app.workspace.on(
+		'file-menu',
+		(
+			menu,
+			_file,
+			source,
+			leaf
+		) => {
 			if (source !== TAB_HEADER_SOURCE || leaf === undefined) {
 				return;
 			}
@@ -49,7 +58,10 @@ export function registerClusterCreationMenu(
 				});
 			}
 
-			const panePaths = getPanePaths(app, leaf);
+			const panePaths = getPanePaths(
+				app,
+				leaf
+			);
 			if (panePaths.length > 0) {
 				menu.addItem((item) => {
 					item
@@ -64,6 +76,6 @@ export function registerClusterCreationMenu(
 						});
 				});
 			}
-		})
-	);
+		}
+	));
 }

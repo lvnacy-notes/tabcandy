@@ -1,5 +1,8 @@
 /** @file The command that opens the Cluster sidebar. */
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { activateClusterSidebar } from '../obsidian/clusterSidebarActivation';
 
 /**

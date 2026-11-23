@@ -9,7 +9,10 @@ import {
 	vi
 } from 'vitest';
 import PairClustersModal from './PairClustersModal';
-import { buildCluster, createConfiguredApp } from '../test/fakes';
+import {
+	buildCluster,
+	createConfiguredApp
+} from '../test/fakes';
 import { findButton } from '../test/modalHelpers';
 
 /**
@@ -19,20 +22,38 @@ import { findButton } from '../test/modalHelpers';
  */
 function openModal(): {
 	modal: PairClustersModal;
-	onSubmit: Mock<(sourceId: string, targetId: string) => void>;
+	onSubmit: Mock<(
+		sourceId: string,
+		targetId: string
+	) => void>;
 } {
-	const onSubmit = vi.fn<(sourceId: string, targetId: string) => void>();
+	const onSubmit = vi.fn<(
+		sourceId: string,
+		targetId: string
+	) => void>();
 	const modal = new PairClustersModal(
 		createConfiguredApp(),
 		[
-			buildCluster({ id: 'one', name: 'One' }),
-			buildCluster({ id: 'two', name: 'Two' }),
-			buildCluster({ id: 'three', name: 'Three' }),
+			buildCluster({
+				id: 'one',
+				name: 'One'
+			}),
+			buildCluster({
+				id: 'two',
+				name: 'Two'
+			}),
+			buildCluster({
+				id: 'three',
+				name: 'Three'
+			}),
 		],
 		onSubmit
 	);
 	modal.open();
-	return { modal, onSubmit };
+	return {
+		modal,
+		onSubmit
+	};
 }
 
 /**
@@ -72,54 +93,122 @@ describe('PairClustersModal', () => {
 	it('lists every Cluster as a source', () => {
 		const { modal } = openModal();
 
-		expect(optionsOf(modal, 0)).toEqual(['One', 'Two', 'Three']);
+		expect(optionsOf(
+			modal,
+			0
+		)).toEqual([
+			'One',
+			'Two',
+			'Three'
+		]);
 	});
 
 	it('leaves the source out of the targets', () => {
 		const { modal } = openModal();
 
-		expect(optionsOf(modal, 1)).toEqual(['Two', 'Three']);
+		expect(optionsOf(
+			modal,
+			1
+		)).toEqual([
+			'Two',
+			'Three'
+		]);
 	});
 
 	it('rebuilds the targets when the source changes', () => {
 		const { modal } = openModal();
 
-		pick(modal, 0, 'two');
+		pick(
+			modal,
+			0,
+			'two'
+		);
 
-		expect(optionsOf(modal, 1)).toEqual(['One', 'Three']);
+		expect(optionsOf(
+			modal,
+			1
+		)).toEqual([
+			'One',
+			'Three'
+		]);
 	});
 
 	it('submits the first source and the first target when nothing is picked', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Pair').click();
+		findButton(
+			modal,
+			'Pair'
+		).click();
 
-		expect(onSubmit).toHaveBeenCalledWith('one', 'two');
+		expect(onSubmit).toHaveBeenCalledWith(
+			'one',
+			'two'
+		);
 	});
 
 	it('submits the picked source and target', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		pick(modal, 0, 'two');
-		pick(modal, 1, 'three');
-		findButton(modal, 'Pair').click();
+		pick(
+			modal,
+			0,
+			'two'
+		);
+		pick(
+			modal,
+			1,
+			'three'
+		);
+		findButton(
+			modal,
+			'Pair'
+		).click();
 
-		expect(onSubmit).toHaveBeenCalledWith('two', 'three');
+		expect(onSubmit).toHaveBeenCalledWith(
+			'two',
+			'three'
+		);
 	});
 
 	it('submits the first remaining target after the source changes', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		pick(modal, 0, 'two');
-		findButton(modal, 'Pair').click();
+		pick(
+			modal,
+			0,
+			'two'
+		);
+		findButton(
+			modal,
+			'Pair'
+		).click();
 
-		expect(onSubmit).toHaveBeenCalledWith('two', 'one');
+		expect(onSubmit).toHaveBeenCalledWith(
+			'two',
+			'one'
+		);
 	});
 
 	it('does not submit when cancelled', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Cancel').click();
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});

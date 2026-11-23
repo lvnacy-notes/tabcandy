@@ -17,7 +17,10 @@ import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
  *
  * @returns The leaf and its `setViewState` spy.
  */
-function buildLeaf(): { leaf: WorkspaceLeaf; setViewState: ReturnType<typeof vi.fn> } {
+function buildLeaf(): {
+	leaf: WorkspaceLeaf;
+	setViewState: ReturnType<typeof vi.fn>
+} {
 	const setViewState = vi.fn().mockResolvedValue(undefined);
 	return {
 		leaf: { setViewState } as unknown as WorkspaceLeaf,
@@ -37,15 +40,33 @@ describe('open-cluster-sidebar command', () => {
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createFakeWorkspaceApp());
 
-		expect([command.id, command.name]).toEqual(['open-cluster-sidebar', 'Open cluster sidebar']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'open-cluster-sidebar',
+			'Open cluster sidebar'
+		]);
 	});
 
 	it('opens the sidebar in the right dock when it is not open', async () => {
 		const app = createFakeWorkspaceApp();
-		const { leaf, setViewState } = buildLeaf();
-		vi.spyOn(app.workspace, 'getLeavesOfType').mockReturnValue([]);
-		vi.spyOn(app.workspace, 'getRightLeaf').mockReturnValue(leaf);
-		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
+		const {
+			leaf,
+			setViewState
+		} = buildLeaf();
+		vi.spyOn(
+			app.workspace,
+			'getLeavesOfType'
+		).mockReturnValue([]);
+		vi.spyOn(
+			app.workspace,
+			'getRightLeaf'
+		).mockReturnValue(leaf);
+		const reveal = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		).mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
 		await vi.runAllTimersAsync();
@@ -60,9 +81,18 @@ describe('open-cluster-sidebar command', () => {
 	it('reveals the open sidebar instead of opening another', async () => {
 		const app = createFakeWorkspaceApp();
 		const { leaf } = buildLeaf();
-		vi.spyOn(app.workspace, 'getLeavesOfType').mockReturnValue([leaf]);
-		const getRightLeaf = vi.spyOn(app.workspace, 'getRightLeaf');
-		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
+		vi.spyOn(
+			app.workspace,
+			'getLeavesOfType'
+		).mockReturnValue([leaf]);
+		const getRightLeaf = vi.spyOn(
+			app.workspace,
+			'getRightLeaf'
+		);
+		const reveal = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		).mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
 		await vi.runAllTimersAsync();
@@ -73,9 +103,18 @@ describe('open-cluster-sidebar command', () => {
 
 	it('does nothing when the right dock has no leaf to offer', async () => {
 		const app = createFakeWorkspaceApp();
-		vi.spyOn(app.workspace, 'getLeavesOfType').mockReturnValue([]);
-		vi.spyOn(app.workspace, 'getRightLeaf').mockReturnValue(null);
-		const reveal = vi.spyOn(app.workspace, 'revealLeaf').mockResolvedValue(undefined);
+		vi.spyOn(
+			app.workspace,
+			'getLeavesOfType'
+		).mockReturnValue([]);
+		vi.spyOn(
+			app.workspace,
+			'getRightLeaf'
+		).mockReturnValue(null);
+		const reveal = vi.spyOn(
+			app.workspace,
+			'revealLeaf'
+		).mockResolvedValue(undefined);
 
 		buildInvokeCommand(app).callback?.();
 		await vi.runAllTimersAsync();

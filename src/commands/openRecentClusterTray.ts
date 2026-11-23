@@ -1,5 +1,8 @@
 /** @file The command that opens a Tray for the most recent Cluster. */
-import { App, Command } from 'obsidian';
+import {
+	App,
+	Command
+} from 'obsidian';
 import { getMostRecentCluster } from '../clusters/clusters';
 import { openClusterTray } from '../obsidian/trayLeaves';
 import SettingsStore from '../settings/SettingsStore';

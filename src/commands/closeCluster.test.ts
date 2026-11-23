@@ -15,7 +15,10 @@ import {
 	choosingNothing,
 	isAvailable
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 
 vi.mock('../obsidian/clusterOpenClose', async (importOriginal) => ({
 	...await importOriginal<typeof import('../obsidian/clusterOpenClose')>(),
@@ -30,12 +33,22 @@ describe('close-cluster command', () => {
 			choosingNothing().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['close-cluster', 'Close cluster']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'close-cluster',
+			'Close cluster'
+		]);
 	});
 
 	it('is available when a Cluster has an open member', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -49,7 +62,11 @@ describe('close-cluster command', () => {
 
 	it('is unavailable when no Cluster has an open member', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'other.md', {});
+		await addFileTab(
+			app,
+			'other.md',
+			{}
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -63,13 +80,26 @@ describe('close-cluster command', () => {
 
 	it('offers only the Clusters with an open member', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		const { prompt, spy } = choosingNothing();
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(
-				buildCluster({ id: 'one', members: ['a.md'] }),
-				buildCluster({ id: 'two', members: ['b.md'] })
+				buildCluster({
+					id: 'one',
+					members: ['a.md']
+				}),
+				buildCluster({
+					id: 'two',
+					members: ['b.md']
+				})
 			),
 			prompt
 		);
@@ -81,8 +111,15 @@ describe('close-cluster command', () => {
 
 	it('closes the chosen Cluster', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
-		const store = buildStoreWith(buildCluster({ id: 'one', members: ['a.md'] }));
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		const store = buildStoreWith(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 		const command = buildInvokeCommand(
 			app,
 			store,

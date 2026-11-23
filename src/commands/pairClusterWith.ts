@@ -1,8 +1,17 @@
 /** @file The pair-cluster-with command. */
-import { App, Command } from 'obsidian';
-import { getActiveClusters, promptAndPair } from '../clusters/clusterPairing';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	getActiveClusters,
+	promptAndPair
+} from '../clusters/clusterPairing';
 import SettingsStore from '../settings/SettingsStore';
-import type { PromptForClusterChoice, PromptForConfirmation } from '../types';
+import type {
+	PromptForClusterChoice,
+	PromptForConfirmation
+} from '../types';
 
 /**
  * Builds the command that pairs the active Cluster with another. Available only when the active Tray or tab belongs to a Cluster. Asks which first when the active tab's file belongs to several.
@@ -23,7 +32,10 @@ export function buildInvokeCommand(
 		id: 'pair-cluster-with',
 		name: 'Pair cluster with…',
 		checkCallback: (checking) => {
-			const active = getActiveClusters(app, settingsStore);
+			const active = getActiveClusters(
+				app,
+				settingsStore
+			);
 			if (active.length === 0) {
 				return false;
 			}
@@ -46,7 +58,10 @@ export function buildInvokeCommand(
 								id
 							);
 						},
-						{ action: 'Choose', title: 'Pair which cluster?' }
+						{
+							action: 'Choose',
+							title: 'Pair which cluster?'
+						}
 					);
 				}
 			}

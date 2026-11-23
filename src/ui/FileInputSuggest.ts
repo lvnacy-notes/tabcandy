@@ -20,7 +20,10 @@ export default class FileInputSuggest extends AbstractInputSuggest<TFile> {
 		inputEl: HTMLInputElement,
 		onPick: (file: TFile) => void
 	) {
-		super(app, inputEl);
+		super(
+			app,
+			inputEl
+		);
 		this._onPick = onPick;
 	}
 
@@ -30,16 +33,25 @@ export default class FileInputSuggest extends AbstractInputSuggest<TFile> {
 	 */
 	getSuggestions(query: string): TFile[] {
 		const search = prepareFuzzySearch(query);
-		const scored: { file: TFile; score: number }[] = [];
+		const scored: {
+			file: TFile;
+			score: number
+		}[] = [];
 		for (const file of this.app.vault.getFiles()) {
 			const match = search(file.path);
 			if (match) {
-				scored.push({ file, score: match.score });
+				scored.push({
+					file,
+					score: match.score
+				});
 			}
 		}
 
 		return scored
-			.sort((a, b) => b.score - a.score)
+			.sort((
+				a,
+				b
+			) => b.score - a.score)
 			.slice(0, 20)
 			.map(({ file }) => file);
 	}

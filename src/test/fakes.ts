@@ -42,7 +42,10 @@ export function buildSettings(overrides: Partial<TabCandySettings> = {}): TabCan
  * @returns The store.
  */
 export function buildStore(overrides: Partial<TabCandySettings> = {}): SettingsStore {
-	return new SettingsStore(buildSettings(overrides), async () => {});
+	return new SettingsStore(
+		buildSettings(overrides),
+		async () => {}
+	);
 }
 
 /**
@@ -51,9 +54,7 @@ export function buildStore(overrides: Partial<TabCandySettings> = {}): SettingsS
  * @param overrides - Fields to replace.
  * @returns The Cluster.
  */
-export function buildCluster(
-	overrides: Partial<TabCandyCluster> = {}
-): TabCandyCluster {
+export function buildCluster(overrides: Partial<TabCandyCluster> = {}): TabCandyCluster {
 	return {
 		id: 'cluster-a',
 		name: 'Cluster A',
@@ -70,9 +71,7 @@ export function buildCluster(
  * @param clusters - The Clusters.
  * @returns The record.
  */
-export function buildClusters(
-	...clusters: TabCandyCluster[]
-): TabCandyClusters {
+export function buildClusters(...clusters: TabCandyCluster[]): TabCandyClusters {
 	const record: TabCandyClusters = {};
 	for (const cluster of clusters) {
 		record[cluster.id] = cluster;

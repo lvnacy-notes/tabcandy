@@ -80,14 +80,24 @@ describe('createCluster', () => {
 	});
 
 	it('generates an id when none is given', () => {
-		const result = createCluster({}, { name: 'Research' });
+		const result = createCluster(
+			{},
+			{ name: 'Research' }
+		);
 
 		expect(result.cluster.id).toMatch(/^[0-9a-f]{32}$/);
 		expect(result.clusters[result.cluster.id]).toBe(result.cluster);
 	});
 
 	it('collapses repeated starting members, keeping the first of each in order', () => {
-		const input = { name: 'Pane', members: ['a.md', 'b.md', 'a.md'] };
+		const input = {
+			name: 'Pane',
+			members: [
+				'a.md',
+				'b.md',
+				'a.md'
+			]
+		};
 
 		const result = createCluster(
 			{},
@@ -96,11 +106,17 @@ describe('createCluster', () => {
 			'id'
 		);
 
-		expect(result.cluster.members).toEqual(['a.md', 'b.md']);
+		expect(result.cluster.members).toEqual([
+			'a.md',
+			'b.md'
+		]);
 	});
 
 	it('keeps a valid hex Flavor', () => {
-		const input = { name: 'Colored', flavor: '#ff8800' };
+		const input = {
+			name: 'Colored',
+			flavor: '#ff8800'
+		};
 
 		const result = createCluster(
 			{},
@@ -113,7 +129,10 @@ describe('createCluster', () => {
 	});
 
 	it('leaves Flavor unset when given something that is not a hex color', () => {
-		const input = { name: 'Colored', flavor: 'red; background: url(x)' };
+		const input = {
+			name: 'Colored',
+			flavor: 'red; background: url(x)'
+		};
 
 		const result = createCluster(
 			{},
@@ -146,18 +165,30 @@ describe('deleteCluster', () => {
 			buildCluster({ id: 'b' })
 		);
 
-		const result = deleteCluster(clusters, 'a');
+		const result = deleteCluster(
+			clusters,
+			'a'
+		);
 
 		expect(Object.keys(result)).toEqual(['b']);
 	});
 
 	it('unpairs the Cluster that was paired with the deleted one', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
-		const result = deleteCluster(clusters, 'a');
+		const result = deleteCluster(
+			clusters,
+			'a'
+		);
 
 		expect(result.b.pairedWith).toBeNull();
 	});
@@ -169,7 +200,10 @@ describe('deleteCluster', () => {
 			unrelated
 		);
 
-		const result = deleteCluster(clusters, 'a');
+		const result = deleteCluster(
+			clusters,
+			'a'
+		);
 
 		expect(result.c).toBe(unrelated);
 	});
@@ -177,7 +211,10 @@ describe('deleteCluster', () => {
 	it('returns the same record when the id does not exist', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = deleteCluster(clusters, 'missing');
+		const result = deleteCluster(
+			clusters,
+			'missing'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -185,9 +222,11 @@ describe('deleteCluster', () => {
 
 describe('addMember', () => {
 	it('appends the path and bumps lastTouchedAt', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['one.md'], lastTouchedAt: 1 })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['one.md'],
+			lastTouchedAt: 1
+		}));
 
 		const result = addMember(
 			clusters,
@@ -196,14 +235,18 @@ describe('addMember', () => {
 			50
 		);
 
-		expect(result.a.members).toEqual(['one.md', 'two.md']);
+		expect(result.a.members).toEqual([
+			'one.md',
+			'two.md'
+		]);
 		expect(result.a.lastTouchedAt).toBe(50);
 	});
 
 	it('returns the same record when the path is already a member', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['one.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['one.md']
+		}));
 
 		const result = addMember(
 			clusters,
@@ -231,9 +274,14 @@ describe('addMember', () => {
 
 describe('removeMember', () => {
 	it('removes the path and bumps lastTouchedAt', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['one.md', 'two.md'], lastTouchedAt: 1 })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: [
+				'one.md',
+				'two.md'
+			],
+			lastTouchedAt: 1
+		}));
 
 		const result = removeMember(
 			clusters,
@@ -247,9 +295,10 @@ describe('removeMember', () => {
 	});
 
 	it('returns the same record when the path is not a member', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['one.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['one.md']
+		}));
 
 		const result = removeMember(
 			clusters,
@@ -276,10 +325,18 @@ describe('removeMember', () => {
 });
 
 describe('reorderMember', () => {
-	const members = ['a.md', 'b.md', 'c.md', 'd.md'];
+	const members = [
+		'a.md',
+		'b.md',
+		'c.md',
+		'd.md'
+	];
 
 	it('moves a member later in the list', () => {
-		const clusters = buildClusters(buildCluster({ id: 'x', members }));
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members
+		}));
 
 		const result = reorderMember(
 			clusters,
@@ -288,11 +345,19 @@ describe('reorderMember', () => {
 			2
 		);
 
-		expect(result.x.members).toEqual(['b.md', 'c.md', 'a.md', 'd.md']);
+		expect(result.x.members).toEqual([
+			'b.md',
+			'c.md',
+			'a.md',
+			'd.md'
+		]);
 	});
 
 	it('moves a member earlier in the list', () => {
-		const clusters = buildClusters(buildCluster({ id: 'x', members }));
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members
+		}));
 
 		const result = reorderMember(
 			clusters,
@@ -301,13 +366,20 @@ describe('reorderMember', () => {
 			1
 		);
 
-		expect(result.x.members).toEqual(['a.md', 'd.md', 'b.md', 'c.md']);
+		expect(result.x.members).toEqual([
+			'a.md',
+			'd.md',
+			'b.md',
+			'c.md'
+		]);
 	});
 
 	it('does not bump lastTouchedAt', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'x', members, lastTouchedAt: 7 })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members,
+			lastTouchedAt: 7
+		}));
 
 		const result = reorderMember(
 			clusters,
@@ -320,7 +392,10 @@ describe('reorderMember', () => {
 	});
 
 	it('does not mutate the members array it was given', () => {
-		const clusters = buildClusters(buildCluster({ id: 'x', members: [...members] }));
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members: [...members]
+		}));
 
 		reorderMember(
 			clusters,
@@ -333,14 +408,41 @@ describe('reorderMember', () => {
 	});
 
 	it.each([
-		['the source index is negative', -1, 1],
-		['the source index is past the end', 4, 1],
-		['the target index is negative', 1, -1],
-		['the target index is past the end', 1, 4],
-		['an index is not an integer', 0.5, 1],
-		['the move is a no-op', 2, 2],
+		[
+			'the source index is negative',
+			-1,
+			1
+		],
+		[
+			'the source index is past the end',
+			4,
+			1
+		],
+		[
+			'the target index is negative',
+			1,
+			-1
+		],
+		[
+			'the target index is past the end',
+			1,
+			4
+		],
+		[
+			'an index is not an integer',
+			0.5,
+			1
+		],
+		[
+			'the move is a no-op',
+			2,
+			2
+		]
 	])('returns the same record when %s', (_reason, fromIndex, toIndex) => {
-		const clusters = buildClusters(buildCluster({ id: 'x', members }));
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members
+		}));
 
 		const result = reorderMember(
 			clusters,
@@ -353,7 +455,10 @@ describe('reorderMember', () => {
 	});
 
 	it('returns the same record when the Cluster does not exist', () => {
-		const clusters = buildClusters(buildCluster({ id: 'x', members }));
+		const clusters = buildClusters(buildCluster({
+			id: 'x',
+			members
+		}));
 
 		const result = reorderMember(
 			clusters,
@@ -368,9 +473,16 @@ describe('reorderMember', () => {
 
 describe('touchCluster', () => {
 	it('sets lastTouchedAt', () => {
-		const clusters = buildClusters(buildCluster({ id: 'a', lastTouchedAt: 1 }));
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			lastTouchedAt: 1
+		}));
 
-		const result = touchCluster(clusters, 'a', 99);
+		const result = touchCluster(
+			clusters,
+			'a',
+			99
+		);
 
 		expect(result.a.lastTouchedAt).toBe(99);
 	});
@@ -378,7 +490,11 @@ describe('touchCluster', () => {
 	it('returns the same record when the Cluster does not exist', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = touchCluster(clusters, 'missing', 99);
+		const result = touchCluster(
+			clusters,
+			'missing',
+			99
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -391,7 +507,11 @@ describe('pairClusters', () => {
 			buildCluster({ id: 'b' })
 		);
 
-		const result = pairClusters(clusters, 'a', 'b');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'b'
+		);
 
 		expect(result.a.pairedWith).toBe('b');
 		expect(result.b.pairedWith).toBe('a');
@@ -399,11 +519,21 @@ describe('pairClusters', () => {
 
 	it('does not bump lastTouchedAt on either side', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', lastTouchedAt: 3 }),
-			buildCluster({ id: 'b', lastTouchedAt: 4 })
+			buildCluster({
+				id: 'a',
+				lastTouchedAt: 3
+			}),
+			buildCluster({
+				id: 'b',
+				lastTouchedAt: 4
+			})
 		);
 
-		const result = pairClusters(clusters, 'a', 'b');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'b'
+		);
 
 		expect(result.a.lastTouchedAt).toBe(3);
 		expect(result.b.lastTouchedAt).toBe(4);
@@ -411,13 +541,29 @@ describe('pairClusters', () => {
 
 	it('unpairs the previous partner of either side, keeping Pairing 1:1', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', pairedWith: 'x' }),
-			buildCluster({ id: 'x', pairedWith: 'a' }),
-			buildCluster({ id: 'b', pairedWith: 'y' }),
-			buildCluster({ id: 'y', pairedWith: 'b' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'x'
+			}),
+			buildCluster({
+				id: 'x',
+				pairedWith: 'a'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'y'
+			}),
+			buildCluster({
+				id: 'y',
+				pairedWith: 'b'
+			})
 		);
 
-		const result = pairClusters(clusters, 'a', 'b');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'b'
+		);
 
 		expect(result.a.pairedWith).toBe('b');
 		expect(result.b.pairedWith).toBe('a');
@@ -427,11 +573,21 @@ describe('pairClusters', () => {
 
 	it('returns the same record when the two are already paired with each other', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
-		const result = pairClusters(clusters, 'a', 'b');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'b'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -439,7 +595,11 @@ describe('pairClusters', () => {
 	it('returns the same record when asked to pair a Cluster with itself', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = pairClusters(clusters, 'a', 'a');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'a'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -447,7 +607,11 @@ describe('pairClusters', () => {
 	it('returns the same record when either Cluster does not exist', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = pairClusters(clusters, 'a', 'missing');
+		const result = pairClusters(
+			clusters,
+			'a',
+			'missing'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -456,11 +620,20 @@ describe('pairClusters', () => {
 describe('unpairCluster', () => {
 	it('clears the Pairing on both sides', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', pairedWith: 'b' }),
-			buildCluster({ id: 'b', pairedWith: 'a' })
+			buildCluster({
+				id: 'a',
+				pairedWith: 'b'
+			}),
+			buildCluster({
+				id: 'b',
+				pairedWith: 'a'
+			})
 		);
 
-		const result = unpairCluster(clusters, 'a');
+		const result = unpairCluster(
+			clusters,
+			'a'
+		);
 
 		expect(result.a.pairedWith).toBeNull();
 		expect(result.b.pairedWith).toBeNull();
@@ -469,7 +642,10 @@ describe('unpairCluster', () => {
 	it('returns the same record when the Cluster is not paired', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = unpairCluster(clusters, 'a');
+		const result = unpairCluster(
+			clusters,
+			'a'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -477,7 +653,10 @@ describe('unpairCluster', () => {
 	it('returns the same record when the Cluster does not exist', () => {
 		const clusters = buildClusters(buildCluster({ id: 'a' }));
 
-		const result = unpairCluster(clusters, 'missing');
+		const result = unpairCluster(
+			clusters,
+			'missing'
+		);
 
 		expect(result).toBe(clusters);
 	});
@@ -485,11 +664,20 @@ describe('unpairCluster', () => {
 
 describe('getMostRecentCluster', () => {
 	it('returns the Cluster with the highest lastTouchedAt', () => {
-		const newest = buildCluster({ id: 'b', lastTouchedAt: 20 });
+		const newest = buildCluster({
+			id: 'b',
+			lastTouchedAt: 20
+		});
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', lastTouchedAt: 10 }),
+			buildCluster({
+				id: 'a',
+				lastTouchedAt: 10
+			}),
 			newest,
-			buildCluster({ id: 'c', lastTouchedAt: 5 })
+			buildCluster({
+				id: 'c',
+				lastTouchedAt: 5
+			})
 		);
 
 		const result = getMostRecentCluster(clusters);
@@ -498,10 +686,16 @@ describe('getMostRecentCluster', () => {
 	});
 
 	it('goes to the first Cluster in the record when lastTouchedAt ties', () => {
-		const first = buildCluster({ id: 'a', lastTouchedAt: 10 });
+		const first = buildCluster({
+			id: 'a',
+			lastTouchedAt: 10
+		});
 		const clusters = buildClusters(
 			first,
-			buildCluster({ id: 'b', lastTouchedAt: 10 })
+			buildCluster({
+				id: 'b',
+				lastTouchedAt: 10
+			})
 		);
 
 		const result = getMostRecentCluster(clusters);
@@ -518,23 +712,47 @@ describe('getMostRecentCluster', () => {
 
 describe('getClustersContainingPath', () => {
 	it('returns every Cluster listing the path, in record order', () => {
-		const a = buildCluster({ id: 'a', members: ['shared.md'] });
-		const c = buildCluster({ id: 'c', members: ['x.md', 'shared.md'] });
+		const a = buildCluster({
+			id: 'a',
+			members: ['shared.md']
+		});
+		const c = buildCluster({
+			id: 'c',
+			members: [
+				'x.md',
+				'shared.md'
+			]
+		});
 		const clusters = buildClusters(
 			a,
-			buildCluster({ id: 'b', members: ['other.md'] }),
+			buildCluster({
+				id: 'b',
+				members: ['other.md']
+			}),
 			c
 		);
 
-		const result = getClustersContainingPath(clusters, 'shared.md');
+		const result = getClustersContainingPath(
+			clusters,
+			'shared.md'
+		);
 
-		expect(result).toEqual([a, c]);
+		expect(result).toEqual([
+			a,
+			c
+		]);
 	});
 
 	it('returns an empty array when no Cluster lists the path', () => {
-		const clusters = buildClusters(buildCluster({ id: 'a', members: ['x.md'] }));
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['x.md']
+		}));
 
-		const result = getClustersContainingPath(clusters, 'nope.md');
+		const result = getClustersContainingPath(
+			clusters,
+			'nope.md'
+		);
 
 		expect(result).toEqual([]);
 	});
@@ -552,29 +770,35 @@ describe('replaceMemberPath', () => {
 			main: {
 				id: 'split-1',
 				type: 'split',
-				children: [
-					{
-						id: 'tabs-1',
-						type: 'tabs',
-						children: files.map((file, index) => ({
-							id: `leaf-${ index }`,
-							type: 'leaf',
+				children: [{
+					id: 'tabs-1',
+					type: 'tabs',
+					children: files.map((file, index) => ({
+						id: `leaf-${ index }`,
+						type: 'leaf',
+						state: {
+							type: 'markdown',
 							state: {
-								type: 'markdown',
-								state: { file, mode: 'source' },
-							},
-						})),
-					},
-				],
+								file,
+								mode: 'source'
+							}
+						}
+					}))
+				}]
 			},
 			active: 'leaf-0',
 		};
 	}
 
 	it('replaces the path in members at the same position', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['x.md', 'old.md', 'z.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: [
+				'x.md',
+				'old.md',
+				'z.md'
+			]
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -582,13 +806,23 @@ describe('replaceMemberPath', () => {
 			'new.md'
 		);
 
-		expect(result.a.members).toEqual(['x.md', 'new.md', 'z.md']);
+		expect(result.a.members).toEqual([
+			'x.md',
+			'new.md',
+			'z.md'
+		]);
 	});
 
 	it('replaces the path in every Cluster that lists it', () => {
 		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'] }),
-			buildCluster({ id: 'b', members: ['old.md'] })
+			buildCluster({
+				id: 'a',
+				members: ['old.md']
+			}),
+			buildCluster({
+				id: 'b',
+				members: ['old.md']
+			})
 		);
 
 		const result = replaceMemberPath(
@@ -602,9 +836,11 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('does not bump lastTouchedAt', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'], lastTouchedAt: 5 })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['old.md'],
+			lastTouchedAt: 5
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -616,9 +852,14 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('drops the repeat instead of listing the same file twice when the new path is already a member', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['new.md', 'old.md', 'z.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: [
+				'new.md',
+				'old.md',
+				'z.md'
+			]
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -626,17 +867,24 @@ describe('replaceMemberPath', () => {
 			'new.md'
 		);
 
-		expect(result.a.members).toEqual(['new.md', 'z.md']);
+		expect(result.a.members).toEqual([
+			'new.md',
+			'z.md'
+		]);
 	});
 
 	it('replaces the file path in the matching leaf of layoutSnapshot', () => {
-		const clusters = buildClusters(
-			buildCluster({
-				id: 'a',
-				members: ['old.md', 'keep.md'],
-				layoutSnapshot: buildLayout('old.md', 'keep.md'),
-			})
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: [
+				'old.md',
+				'keep.md'
+			],
+			layoutSnapshot: buildLayout(
+				'old.md',
+				'keep.md'
+			),
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -644,17 +892,18 @@ describe('replaceMemberPath', () => {
 			'new.md'
 		);
 
-		expect(result.a.layoutSnapshot).toEqual(buildLayout('new.md', 'keep.md'));
+		expect(result.a.layoutSnapshot).toEqual(buildLayout(
+			'new.md',
+			'keep.md'
+		));
 	});
 
 	it('patches layoutSnapshot even when members no longer lists the path', () => {
-		const clusters = buildClusters(
-			buildCluster({
-				id: 'a',
-				members: [],
-				layoutSnapshot: buildLayout('old.md'),
-			})
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: [],
+			layoutSnapshot: buildLayout('old.md'),
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -666,10 +915,15 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('does not touch a file path that sits outside a leaf node', () => {
-		const layout = { ...buildLayout('keep.md'), lastOpenFiles: ['old.md'] };
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'], layoutSnapshot: layout })
-		);
+		const layout = {
+			...buildLayout('keep.md'),
+			lastOpenFiles: ['old.md']
+		};
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['old.md'],
+			layoutSnapshot: layout
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -682,9 +936,11 @@ describe('replaceMemberPath', () => {
 
 	it('does not mutate the layoutSnapshot it was given', () => {
 		const layout = buildLayout('old.md');
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'], layoutSnapshot: layout })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['old.md'],
+			layoutSnapshot: layout
+		}));
 
 		replaceMemberPath(
 			clusters,
@@ -697,9 +953,11 @@ describe('replaceMemberPath', () => {
 
 	it('is a no-op for a Cluster whose layoutSnapshot does not contain the path', () => {
 		const layout = buildLayout('keep.md');
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'], layoutSnapshot: layout })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['old.md'],
+			layoutSnapshot: layout
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -711,9 +969,10 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('leaves a Cluster with no layoutSnapshot without one', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['old.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['old.md']
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -725,9 +984,11 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('returns the same record when the path is stored nowhere', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['x.md'], layoutSnapshot: buildLayout('x.md') })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['x.md'],
+			layoutSnapshot: buildLayout('x.md')
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -739,9 +1000,10 @@ describe('replaceMemberPath', () => {
 	});
 
 	it('returns the same record when the old and new paths are equal', () => {
-		const clusters = buildClusters(
-			buildCluster({ id: 'a', members: ['same.md'] })
-		);
+		const clusters = buildClusters(buildCluster({
+			id: 'a',
+			members: ['same.md']
+		}));
 
 		const result = replaceMemberPath(
 			clusters,
@@ -755,23 +1017,40 @@ describe('replaceMemberPath', () => {
 
 describe('getMissingMembers', () => {
 	it('lists the members whose files are absent, in member order', () => {
-		const cluster = buildCluster({ members: ['a.md', 'gone.md', 'b.md', 'also-gone.md'] });
+		const cluster = buildCluster({ members: [
+			'a.md',
+			'gone.md',
+			'b.md',
+			'also-gone.md'
+		] });
 
-		const missing = getMissingMembers(cluster, (path) => path === 'a.md' || path === 'b.md');
+		const missing = getMissingMembers(
+			cluster,
+			(path) => path === 'a.md' || path === 'b.md'
+		);
 
-		expect(missing).toEqual(['gone.md', 'also-gone.md']);
+		expect(missing).toEqual([
+			'gone.md',
+			'also-gone.md'
+		]);
 	});
 
 	it('is empty when every member exists', () => {
 		const cluster = buildCluster({ members: ['a.md'] });
 
-		expect(getMissingMembers(cluster, () => true)).toEqual([]);
+		expect(getMissingMembers(
+			cluster,
+			() => true
+		)).toEqual([]);
 	});
 });
 
 describe('setLayoutSnapshot', () => {
 	it('stores the snapshot without touching the Cluster', () => {
-		const clusters = buildClusters(buildCluster({ id: 'one', lastTouchedAt: 5 }));
+		const clusters = buildClusters(buildCluster({
+			id: 'one',
+			lastTouchedAt: 5
+		}));
 
 		const next = setLayoutSnapshot(
 			clusters,
@@ -779,7 +1058,13 @@ describe('setLayoutSnapshot', () => {
 			{ type: 'tabs' }
 		);
 
-		expect([next['one'].layoutSnapshot, next['one'].lastTouchedAt]).toEqual([{ type: 'tabs' }, 5]);
+		expect([
+			next['one'].layoutSnapshot,
+			next['one'].lastTouchedAt
+		]).toEqual([
+			{ type: 'tabs' },
+			5
+		]);
 	});
 
 	it('returns the same record when the Cluster does not exist', () => {

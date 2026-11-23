@@ -15,7 +15,10 @@ export function buildDataTransfer(): DataTransfer {
 		},
 		getData: (type: string): string => data.get(type) ?? '',
 		setData: (type: string, value: string): void => {
-			data.set(type, value);
+			data.set(
+				type,
+				value
+			);
 		},
 		dropEffect: 'none',
 		effectAllowed: 'none',

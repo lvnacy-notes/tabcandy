@@ -38,7 +38,10 @@ export function buildMemberActions(
 			);
 		},
 		openMember: (path) => {
-			void openMemberFile(app, path);
+			void openMemberFile(
+				app,
+				path
+			);
 		},
 		removeMember: (path) => {
 			void removePathFromClusters(

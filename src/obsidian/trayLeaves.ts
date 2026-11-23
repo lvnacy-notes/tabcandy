@@ -1,5 +1,8 @@
 /** @file Finds and opens Tray leaves. */
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 import { touchCluster } from '../clusters/clusters';
 import SettingsStore from '../settings/SettingsStore';
 import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
@@ -34,7 +37,11 @@ export async function openClusterTray(
 	clusterId: string,
 	leaf?: WorkspaceLeaf
 ): Promise<void> {
-	const { clusters, jumpToExistingCluster } = settingsStore.get();
+	const {
+		clusters,
+		jumpToExistingCluster
+	} = settingsStore.get();
+
 	if (clusters[clusterId] === undefined) {
 		return;
 	}
@@ -56,7 +63,10 @@ export async function openClusterTray(
 		});
 	}
 
-	await settingsStore.update({ clusters: touchCluster(settingsStore.get().clusters, clusterId) });
+	await settingsStore.update({ clusters: touchCluster(
+		settingsStore.get().clusters,
+		clusterId
+	) });
 }
 
 /**
@@ -88,7 +98,10 @@ export async function openClusterTrayAt(
 		return;
 	}
 
-	app.workspace.setActiveLeaf(pane, { focus: true });
+	app.workspace.setActiveLeaf(
+		pane,
+		{ focus: true }
+	);
 	await openClusterTray(
 		app,
 		settingsStore,

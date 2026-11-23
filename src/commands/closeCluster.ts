@@ -1,6 +1,12 @@
 /** @file The close-cluster command. */
-import { App, Command } from 'obsidian';
-import { closeCluster, getOpenMembers } from '../obsidian/clusterOpenClose';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	closeCluster,
+	getOpenMembers
+} from '../obsidian/clusterOpenClose';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice } from '../types';
 
@@ -22,7 +28,10 @@ export function buildInvokeCommand(
 		name: 'Close cluster',
 		checkCallback: (checking) => {
 			const open = Object.values(settingsStore.get().clusters)
-				.filter((cluster) => getOpenMembers(app, cluster).size > 0);
+				.filter((cluster) => getOpenMembers(
+					app,
+					cluster
+				).size > 0);
 			if (open.length === 0) {
 				return false;
 			}
@@ -36,7 +45,10 @@ export function buildInvokeCommand(
 							id
 						);
 					},
-					{ action: 'Close', title: 'Close cluster' }
+					{
+						action: 'Close',
+						title: 'Close cluster'
+					}
 				);
 			}
 			return true;

@@ -26,12 +26,25 @@ describe('create-cluster-from-active-pane command', () => {
 			cancelling().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['create-cluster-from-active-pane', 'Create cluster from active pane']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'create-cluster-from-active-pane',
+			'Create cluster from active pane'
+		]);
 	});
 
 	it('is available when the most recent tab\'s pane has file-backed tabs', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -44,8 +57,18 @@ describe('create-cluster-from-active-pane command', () => {
 	it('is available when the most recent tab has no file but its pane does', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'a.md', pane);
-		setMostRecentLeaf(app, await addNonFileTab(app, pane));
+		await addFileTab(
+			app,
+			'a.md',
+			pane
+		);
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				pane
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -57,7 +80,13 @@ describe('create-cluster-from-active-pane command', () => {
 
 	it('is unavailable when no tab in the pane has a file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -69,7 +98,10 @@ describe('create-cluster-from-active-pane command', () => {
 
 	it('is unavailable when there is no most recent tab', () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, null);
+		setMostRecentLeaf(
+			app,
+			null
+		);
 		const command = buildInvokeCommand(
 			app,
 			buildStore(),
@@ -82,9 +114,24 @@ describe('create-cluster-from-active-pane command', () => {
 	it('creates a Cluster holding every file in the pane, not other panes', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'one.md', pane);
-		setMostRecentLeaf(app, await addFileTab(app, 'two.md', pane));
-		await addFileTab(app, 'elsewhere.md', {});
+		await addFileTab(
+			app,
+			'one.md',
+			pane
+		);
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'two.md',
+				pane
+			)
+		);
+		await addFileTab(
+			app,
+			'elsewhere.md',
+			{}
+		);
 		const store = buildStore();
 		const command = buildInvokeCommand(
 			app,
@@ -95,14 +142,28 @@ describe('create-cluster-from-active-pane command', () => {
 		command.checkCallback?.(false);
 
 		const [created] = Object.values(store.get().clusters);
-		expect(created.members).toEqual(['one.md', 'two.md']);
+		expect(created.members).toEqual([
+			'one.md',
+			'two.md'
+		]);
 	});
 
 	it('collapses a file open in two tabs of the pane to one member', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'same.md', pane);
-		setMostRecentLeaf(app, await addFileTab(app, 'same.md', pane));
+		await addFileTab(
+			app,
+			'same.md',
+			pane
+		);
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'same.md',
+				pane
+			)
+		);
 		const store = buildStore();
 		const command = buildInvokeCommand(
 			app,

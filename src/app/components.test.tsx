@@ -69,38 +69,48 @@ function renderRow(
 	cluster: TabCandyCluster,
 	overrides: Partial<Parameters<typeof ClusterRow>[0]> = {}
 ): ReturnType<typeof render> {
-	return render(
-		<ClusterRow
-			cluster = { cluster }
-			expanded = { false }
-			getDraggedPath = { () => null }
-			hasOpenMember = { () => false }
-			isFilePresent = { () => true }
-			onCloseCluster = { () => {} }
-			onConfirmUnlink = { () => {} }
-			onDragCluster = { () => {} }
-			onDragMember = { () => {} }
-			onDropPath = { () => {} }
-			onMoveMember = { () => {} }
-			onOpenCluster = { () => {} }
-			onOpenMember = { () => {} }
-			onOpenTray = { () => {} }
-			onPair = { () => {} }
-			onRemoveMember = { () => {} }
-			onResolveMissing = { () => {} }
-			onToggle = { () => {} }
-			onUnlink = { () => {} }
-			pairedName = { null }
-			{ ...overrides }
-		/>
-	);
+	return render(<ClusterRow
+		cluster = { cluster }
+		expanded = { false }
+		getDraggedPath = { () => null }
+		hasOpenMember = { () => false }
+		isFilePresent = { () => true }
+		onCloseCluster = { () => {} }
+		onConfirmUnlink = { () => {} }
+		onDragCluster = { () => {} }
+		onDragMember = { () => {} }
+		onDropPath = { () => {} }
+		onMoveMember = { () => {} }
+		onOpenCluster = { () => {} }
+		onOpenMember = { () => {} }
+		onOpenTray = { () => {} }
+		onPair = { () => {} }
+		onRemoveMember = { () => {} }
+		onResolveMissing = { () => {} }
+		onToggle = { () => {} }
+		onUnlink = { () => {} }
+		pairedName = { null }
+		{ ...overrides }
+	/>);
 }
 
 describe('ClusterRow', () => {
 	it('shows the Cluster\'s name and member count', () => {
-		renderRow(buildCluster({ name: 'Reading', members: ['a.md', 'b.md'] }));
+		renderRow(buildCluster({ 
+			name: 'Reading', 
+			members: [
+				'a.md', 
+				'b.md'
+			] 
+		}));
 
-		expect([screen.getByText('Reading').textContent, screen.getByText('2').textContent]).toEqual(['Reading', '2']);
+		expect([
+			screen.getByText('Reading').textContent, 
+			screen.getByText('2').textContent
+		]).toEqual([
+			'Reading', 
+			'2'
+		]);
 	});
 
 	it('hides the members while collapsed', () => {
@@ -111,25 +121,37 @@ describe('ClusterRow', () => {
 
 	it('lists the members in order while expanded', () => {
 		const { container } = renderRow(
-			buildCluster({ members: ['b.md', 'a.md'] }),
+			buildCluster({ members: [
+				'b.md', 
+				'a.md'
+			] }),
 			{ expanded: true }
 		);
 
 		const titles = Array.from(container.querySelectorAll('.tabcandy-member-title'))
 			.map((title) => title.textContent);
 
-		expect(titles).toEqual(['b', 'a']);
+		expect(titles).toEqual([
+			'b', 
+			'a'
+		]);
 	});
 
 	it('says there are no tabs when an expanded Cluster is empty', () => {
-		renderRow(buildCluster(), { expanded: true });
+		renderRow(
+			buildCluster(), 
+			{ expanded: true }
+		);
 
 		expect(screen.getByText('No tabs yet.')).toBeTruthy();
 	});
 
 	it('marks only the members whose files are missing', () => {
 		const { container } = renderRow(
-			buildCluster({ members: ['here.md', 'gone.md'] }),
+			buildCluster({ members: [
+				'here.md', 
+				'gone.md'
+			] }),
 			{
 				expanded: true,
 				isFilePresent: (path) => path === 'here.md',
@@ -143,14 +165,23 @@ describe('ClusterRow', () => {
 	});
 
 	it('reports the expanded state to assistive technology', () => {
-		renderRow(buildCluster(), { expanded: true });
+		renderRow(
+			buildCluster(), 
+			{ expanded: true }
+		);
 
-		expect(screen.getByRole('button', { name: /Cluster A/ }).getAttribute('aria-expanded')).toBe('true');
+		expect(screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		).getAttribute('aria-expanded')).toBe('true');
 	});
 
 	it('toggles when the header is clicked', () => {
 		const onToggle = vi.fn();
-		renderRow(buildCluster(), { onToggle });
+		renderRow(
+			buildCluster(), 
+			{ onToggle }
+		);
 
 		fireEvent.click(screen.getByText('Cluster A'));
 
@@ -159,27 +190,54 @@ describe('ClusterRow', () => {
 
 	it('toggles when Enter is pressed on the header', () => {
 		const onToggle = vi.fn();
-		renderRow(buildCluster(), { onToggle });
+		renderRow(
+			buildCluster(), 
+			{ onToggle }
+		);
 
-		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'Enter' });
+		fireEvent.keyDown(
+			screen.getByRole(
+				'button', 
+				{ name: /Cluster A/ }
+			), 
+			{ key: 'Enter' }
+		);
 
 		expect(onToggle).toHaveBeenCalledTimes(1);
 	});
 
 	it('toggles when Space is pressed on the header', () => {
 		const onToggle = vi.fn();
-		renderRow(buildCluster(), { onToggle });
+		renderRow(
+			buildCluster(), 
+			{ onToggle }
+		);
 
-		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: ' ' });
+		fireEvent.keyDown(
+			screen.getByRole(
+				'button', 
+				{ name: /Cluster A/ }
+			), 
+			{ key: ' ' }
+		);
 
 		expect(onToggle).toHaveBeenCalledTimes(1);
 	});
 
 	it('does not toggle on other keys', () => {
 		const onToggle = vi.fn();
-		renderRow(buildCluster(), { onToggle });
+		renderRow(
+			buildCluster(), 
+			{ onToggle }
+		);
 
-		fireEvent.keyDown(screen.getByRole('button', { name: /Cluster A/ }), { key: 'a' });
+		fireEvent.keyDown(
+			screen.getByRole(
+				'button', 
+				{ name: /Cluster A/ }
+			), 
+			{ key: 'a' }
+		);
 
 		expect(onToggle).not.toHaveBeenCalled();
 	});
@@ -187,7 +245,10 @@ describe('ClusterRow', () => {
 	it('exposes the Flavor to CSS', () => {
 		renderRow(buildCluster({ flavor: '#ff0000' }));
 
-		const header = screen.getByRole('button', { name: /Cluster A/ });
+		const header = screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
 
 		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('#ff0000');
 	});
@@ -195,7 +256,10 @@ describe('ClusterRow', () => {
 	it('sets no Flavor variable for a Cluster without one', () => {
 		renderRow(buildCluster());
 
-		const header = screen.getByRole('button', { name: /Cluster A/ });
+		const header = screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
 
 		expect(header.style.getPropertyValue('--tabcandy-flavor')).toBe('');
 	});
@@ -203,7 +267,10 @@ describe('ClusterRow', () => {
 	it('marks the header as flavored when the Cluster has a Flavor', () => {
 		renderRow(buildCluster({ flavor: '#ff0000' }));
 
-		const header = screen.getByRole('button', { name: /Cluster A/ });
+		const header = screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
 
 		expect(header.classList.contains('tabcandy-cluster-header--flavored')).toBe(true);
 	});
@@ -211,7 +278,10 @@ describe('ClusterRow', () => {
 	it('does not mark the header as flavored without a Flavor', () => {
 		renderRow(buildCluster());
 
-		const header = screen.getByRole('button', { name: /Cluster A/ });
+		const header = screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
 
 		expect(header.classList.contains('tabcandy-cluster-header--flavored')).toBe(false);
 	});
@@ -220,7 +290,10 @@ describe('ClusterRow', () => {
 		const onOpenMember = vi.fn();
 		renderRow(
 			buildCluster({ members: ['Notes/a.md'] }),
-			{ expanded: true, onOpenMember }
+			{ 
+				expanded: true, 
+				onOpenMember 
+			}
 		);
 
 		fireEvent.click(screen.getByText('a'));
@@ -232,7 +305,10 @@ describe('ClusterRow', () => {
 		const onRemoveMember = vi.fn();
 		renderRow(
 			buildCluster({ members: ['Notes/a.md'] }),
-			{ expanded: true, onRemoveMember }
+			{ 
+				expanded: true, 
+				onRemoveMember 
+			}
 		);
 
 		fireEvent.click(screen.getByLabelText('Remove from cluster'));
@@ -243,86 +319,183 @@ describe('ClusterRow', () => {
 	it('can be dragged, and reports the element under the pointer when the drag ends', () => {
 		const target = createDiv();
 		const elementFromPoint = vi.fn(() => target);
-		Object.defineProperty(document, 'elementFromPoint', { value: elementFromPoint, configurable: true });
+		Object.defineProperty(
+			document, 
+			'elementFromPoint', 
+			{ 
+				value: elementFromPoint, 
+				configurable: true 
+			}
+		);
 		const onDragCluster = vi.fn();
-		renderRow(buildCluster(), { onDragCluster });
-		const header = screen.getByRole('button', { name: /Cluster A/ });
+		renderRow(
+			buildCluster(), 
+			{ onDragCluster }
+		);
+		const header = screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
 
 		// jsdom has no DragEvent, so the pointer position is set on the event by hand.
-		const dragEnd = createEvent.dragEnd(header, { dataTransfer: buildDataTransfer() });
+		const dragEnd = createEvent.dragEnd(
+			header, 
+			{ dataTransfer: buildDataTransfer() }
+		);
 		Object.defineProperties(dragEnd, {
 			clientX: { value: 30 },
 			clientY: { value: 40 },
 		});
-		fireEvent(header, dragEnd);
-		Reflect.deleteProperty(document, 'elementFromPoint');
+		fireEvent(
+			header, 
+			dragEnd
+		);
+		Reflect.deleteProperty(
+			document, 
+			'elementFromPoint'
+		);
 
 		expect(header.getAttribute('draggable')).toBe('true');
-		expect(elementFromPoint).toHaveBeenCalledWith(30, 40);
+		expect(elementFromPoint).toHaveBeenCalledWith(
+			30, 
+			40
+		);
 		expect(onDragCluster).toHaveBeenCalledWith(target);
 	});
 
 	it('accepts a dropped file or tab by its path', () => {
 		const onDropPath = vi.fn();
-		renderRow(buildCluster(), { getDraggedPath: () => 'x.md', onDropPath });
+		renderRow(
+			buildCluster(), 
+			{ 
+				getDraggedPath: () => 'x.md', 
+				onDropPath 
+			}
+		);
 
-		fireEvent.drop(screen.getByRole('button', { name: /Cluster A/ }), { dataTransfer: buildDataTransfer() });
+		fireEvent.drop(
+			screen.getByRole(
+				'button', 
+				{ name: /Cluster A/ }
+			), 
+			{ dataTransfer: buildDataTransfer() }
+		);
 
 		expect(onDropPath).toHaveBeenCalledWith('x.md');
 	});
 
 	it('allows a drop only while a file or tab is being dragged', () => {
-		const header = (): HTMLElement => screen.getByRole('button', { name: /Cluster A/ });
-		renderRow(buildCluster(), { getDraggedPath: () => 'x.md' });
-		const allowed = fireEvent.dragOver(header(), { dataTransfer: buildDataTransfer() });
+		const header = (): HTMLElement => screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		);
+		renderRow(
+			buildCluster(), 
+			{ getDraggedPath: () => 'x.md' }
+		);
+		const allowed = fireEvent.dragOver(
+			header(), 
+			{ dataTransfer: buildDataTransfer() }
+		);
 		cleanup();
-		renderRow(buildCluster(), { getDraggedPath: () => null });
-		const refused = fireEvent.dragOver(header(), { dataTransfer: buildDataTransfer() });
+		renderRow(
+			buildCluster(), 
+			{ getDraggedPath: () => null }
+		);
+		const refused = fireEvent.dragOver(
+			header(), 
+			{ dataTransfer: buildDataTransfer() }
+		);
 
-		expect([allowed, refused]).toEqual([false, true]);
+		expect([
+			allowed, 
+			refused
+		]).toEqual([
+			false, 
+			true
+		]);
 	});
 
 	it('ignores a drop when nothing is being dragged', () => {
 		const onDropPath = vi.fn();
-		renderRow(buildCluster(), { getDraggedPath: () => null, onDropPath });
+		renderRow(
+			buildCluster(), 
+			{ 
+				getDraggedPath: () => null, 
+				onDropPath 
+			}
+		);
 
-		fireEvent.drop(screen.getByRole('button', { name: /Cluster A/ }), { dataTransfer: buildDataTransfer() });
+		fireEvent.drop(
+			screen.getByRole(
+				'button', 
+				{ name: /Cluster A/ }
+			), 
+			{ dataTransfer: buildDataTransfer() }
+		);
 
 		expect(onDropPath).not.toHaveBeenCalled();
 	});
 
 	it('passes a dragged member\'s path and the drag event on', () => {
 		const onDragMember = vi.fn();
-		renderRow(buildCluster({ members: ['a.md'] }), { expanded: true, onDragMember });
+		renderRow(
+			buildCluster({ members: ['a.md'] }), 
+			{ 
+				expanded: true, 
+				onDragMember 
+			}
+		);
 
-		fireEvent.dragStart(document.querySelector('.tabcandy-member-row') as HTMLElement, { dataTransfer: buildDataTransfer() });
+		fireEvent.dragStart(
+			document.querySelector('.tabcandy-member-row') as HTMLElement, 
+			{ dataTransfer: buildDataTransfer() }
+		);
 
-		expect(onDragMember).toHaveBeenCalledWith('a.md', expect.any(Event));
+		expect(onDragMember).toHaveBeenCalledWith(
+			'a.md', 
+			expect.any(Event)
+		);
 	});
 
 	it('offers to resolve missing members from the drawer', () => {
 		const onResolveMissing = vi.fn();
-		renderRow(buildCluster({ members: ['a.md', 'gone.md'] }), {
+		renderRow(buildCluster({ members: [
+			'a.md', 
+			'gone.md'
+		] }), {
 			expanded: true,
 			isFilePresent: (path) => path === 'a.md',
 			onResolveMissing,
 		});
 
-		fireEvent.click(screen.getByRole('button', { name: 'Resolve missing (1)' }));
+		fireEvent.click(screen.getByRole(
+			'button', 
+			{ name: 'Resolve missing (1)' }
+		));
 
 		expect(onResolveMissing).toHaveBeenCalledWith();
 	});
 
 	it('omits the resolve button when nothing is missing', () => {
-		renderRow(buildCluster({ members: ['a.md'] }), { expanded: true });
+		renderRow(
+			buildCluster({ members: ['a.md'] }), 
+			{ expanded: true }
+		);
 
-		expect(screen.queryByRole('button', { name: /Resolve missing/ })).toBeNull();
+		expect(screen.queryByRole(
+			'button', 
+			{ name: /Resolve missing/ }
+		)).toBeNull();
 	});
 
 	it('resolves a single missing member from its context menu', () => {
 		const onResolveMissing = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
@@ -336,7 +509,10 @@ describe('ClusterRow', () => {
 		const items = menus[0].menuItems__;
 		items[0].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onResolveMissing.mock.calls]).toEqual([
+		expect([
+			items.map((item) => item.title__), 
+			onResolveMissing.mock.calls
+		]).toEqual([
 			['Resolve missing member'],
 			[['gone.md']],
 		]);
@@ -345,35 +521,74 @@ describe('ClusterRow', () => {
 	it('offers Open tray from the Cluster row\'s context menu', () => {
 		const onOpenTray = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster(), { onOpenTray });
+		renderRow(
+			buildCluster(), 
+			{ onOpenTray }
+		);
 
-		fireEvent.contextMenu(screen.getByRole('button', { name: /Cluster A/ }));
+		fireEvent.contextMenu(screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		));
 		const items = menus[0].menuItems__;
 		items[0].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onOpenTray.mock.calls.length]).toEqual([['Open tray', 'Open cluster', 'Pair with…'], 1]);
+		expect([
+			items.map((item) => item.title__), 
+			onOpenTray.mock.calls.length
+		]).toEqual([
+			[
+				'Open tray', 
+				'Open cluster', 
+				'Pair with…'
+			], 
+			1
+		]);
 	});
 
 	it('offers Open tray from the Cluster options button without toggling the row', () => {
 		const onOpenTray = vi.fn();
 		const onToggle = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster(), { onOpenTray, onToggle });
+		renderRow(
+			buildCluster(), 
+			{ 
+				onOpenTray, 
+				onToggle 
+			}
+		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+		fireEvent.click(screen.getByRole(
+			'button', 
+			{ name: 'Cluster options' }
+		));
 		const items = menus[0].menuItems__;
 		items[0].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onOpenTray.mock.calls.length, onToggle.mock.calls.length]).toEqual([
-			['Open tray', 'Open cluster', 'Pair with…'],
+		expect([
+			items.map((item) => item.title__), 
+			onOpenTray.mock.calls.length, 
+			onToggle.mock.calls.length
+		]).toEqual([
+			[
+				'Open tray', 
+				'Open cluster', 
+				'Pair with…'
+			],
 			1,
 			0,
 		]);
@@ -382,11 +597,26 @@ describe('ClusterRow', () => {
 	it('pairs from the 🔗 icon when unpaired, without toggling the row', () => {
 		const onPair = vi.fn();
 		const onToggle = vi.fn();
-		renderRow(buildCluster(), { onPair, onToggle });
+		renderRow(
+			buildCluster(), 
+			{ 
+				onPair, 
+				onToggle 
+			}
+		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Pair with another cluster' }));
+		fireEvent.click(screen.getByRole(
+			'button', 
+			{ name: 'Pair with another cluster' }
+		));
 
-		expect([onPair.mock.calls.length, onToggle.mock.calls.length]).toEqual([1, 0]);
+		expect([
+			onPair.mock.calls.length, 
+			onToggle.mock.calls.length
+		]).toEqual([
+			1, 
+			0
+		]);
 	});
 
 	it('unlinks from the 🔗 icon when paired, naming the partner', () => {
@@ -398,20 +628,30 @@ describe('ClusterRow', () => {
 			pairedName: 'Other',
 		});
 
-		const button = screen.getByRole('button', { name: 'Unlink from Other' });
+		const button = screen.getByRole(
+			'button', 
+			{ name: 'Unlink from Other' }
+		);
 		fireEvent.click(button);
 
 		expect([
 			button.classList.contains('is-paired'),
 			onUnlink.mock.calls.length,
 			onToggle.mock.calls.length,
-		]).toEqual([true, 1, 0]);
+		]).toEqual([
+			true, 
+			1, 
+			0
+		]);
 	});
 
 	it('does not mark the 🔗 icon as paired when unpaired', () => {
 		renderRow(buildCluster());
 
-		const button = screen.getByRole('button', { name: 'Pair with another cluster' });
+		const button = screen.getByRole(
+			'button', 
+			{ name: 'Pair with another cluster' }
+		);
 
 		expect(button.classList.contains('is-paired')).toBe(false);
 	});
@@ -419,29 +659,60 @@ describe('ClusterRow', () => {
 	it('offers Unlink, not Pair with…, from the options button when paired', () => {
 		const onConfirmUnlink = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster(), { onConfirmUnlink, pairedName: 'Other' });
+		renderRow(
+			buildCluster(), 
+			{ 
+				onConfirmUnlink, 
+				pairedName: 'Other' 
+			}
+		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Cluster options' }));
+		fireEvent.click(screen.getByRole(
+			'button', 
+			{ name: 'Cluster options' }
+		));
 		const items = menus[0].menuItems__;
 		items[2].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onConfirmUnlink.mock.calls.length]).toEqual([['Open tray', 'Open cluster', 'Unlink'], 1]);
+		expect([
+			items.map((item) => item.title__), 
+			onConfirmUnlink.mock.calls.length
+		]).toEqual([
+			[
+				'Open tray', 
+				'Open cluster', 
+				'Unlink'
+			], 
+			1
+		]);
 	});
 
 	it('opens the Cluster from the row menu', () => {
 		const onOpenCluster = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster(), { onOpenCluster });
+		renderRow(
+			buildCluster(), 
+			{ onOpenCluster }
+		);
 
-		fireEvent.contextMenu(screen.getByRole('button', { name: /Cluster A/ }));
+		fireEvent.contextMenu(screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		));
 		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
 
 		expect(onOpenCluster).toHaveBeenCalledTimes(1);
@@ -450,18 +721,38 @@ describe('ClusterRow', () => {
 	it('offers Close cluster only while a member is open', () => {
 		const onCloseCluster = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster(), { hasOpenMember: () => true, onCloseCluster });
+		renderRow(
+			buildCluster(), 
+			{ 
+				hasOpenMember: () => true, 
+				onCloseCluster 
+			}
+		);
 
-		fireEvent.contextMenu(screen.getByRole('button', { name: /Cluster A/ }));
+		fireEvent.contextMenu(screen.getByRole(
+			'button', 
+			{ name: /Cluster A/ }
+		));
 		const items = menus[0].menuItems__;
 		items[2].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onCloseCluster.mock.calls.length]).toEqual([
-			['Open tray', 'Open cluster', 'Close cluster', 'Pair with…'],
+		expect([
+			items.map((item) => item.title__), 
+			onCloseCluster.mock.calls.length
+		]).toEqual([
+			[
+				'Open tray', 
+				'Open cluster', 
+				'Close cluster', 
+				'Pair with…'
+			],
 			1,
 		]);
 	});
@@ -469,26 +760,53 @@ describe('ClusterRow', () => {
 	it('offers Move down from the first member\'s options button', () => {
 		const onMoveMember = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype, 
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
-		renderRow(buildCluster({ members: ['a.md', 'b.md'] }), { expanded: true, onMoveMember });
+		renderRow(
+			buildCluster({ members: [
+				'a.md', 
+				'b.md'
+			] }), 
+			{ 
+				expanded: true, 
+				onMoveMember 
+			}
+		);
 
-		fireEvent.click(screen.getAllByRole('button', { name: 'Member options' })[0]);
+		fireEvent.click(screen.getAllByRole(
+			'button', 
+			{ name: 'Member options' }
+		)[0]);
 		const items = menus[0].menuItems__;
 		items[0].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onMoveMember.mock.calls]).toEqual([
+		expect([
+			items.map((item) => item.title__), 
+			onMoveMember.mock.calls
+		]).toEqual([
 			['Move down'],
-			[[0, 1]],
+			[[
+				0, 
+				1
+			]],
 		]);
 	});
 
 	it('leaves out the member options button when the menu would be empty', () => {
-		renderRow(buildCluster({ members: ['a.md'] }), { expanded: true });
+		renderRow(
+			buildCluster({ members: ['a.md'] }),
+			{ expanded: true }
+		);
 
-		expect(screen.queryByRole('button', { name: 'Member options' })).toBeNull();
+		expect(screen.queryByRole(
+			'button',
+			{ name: 'Member options' }
+		)).toBeNull();
 	});
 });
 
@@ -820,119 +1138,110 @@ describe('Icon', () => {
 
 describe('MemberRow', () => {
 	it('labels the row with the file name without its extension', () => {
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'Notes/Reading list.md'
-				exists = { true }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'Notes/Reading list.md'
+			exists = { true }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		expect(screen.getByText('Reading list')).toBeTruthy();
 	});
 
 	it('keeps the whole name when the file has no extension', () => {
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'Notes/README'
-				exists = { true }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'Notes/README'
+			exists = { true }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		expect(screen.getByText('README')).toBeTruthy();
 	});
 
 	it('shows the full path as the title of a present file', () => {
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'Notes/a.md'
-				exists = { true }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'Notes/a.md'
+			exists = { true }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		expect(screen.getByText('a').getAttribute('title')).toBe('Notes/a.md');
 	});
 
 	it('marks a missing file as unresolved and says so in its title', () => {
-		const { container } = render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'Notes/a.md'
-				exists = { false }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		const { container } = render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'Notes/a.md'
+			exists = { false }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		expect([
 			container.querySelector('.is-unresolved') !== null,
 			screen.getByText('a').getAttribute('title'),
-		]).toEqual([true, 'Notes/a.md (file not found)']);
+		]).toEqual([
+			true,
+			'Notes/a.md (file not found)'
+		]);
 	});
 
 	it('does not mark a present file as unresolved', () => {
-		const { container } = render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'a.md'
-				exists = { true }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		const { container } = render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'a.md'
+			exists = { true }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		expect(container.querySelector('.is-unresolved')).toBeNull();
 	});
 
 	it('opens the member when the title is clicked', () => {
 		const onOpen = vi.fn();
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'a.md'
-				exists = { true }
-				onOpen = { onOpen }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'a.md'
+			exists = { true }
+			onOpen = { onOpen }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 
 		fireEvent.click(screen.getByText('a'));
 
@@ -942,42 +1251,44 @@ describe('MemberRow', () => {
 	it('removes the member when the minus button is clicked, without opening it', () => {
 		const onOpen = vi.fn();
 		const onRemove = vi.fn();
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'a.md'
-				exists = { true }
-				onOpen = { onOpen }
-				onRemove = { onRemove }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'a.md'
+			exists = { true }
+			onOpen = { onOpen }
+			onRemove = { onRemove }
+			onResolve = { () => {} }
+		/>);
 
 		fireEvent.click(screen.getByLabelText('Remove from cluster'));
 
-		expect([onRemove.mock.calls.length, onOpen.mock.calls.length]).toEqual([1, 0]);
+		expect([
+			onRemove.mock.calls.length,
+			onOpen.mock.calls.length
+		]).toEqual([
+			1,
+			0
+		]);
 	});
 
 	it('removes a missing member the same way', () => {
 		const onRemove = vi.fn();
-		render(
-			<MemberRow
-				clusterId = 'a'
-				count = { 1 }
-				index = { 0 }
-				onDragOut = { () => {} }
-				onMove = { () => {} }
-				path = 'a.md'
-				exists = { false }
-				onOpen = { () => {} }
-				onRemove = { onRemove }
-				onResolve = { () => {} }
-			/>
-		);
+		render(<MemberRow
+			clusterId = 'a'
+			count = { 1 }
+			index = { 0 }
+			onDragOut = { () => {} }
+			onMove = { () => {} }
+			path = 'a.md'
+			exists = { false }
+			onOpen = { () => {} }
+			onRemove = { onRemove }
+			onResolve = { () => {} }
+		/>);
 
 		fireEvent.click(screen.getByLabelText('Remove from cluster'));
 
@@ -995,22 +1306,23 @@ describe('MemberRow', () => {
 	function renderMovableRow(
 		index: number,
 		count: number,
-		onMove: (fromIndex: number, toIndex: number) => void
+		onMove: (
+			fromIndex: number,
+			toIndex: number
+		) => void
 	): HTMLElement {
-		const { container } = render(
-			<MemberRow
-				clusterId = 'a'
-				count = { count }
-				index = { index }
-				path = 'x.md'
-				exists = { true }
-				onDragOut = { () => {} }
-				onMove = { onMove }
-				onOpen = { () => {} }
-				onRemove = { () => {} }
-				onResolve = { () => {} }
-			/>
-		);
+		const { container } = render(<MemberRow
+			clusterId = 'a'
+			count = { count }
+			index = { index }
+			path = 'x.md'
+			exists = { true }
+			onDragOut = { () => {} }
+			onMove = { onMove }
+			onOpen = { () => {} }
+			onRemove = { () => {} }
+			onResolve = { () => {} }
+		/>);
 		return container.querySelector('.tabcandy-member-row') as HTMLElement;
 	}
 
@@ -1032,11 +1344,23 @@ describe('MemberRow', () => {
 			onMove
 		);
 		const dataTransfer = buildDataTransfer();
-		dataTransfer.setData('application/x-tabcandy-member', JSON.stringify({ clusterId: 'a', index: 0 }));
+		dataTransfer.setData(
+			'application/x-tabcandy-member',
+			JSON.stringify({
+				clusterId: 'a',
+				index: 0
+			})
+		);
 
-		fireEvent.drop(row, { dataTransfer });
+		fireEvent.drop(
+			row,
+			{ dataTransfer }
+		);
 
-		expect(onMove).toHaveBeenCalledWith(0, 2);
+		expect(onMove).toHaveBeenCalledWith(
+			0,
+			2
+		);
 	});
 
 	it('ignores a member dragged from another Cluster', () => {
@@ -1047,9 +1371,18 @@ describe('MemberRow', () => {
 			onMove
 		);
 		const dataTransfer = buildDataTransfer();
-		dataTransfer.setData('application/x-tabcandy-member', JSON.stringify({ clusterId: 'b', index: 0 }));
+		dataTransfer.setData(
+			'application/x-tabcandy-member',
+			JSON.stringify({
+				clusterId: 'b',
+				index: 0
+			})
+		);
 
-		fireEvent.drop(row, { dataTransfer });
+		fireEvent.drop(
+			row,
+			{ dataTransfer }
+		);
 
 		expect(onMove).not.toHaveBeenCalled();
 	});
@@ -1062,7 +1395,10 @@ describe('MemberRow', () => {
 			onMove
 		);
 
-		fireEvent.drop(row, { dataTransfer: buildDataTransfer() });
+		fireEvent.drop(
+			row,
+			{ dataTransfer: buildDataTransfer() }
+		);
 
 		expect(onMove).not.toHaveBeenCalled();
 	});
@@ -1075,15 +1411,24 @@ describe('MemberRow', () => {
 		);
 		const dataTransfer = buildDataTransfer();
 
-		fireEvent.dragStart(row, { dataTransfer });
+		fireEvent.dragStart(
+			row,
+			{ dataTransfer }
+		);
 
-		expect(JSON.parse(dataTransfer.getData('application/x-tabcandy-member'))).toEqual({ clusterId: 'a', index: 1 });
+		expect(JSON.parse(dataTransfer.getData('application/x-tabcandy-member'))).toEqual({
+			clusterId: 'a',
+			index: 1
+		});
 	});
 
 	it('offers Move up and Move down from the middle of the list', () => {
 		const onMove = vi.fn();
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype,
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
@@ -1098,15 +1443,33 @@ describe('MemberRow', () => {
 		items[0].onClick__?.(new MouseEvent('click'));
 		items[1].onClick__?.(new MouseEvent('click'));
 
-		expect([items.map((item) => item.title__), onMove.mock.calls]).toEqual([
-			['Move up', 'Move down'],
-			[[1, 0], [1, 2]],
+		expect([
+			items.map((item) => item.title__),
+			onMove.mock.calls
+		]).toEqual([
+			[
+				'Move up',
+				'Move down'
+			],
+			[
+				[
+					1,
+					0
+				],
+				[
+					1,
+					2
+				]
+			]
 		]);
 	});
 
 	it('offers only Move down on the first row and only Move up on the last', () => {
 		const menus: MenuMock[] = [];
-		vi.spyOn(Menu.prototype, 'showAtMouseEvent').mockImplementation(function (this: Menu) {
+		vi.spyOn(
+			Menu.prototype,
+			'showAtMouseEvent'
+		).mockImplementation(function (this: Menu) {
 			menus.push(this as unknown as MenuMock);
 			return this;
 		});
@@ -1124,6 +1487,9 @@ describe('MemberRow', () => {
 		);
 		fireEvent.contextMenu(last);
 
-		expect(menus.map((menu) => menu.menuItems__.map((item) => item.title__))).toEqual([['Move down'], ['Move up']]);
+		expect(menus.map((menu) => menu.menuItems__.map((item) => item.title__))).toEqual([
+			['Move down'],
+			['Move up']
+		]);
 	});
 });

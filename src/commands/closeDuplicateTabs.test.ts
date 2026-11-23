@@ -17,7 +17,13 @@ describe('close-duplicate-tabs command', () => {
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createFakeWorkspaceApp());
 
-		expect([command.id, command.name]).toEqual(['close-duplicate-tabs', 'Close duplicate tabs']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'close-duplicate-tabs',
+			'Close duplicate tabs'
+		]);
 	});
 
 	it('closes a tab showing a file that a pinned tab already shows', async () => {
@@ -28,11 +34,23 @@ describe('close-duplicate-tabs command', () => {
 			state: { file: 'A.md' },
 			pinned: true,
 		});
-		addRootLeaf(app, pinned);
+		addRootLeaf(
+			app,
+			pinned
+		);
 		const duplicate = createFakeLeaf(app);
-		await duplicate.setViewState({ type: 'markdown', state: { file: 'A.md' } });
-		addRootLeaf(app, duplicate);
-		setMostRecentLeaf(app, duplicate);
+		await duplicate.setViewState({
+			type: 'markdown',
+			state: { file: 'A.md' }
+		});
+		addRootLeaf(
+			app,
+			duplicate
+		);
+		setMostRecentLeaf(
+			app,
+			duplicate
+		);
 
 		buildInvokeCommand(app).callback?.();
 

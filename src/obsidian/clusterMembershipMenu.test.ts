@@ -1,5 +1,8 @@
 /** @file Tests for the tab-header context menu items that add a file to Clusters and remove it from them. */
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 import {
 	describe,
 	expect,
@@ -17,10 +20,16 @@ import {
 	selecting,
 	selectingNothing
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 import { openFileMenu } from '../test/menuHelpers';
 import SettingsStore from '../settings/SettingsStore';
-import type { PromptForClusterChoice, PromptForClusterRemoval } from '../types';
+import type {
+	PromptForClusterChoice,
+	PromptForClusterRemoval
+} from '../types';
 
 describe('registerClusterMembershipMenu', () => {
 	/**
@@ -73,7 +82,11 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('adds nothing when there are no Clusters', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -86,10 +99,22 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('offers "Add to cluster" and the most recent Cluster by name', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'old', name: 'Old', lastTouchedAt: 1 }),
-			buildCluster({ id: 'new', name: 'Reading', lastTouchedAt: 9 })
+			buildCluster({
+				id: 'old',
+				name: 'Old',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'new',
+				name: 'Reading',
+				lastTouchedAt: 9
+			})
 		);
 
 		const items = openMenu(
@@ -98,15 +123,29 @@ describe('registerClusterMembershipMenu', () => {
 			leaf
 		);
 
-		expect(items.map((item) => item.title)).toEqual(['Add to cluster', 'Add to Reading']);
+		expect(items.map((item) => item.title)).toEqual([
+			'Add to cluster',
+			'Add to Reading'
+		]);
 	});
 
 	it('omits the most recent Cluster item when that Cluster already holds the file', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'old', lastTouchedAt: 1 }),
-			buildCluster({ id: 'new', lastTouchedAt: 9, members: ['a.md'] })
+			buildCluster({
+				id: 'old',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'new',
+				lastTouchedAt: 9,
+				members: ['a.md']
+			})
 		);
 
 		const items = openMenu(
@@ -115,12 +154,19 @@ describe('registerClusterMembershipMenu', () => {
 			leaf
 		);
 
-		expect(items.map((item) => item.title)).toEqual(['Add to cluster', 'Remove from cluster']);
+		expect(items.map((item) => item.title)).toEqual([
+			'Add to cluster',
+			'Remove from cluster'
+		]);
 	});
 
 	it('offers "Remove from cluster" only when a Cluster holds the file', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(buildCluster({ members: ['other.md'] }));
 
 		const items = openMenu(
@@ -134,7 +180,11 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('reads the Clusters when the menu opens, not when it is registered', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStore();
 		registerClusterMembershipMenu(
 			app,
@@ -151,12 +201,18 @@ describe('registerClusterMembershipMenu', () => {
 			leaf
 		);
 
-		expect(items.map((item) => item.title)).toEqual(['Add to cluster', 'Add to Later']);
+		expect(items.map((item) => item.title)).toEqual([
+			'Add to cluster',
+			'Add to Later'
+		]);
 	});
 
 	it('adds nothing for a tab with no file', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addNonFileTab(app, {});
+		const leaf = await addNonFileTab(
+			app,
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -169,7 +225,11 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('adds nothing to a menu from another source', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -197,10 +257,20 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('adds the file to the chosen Cluster from "Add to cluster"', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', lastTouchedAt: 1 }),
-			buildCluster({ id: 'two', lastTouchedAt: 9 })
+			buildCluster({
+				id: 'one',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'two',
+				lastTouchedAt: 9
+			})
 		);
 		const items = openMenu(
 			app,
@@ -216,10 +286,20 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('adds the file to the most recent Cluster from "Add to [name]"', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', lastTouchedAt: 1 }),
-			buildCluster({ id: 'two', lastTouchedAt: 9 })
+			buildCluster({
+				id: 'one',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'two',
+				lastTouchedAt: 9
+			})
 		);
 		const items = openMenu(
 			app,
@@ -234,10 +314,20 @@ describe('registerClusterMembershipMenu', () => {
 
 	it('removes the file from the selected Clusters from "Remove from cluster"', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 		const items = openMenu(
 			app,
@@ -249,6 +339,12 @@ describe('registerClusterMembershipMenu', () => {
 
 		items[items.length - 1].click();
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([[], ['a.md']]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			[],
+			['a.md']
+		]);
 	});
 });

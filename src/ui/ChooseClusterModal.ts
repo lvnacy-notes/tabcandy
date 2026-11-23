@@ -4,7 +4,10 @@ import {
 	Modal,
 	Setting
 } from 'obsidian';
-import type { ChooseClusterLabels, TabCandyCluster } from '../types';
+import type {
+	ChooseClusterLabels,
+	TabCandyCluster
+} from '../types';
 
 /** Asks which of a set of Clusters to use. */
 export default class ChooseClusterModal extends Modal {
@@ -23,7 +26,10 @@ export default class ChooseClusterModal extends Modal {
 		app: App,
 		clusters: TabCandyCluster[],
 		onSubmit: (id: string) => void,
-		labels: ChooseClusterLabels = { action: 'Add', title: 'Add to cluster' }
+		labels: ChooseClusterLabels = {
+			action: 'Add',
+			title: 'Add to cluster'
+		}
 	) {
 		super(app);
 		this._clusters = clusters;
@@ -36,13 +42,19 @@ export default class ChooseClusterModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl('h2', { text: this._labels.title });
+		contentEl.createEl(
+			'h2',
+			{ text: this._labels.title }
+		);
 
 		new Setting(contentEl)
 			.setName('Cluster')
 			.addDropdown((dropdown) => {
 				for (const cluster of this._clusters) {
-					dropdown.addOption(cluster.id, cluster.name);
+					dropdown.addOption(
+						cluster.id,
+						cluster.name
+					);
 				}
 				dropdown.setValue(this._selectedId);
 				dropdown.onChange((value) => {

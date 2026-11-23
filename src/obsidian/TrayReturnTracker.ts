@@ -65,12 +65,18 @@ export default class TrayReturnTracker {
 
 		const slot = entry.siblings.indexOf(entry.leaf);
 		const before = entry.siblings
-			.slice(0, Math.max(slot, 0))
+			.slice(0, Math.max(
+				slot,
+				0
+			))
 			.reverse()
 			.find((leaf) => current.includes(leaf));
 		const anchor = before ?? current[0];
 		if (anchor) {
-			this.app.workspace.setActiveLeaf(anchor, { focus: false });
+			this.app.workspace.setActiveLeaf(
+				anchor,
+				{ focus: false }
+			);
 		}
 		return this.app.workspace.getLeaf('tab');
 	}

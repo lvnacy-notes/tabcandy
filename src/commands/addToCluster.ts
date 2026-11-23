@@ -1,6 +1,12 @@
 /** @file The add-to-cluster command. */
-import { App, Command } from 'obsidian';
-import { getActiveTabPath, promptAndAdd } from '../clusters/clusterMembership';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	getActiveTabPath,
+	promptAndAdd
+} from '../clusters/clusterMembership';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice } from '../types';
 

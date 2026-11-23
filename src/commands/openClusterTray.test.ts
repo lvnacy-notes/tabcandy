@@ -8,13 +8,19 @@ import {
 	vi
 } from 'vitest';
 import { buildInvokeCommand } from './openClusterTray';
-import { buildStoreWith, isAvailable } from '../test/clusterHelpers';
+import {
+	buildStoreWith,
+	isAvailable
+} from '../test/clusterHelpers';
 import {
 	buildCluster,
 	buildStore,
 	createConfiguredApp
 } from '../test/fakes';
-import { CLUSTER_TRAY_VIEW_TYPE, type PromptForClusterChoice } from '../types';
+import {
+	CLUSTER_TRAY_VIEW_TYPE,
+	type PromptForClusterChoice
+} from '../types';
 
 describe('open-cluster-tray command', () => {
 	beforeEach(() => {
@@ -32,7 +38,13 @@ describe('open-cluster-tray command', () => {
 			vi.fn()
 		);
 
-		expect([command.id, command.name]).toEqual(['open-cluster-tray', 'Open a cluster tray']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'open-cluster-tray',
+			'Open a cluster tray'
+		]);
 	});
 
 	it('is available when a Cluster exists', () => {
@@ -58,9 +70,18 @@ describe('open-cluster-tray command', () => {
 	it('asks which Cluster to open, then opens its Tray', async () => {
 		const app = createConfiguredApp();
 		const setViewState = vi.fn().mockResolvedValue(undefined);
-		vi.spyOn(app.workspace, 'getLeavesOfType').mockReturnValue([]);
-		vi.spyOn(app.workspace, 'getLeaf').mockReturnValue({ setViewState } as never);
-		const prompt = vi.fn<PromptForClusterChoice>((_clusters, onSubmit) => onSubmit('cluster-a'));
+		vi.spyOn(
+			app.workspace,
+			'getLeavesOfType'
+		).mockReturnValue([]);
+		vi.spyOn(
+			app.workspace,
+			'getLeaf'
+		).mockReturnValue({ setViewState } as never);
+		const prompt = vi.fn<PromptForClusterChoice>((
+			_clusters,
+			onSubmit
+		) => onSubmit('cluster-a'));
 		const command = buildInvokeCommand(
 			app,
 			buildStoreWith(buildCluster()),
@@ -75,6 +96,9 @@ describe('open-cluster-tray command', () => {
 			active: true,
 			state: { clusterId: 'cluster-a' },
 		});
-		expect(prompt.mock.calls[0][2]).toEqual({ action: 'Open', title: 'Open a cluster tray' });
+		expect(prompt.mock.calls[0][2]).toEqual({
+			action: 'Open',
+			title: 'Open a cluster tray'
+		});
 	});
 });

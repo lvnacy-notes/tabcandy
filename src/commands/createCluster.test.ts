@@ -5,19 +5,37 @@ import {
 	it
 } from 'vitest';
 import { buildInvokeCommand } from './createCluster';
-import { cancelling, submitting } from '../test/clusterHelpers';
+import {
+	cancelling,
+	submitting
+} from '../test/clusterHelpers';
 import { buildStore } from '../test/fakes';
 
 describe('create-cluster command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(buildStore(), cancelling().prompt);
+		const command = buildInvokeCommand(
+			buildStore(),
+			cancelling().prompt
+		);
 
-		expect([command.id, command.name]).toEqual(['create-cluster', 'Create cluster']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'create-cluster',
+			'Create cluster'
+		]);
 	});
 
 	it('creates an empty Cluster from the submitted details', () => {
 		const store = buildStore();
-		const command = buildInvokeCommand(store, submitting({ name: 'Blank', flavor: '#00ff00' }).prompt);
+		const command = buildInvokeCommand(
+			store,
+			submitting({
+				name: 'Blank',
+				flavor: '#00ff00'
+			}).prompt
+		);
 
 		command.callback?.();
 
@@ -29,7 +47,10 @@ describe('create-cluster command', () => {
 
 	it('creates nothing when the prompt is cancelled', () => {
 		const store = buildStore();
-		const command = buildInvokeCommand(store, cancelling().prompt);
+		const command = buildInvokeCommand(
+			store,
+			cancelling().prompt
+		);
 
 		command.callback?.();
 

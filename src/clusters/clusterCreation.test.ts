@@ -16,7 +16,10 @@ import {
 	createFakeLeaf,
 	makeUnreadable
 } from '../test/FakeWorkspaceLeaf';
-import { addFileTab, addNonFileTab } from '../test/clusterHelpers';
+import {
+	addFileTab,
+	addNonFileTab
+} from '../test/clusterHelpers';
 import {
 	buildCluster,
 	buildClusters,
@@ -29,7 +32,11 @@ import { UNTITLED_CLUSTER_NAME } from '../types';
 describe('getTabPath', () => {
 	it('returns the file path of a file-backed leaf', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'Notes/a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'Notes/a.md',
+			{}
+		);
 
 		const result = getTabPath(leaf);
 
@@ -38,7 +45,10 @@ describe('getTabPath', () => {
 
 	it('returns null for a leaf with no file', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addNonFileTab(app, {});
+		const leaf = await addNonFileTab(
+			app,
+			{}
+		);
 
 		const result = getTabPath(leaf);
 
@@ -56,7 +66,11 @@ describe('getTabPath', () => {
 
 	it('returns null for a leaf whose state cannot be read', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		makeUnreadable(leaf);
 
 		const result = getTabPath(leaf);
@@ -69,22 +83,52 @@ describe('getPanePaths', () => {
 	it('returns the file paths of every tab in the leaf\'s pane, in tab order', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'one.md', pane);
-		const second = await addFileTab(app, 'two.md', pane);
-		await addFileTab(app, 'three.md', pane);
+		await addFileTab(
+			app,
+			'one.md',
+			pane
+		);
+		const second = await addFileTab(
+			app,
+			'two.md',
+			pane
+		);
+		await addFileTab(
+			app,
+			'three.md',
+			pane
+		);
 
-		const result = getPanePaths(app, second);
+		const result = getPanePaths(
+			app,
+			second
+		);
 
-		expect(result).toEqual(['one.md', 'two.md', 'three.md']);
+		expect(result).toEqual([
+			'one.md',
+			'two.md',
+			'three.md'
+		]);
 	});
 
 	it('excludes tabs in other panes', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		const mine = await addFileTab(app, 'mine.md', pane);
-		await addFileTab(app, 'other.md', {});
+		const mine = await addFileTab(
+			app,
+			'mine.md',
+			pane
+		);
+		await addFileTab(
+			app,
+			'other.md',
+			{}
+		);
 
-		const result = getPanePaths(app, mine);
+		const result = getPanePaths(
+			app,
+			mine
+		);
 
 		expect(result).toEqual(['mine.md']);
 	});
@@ -92,10 +136,20 @@ describe('getPanePaths', () => {
 	it('excludes tabs in the pane that have no file', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		const file = await addFileTab(app, 'a.md', pane);
-		await addNonFileTab(app, pane);
+		const file = await addFileTab(
+			app,
+			'a.md',
+			pane
+		);
+		await addNonFileTab(
+			app,
+			pane
+		);
 
-		const result = getPanePaths(app, file);
+		const result = getPanePaths(
+			app,
+			file
+		);
 
 		expect(result).toEqual(['a.md']);
 	});
@@ -103,34 +157,84 @@ describe('getPanePaths', () => {
 	it('excludes tabs in the pane whose state cannot be read', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		const readable = await addFileTab(app, 'a.md', pane);
-		const unreadable = await addFileTab(app, 'b.md', pane);
+		const readable = await addFileTab(
+			app,
+			'a.md',
+			pane
+		);
+		const unreadable = await addFileTab(
+			app,
+			'b.md',
+			pane
+		);
 		makeUnreadable(unreadable);
 
-		const result = getPanePaths(app, readable);
+		const result = getPanePaths(
+			app,
+			readable
+		);
 
 		expect(result).toEqual(['a.md']);
 	});
 
 	it('returns an empty array for a leaf that is not a root leaf', async () => {
 		const app = createFakeWorkspaceApp();
-		await addFileTab(app, 'a.md', {});
+		await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 		const stray = createFakeLeaf(app);
-		Object.defineProperty(stray, 'parent', { value: {}, configurable: true });
+		Object.defineProperty(
+			stray,
+			'parent',
+			{
+				value: {},
+				configurable: true
+			}
+		);
 
-		const result = getPanePaths(app, stray);
+		const result = getPanePaths(
+			app,
+			stray
+		);
 
 		expect(result).toEqual([]);
 	});
 
 	it('returns an empty array when the leaf has no pane', async () => {
 		const app = createFakeWorkspaceApp();
-		const first = await addFileTab(app, 'a.md', {});
-		const second = await addFileTab(app, 'b.md', {});
-		Object.defineProperty(first, 'parent', { value: undefined, configurable: true });
-		Object.defineProperty(second, 'parent', { value: undefined, configurable: true });
+		const first = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
+		const second = await addFileTab(
+			app,
+			'b.md',
+			{}
+		);
+		Object.defineProperty(
+			first,
+			'parent',
+			{
+				value: undefined,
+				configurable: true
+			}
+		);
+		Object.defineProperty(
+			second,
+			'parent',
+			{
+				value: undefined,
+				configurable: true
+			}
+		);
 
-		const result = getPanePaths(app, first);
+		const result = getPanePaths(
+			app,
+			first
+		);
 
 		expect(result).toEqual([]);
 	});
@@ -142,8 +246,14 @@ describe('createClusterFromDraft', () => {
 
 		const cluster = await createClusterFromDraft(
 			store,
-			{ name: 'Research', flavor: '#ff8800' },
-			['a.md', 'b.md'],
+			{
+				name: 'Research',
+				flavor: '#ff8800'
+			},
+			[
+				'a.md',
+				'b.md'
+			],
 			500
 		);
 
@@ -151,7 +261,10 @@ describe('createClusterFromDraft', () => {
 			id: cluster.id,
 			name: 'Research',
 			flavor: '#ff8800',
-			members: ['a.md', 'b.md'],
+			members: [
+				'a.md',
+				'b.md'
+			],
 			lastTouchedAt: 500,
 			pairedWith: null,
 		});
@@ -175,7 +288,10 @@ describe('createClusterFromDraft', () => {
 
 	it('persists the new settings', async () => {
 		const persist = vi.fn(async () => {});
-		const store = new SettingsStore(buildSettings(), persist);
+		const store = new SettingsStore(
+			buildSettings(),
+			persist
+		);
 
 		await createClusterFromDraft(
 			store,
@@ -213,14 +329,39 @@ describe('createClusterFromDraft', () => {
 
 describe('describeNewCluster', () => {
 	it.each([
-		['no members', [], 'Created empty Cluster "Research".'],
-		['one member', ['a.md'], 'Created Cluster "Research" with 1 tab.'],
-		['several members', ['a.md', 'b.md'], 'Created Cluster "Research" with 2 tabs.'],
-	])('describes a Cluster with %s', (_kind, members, expected) => {
-		const cluster = buildCluster({ name: 'Research', members });
+		[
+			'no members',
+			[],
+			'Created empty Cluster "Research".'
+		],
+		[
+			'one member',
+			['a.md'],
+			'Created Cluster "Research" with 1 tab.'
+		],
+		[
+			'several members',
+			[
+				'a.md',
+				'b.md'
+			],
+			'Created Cluster "Research" with 2 tabs.'
+		]
+	])(
+		'describes a Cluster with %s',
+		(
+			_kind,
+			members,
+			expected
+		) => {
+			const cluster = buildCluster({
+				name: 'Research',
+				members
+			});
 
-		const result = describeNewCluster(cluster);
+			const result = describeNewCluster(cluster);
 
-		expect(result).toBe(expected);
-	});
+			expect(result).toBe(expected);
+		}
+	);
 });

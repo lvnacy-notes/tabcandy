@@ -1,4 +1,7 @@
-import { App, WorkspaceLeaf } from 'obsidian';
+import {
+	App,
+	WorkspaceLeaf
+} from 'obsidian';
 import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 
 /**
@@ -14,7 +17,10 @@ export function openFileMenu(
 	app: App,
 	source: string,
 	leaf: WorkspaceLeaf | undefined
-): { title: string; click: () => void }[] {
+): {
+	title: string;
+	click: () => void
+}[] {
 	const menu = MenuMock.create2__();
 	app.workspace.trigger(
 		'file-menu',

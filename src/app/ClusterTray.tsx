@@ -1,7 +1,16 @@
 /** @file The Cluster Tray component. */
-import { App, TFile } from 'obsidian';
-import { MemberList, openClusterMenu } from './components';
-import { useSettings, useVaultRevision } from './hooks';
+import {
+	App,
+	TFile
+} from 'obsidian';
+import {
+	MemberList,
+	openClusterMenu
+} from './components';
+import {
+	useSettings,
+	useVaultRevision
+} from './hooks';
 import { buildMemberActions } from '../obsidian/clusterMemberActions';
 import {
 	closeCluster,
@@ -65,7 +74,10 @@ export default function ClusterTray({
 	 */
 	const openMenu = (event: MouseEvent): void => {
 		openClusterMenu(event, {
-			hasOpenMember: () => getOpenMembers(app, cluster).size > 0,
+			hasOpenMember: () => getOpenMembers(
+				app,
+				cluster
+			).size > 0,
 			onCloseCluster: () => {
 				void closeCluster(
 					app,

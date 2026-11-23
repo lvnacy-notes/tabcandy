@@ -17,15 +17,30 @@ describe('close-other-tabs command', () => {
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createFakeWorkspaceApp());
 
-		expect([command.id, command.name]).toEqual(['close-other-tabs', 'Close all tabs except this one']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'close-other-tabs',
+			'Close all tabs except this one'
+		]);
 	});
 
 	it('closes every tab except the current one', () => {
 		const app = createFakeWorkspaceApp({ files: {} });
 		const current = createFakeLeaf(app);
-		addRootLeaf(app, current);
-		addRootLeaf(app, createFakeLeaf(app));
-		setMostRecentLeaf(app, current);
+		addRootLeaf(
+			app,
+			current
+		);
+		addRootLeaf(
+			app,
+			createFakeLeaf(app)
+		);
+		setMostRecentLeaf(
+			app,
+			current
+		);
 
 		buildInvokeCommand(app).callback?.();
 

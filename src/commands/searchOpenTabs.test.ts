@@ -18,12 +18,21 @@ describe('search-open-tabs command', () => {
 	it('has its id and name', () => {
 		const command = buildInvokeCommand(createConfiguredApp({ files: {} }));
 
-		expect([command.id, command.name]).toEqual(['search-open-tabs', 'Search open tabs']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'search-open-tabs',
+			'Search open tabs'
+		]);
 	});
 
 	it('opens the tab search modal', () => {
 		const opened: unknown[] = [];
-		vi.spyOn(SearchOpenTabsModal.prototype, 'open').mockImplementation(function (this: SearchOpenTabsModal) {
+		vi.spyOn(
+			SearchOpenTabsModal.prototype,
+			'open'
+		).mockImplementation(function (this: SearchOpenTabsModal) {
 			opened.push(this);
 		});
 

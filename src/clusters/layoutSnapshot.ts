@@ -75,7 +75,11 @@ export function flattenPlan(plan: RestorePlan): RestorePlan {
 
 	return groups.length === 1
 		? groups[0]
-		: { kind: 'split', direction: plan.direction, children: groups };
+		: {
+			kind: 'split',
+			direction: plan.direction,
+			children: groups
+		};
 }
 
 /**
@@ -104,7 +108,10 @@ export function planRestore(
 				return null;
 			}
 			seen.add(leafPath);
-			return { kind: 'tabs', paths: [leafPath] };
+			return {
+				kind: 'tabs',
+				paths: [leafPath]
+			};
 		}
 
 		if (node['type'] === 'tabs') {
@@ -116,7 +123,10 @@ export function planRestore(
 					paths.push(path);
 				}
 			}
-			return paths.length === 0 ? null : { kind: 'tabs', paths };
+			return paths.length === 0 ? null : {
+				kind: 'tabs',
+				paths
+			};
 		}
 
 		const children = getChildren(node)
@@ -127,7 +137,11 @@ export function planRestore(
 		}
 		return children.length === 1
 			? children[0]
-			: { kind: 'split', direction: getDirection(node), children };
+			: {
+				kind: 'split',
+				direction: getDirection(node),
+				children
+			};
 	};
 
 	return plan(snapshot);
@@ -155,7 +169,12 @@ export function pruneLayout(
 	 * @returns The copy.
 	 */
 	const strip = (source: LayoutNode): LayoutNode => {
-		const { id: _id, currentTab: _currentTab, children: _children, ...rest } = source;
+		const {
+			id: _id,
+			currentTab: _currentTab,
+			children: _children,
+			...rest
+		} = source;
 		return rest;
 	};
 
@@ -165,7 +184,10 @@ export function pruneLayout(
 	}
 
 	const children = getChildren(node)
-		.map((child) => pruneLayout(child, isOpenMember))
+		.map((child) => pruneLayout(
+			child,
+			isOpenMember
+		))
 		.filter((child): child is LayoutNode => child !== null);
 	if (children.length === 0) {
 		return null;
@@ -173,5 +195,8 @@ export function pruneLayout(
 	if (node['type'] === 'split' && children.length === 1) {
 		return children[0];
 	}
-	return { ...strip(node), children };
+	return {
+		...strip(node),
+		children
+	};
 }

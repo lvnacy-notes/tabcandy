@@ -1,5 +1,8 @@
 /** @file Pure operations on the Cluster record: create, delete, membership, ordering, pairing and path replacement. */
-import { isHexColor, isRecord } from '../utils/typeGuards';
+import {
+	isHexColor,
+	isRecord
+} from '../utils/typeGuards';
 import {
 	NewClusterInput,
 	TabCandyCluster,
@@ -21,7 +24,10 @@ import {
  * @returns True when `clusters` has an own entry for `id`.
  */
 function hasCluster(clusters: TabCandyClusters, id: string): boolean {
-	return Boolean(Object.prototype.hasOwnProperty.call(clusters, id));
+	return Boolean(Object.prototype.hasOwnProperty.call(
+		clusters,
+		id
+	));
 }
 
 /**
@@ -31,7 +37,10 @@ function hasCluster(clusters: TabCandyClusters, id: string): boolean {
  * @returns The paths without repeats, in their original order.
  */
 function uniquePaths(paths: string[]): string[] {
-	return paths.filter((path, index) => paths.indexOf(path) === index);
+	return paths.filter((
+		path,
+		index
+	) => paths.indexOf(path) === index);
 }
 
 /**
@@ -42,7 +51,13 @@ function uniquePaths(paths: string[]): string[] {
 export function generateClusterId(): string {
 	const bytes = new Uint8Array(16);
 	crypto.getRandomValues(bytes);
-	return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+	return Array.from(
+		bytes,
+		(byte) => byte.toString(16).padStart(
+			2,
+			'0'
+		)
+	).join('');
 }
 
 /**
@@ -60,7 +75,10 @@ export function createCluster(
 	input: NewClusterInput,
 	now: number = Date.now(),
 	id: string = generateClusterId()
-): { clusters: TabCandyClusters; cluster: TabCandyCluster } {
+): {
+	clusters: TabCandyClusters;
+	cluster: TabCandyCluster;
+} {
 	const cluster: TabCandyCluster = {
 		id,
 		name: input.name.trim() === '' ? UNTITLED_CLUSTER_NAME : input.name,
@@ -73,7 +91,10 @@ export function createCluster(
 	}
 
 	return {
-		clusters: { ...clusters, [id]: cluster },
+		clusters: {
+			...clusters,
+			[id]: cluster
+		},
 		cluster,
 	};
 }
@@ -87,9 +108,15 @@ export function createCluster(
  */
 function clearPairingsTo(clusters: TabCandyClusters, id: string): TabCandyClusters {
 	const next: TabCandyClusters = {};
-	for (const [key, cluster] of Object.entries(clusters)) {
+	for (const [
+		key,
+		cluster
+	] of Object.entries(clusters)) {
 		next[key] = key === id || cluster.pairedWith === id
-			? { ...cluster, pairedWith: null }
+			? {
+				...cluster,
+				pairedWith: null
+			}
 			: cluster;
 	}
 	return next;
@@ -106,12 +133,22 @@ export function deleteCluster(
 	clusters: TabCandyClusters,
 	id: string
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id)) {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
 		return clusters;
 	}
 
-	const { [id]: _deleted, ...remaining } = clusters;
-	return clearPairingsTo(remaining, id);
+	const {
+		[id]: _deleted,
+		...remaining
+	} = clusters;
+
+	return clearPairingsTo(
+		remaining,
+		id
+	);
 }
 
 /**
@@ -130,7 +167,10 @@ export function addMember(
 	path: string,
 	now: number = Date.now()
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id) || clusters[id].members.includes(path)) {
+	if (!hasCluster(
+		clusters,
+		id
+	) || clusters[id].members.includes(path)) {
 		return clusters;
 	}
 
@@ -139,7 +179,10 @@ export function addMember(
 		...clusters,
 		[id]: {
 			...cluster,
-			members: [...cluster.members, path],
+			members: [
+				...cluster.members,
+				path
+			],
 			lastTouchedAt: now,
 		},
 	};
@@ -162,7 +205,10 @@ export function removeMember(
 	path: string,
 	now: number = Date.now()
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id) || !clusters[id].members.includes(path)) {
+	if (!hasCluster(
+		clusters,
+		id
+	) || !clusters[id].members.includes(path)) {
 		return clusters;
 	}
 
@@ -194,7 +240,10 @@ export function reorderMember(
 	fromIndex: number,
 	toIndex: number
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id)) {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
 		return clusters;
 	}
 
@@ -207,7 +256,10 @@ export function reorderMember(
 	}
 
 	const members = [...cluster.members];
-	const [moved] = members.splice(fromIndex, 1);
+	const [moved] = members.splice(
+		fromIndex,
+		1
+	);
 	members.splice(
 		toIndex,
 		0,
@@ -215,7 +267,10 @@ export function reorderMember(
 	);
 	return {
 		...clusters,
-		[id]: { ...cluster, members },
+		[id]: {
+			...cluster,
+			members
+		},
 	};
 }
 
@@ -232,13 +287,19 @@ export function setLayoutSnapshot(
 	id: string,
 	layoutSnapshot: Record<string, unknown>
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id)) {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
 		return clusters;
 	}
 
 	return {
 		...clusters,
-		[id]: { ...clusters[id], layoutSnapshot },
+		[id]: {
+			...clusters[id],
+			layoutSnapshot
+		},
 	};
 }
 
@@ -255,13 +316,19 @@ export function touchCluster(
 	id: string,
 	now: number = Date.now()
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id)) {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
 		return clusters;
 	}
 
 	return {
 		...clusters,
-		[id]: { ...clusters[id], lastTouchedAt: now },
+		[id]: {
+			...clusters[id],
+			lastTouchedAt: now
+		},
 	};
 }
 
@@ -280,29 +347,43 @@ export function pairClusters(
 	idA: string,
 	idB: string
 ): TabCandyClusters {
-	if (
-		idA === idB ||
-		!hasCluster(clusters, idA) ||
-		!hasCluster(clusters, idB) ||
-		clusters[idA].pairedWith === idB
-	) {
+	if (idA === idB || !hasCluster(
+		clusters,
+		idA
+	) || !hasCluster(
+		clusters,
+		idB
+	) || clusters[idA].pairedWith === idB) {
 		return clusters;
 	}
 
 	const next = { ...clusters };
-	for (const id of [idA, idB]) {
+	for (const id of [
+		idA,
+		idB
+	]) {
 		const previous = clusters[id].pairedWith;
-		if (
-			previous !== null &&
+		if (previous !== null &&
 			previous !== idA &&
 			previous !== idB &&
-			hasCluster(next, previous)
-		) {
-			next[previous] = { ...next[previous], pairedWith: null };
+			hasCluster(
+				next,
+				previous
+			)) {
+			next[previous] = {
+				...next[previous],
+				pairedWith: null
+			};
 		}
 	}
-	next[idA] = { ...next[idA], pairedWith: idB };
-	next[idB] = { ...next[idB], pairedWith: idA };
+	next[idA] = {
+		...next[idA],
+		pairedWith: idB
+	};
+	next[idB] = {
+		...next[idB],
+		pairedWith: idA
+	};
 	return next;
 }
 
@@ -318,11 +399,17 @@ export function unpairCluster(
 	clusters: TabCandyClusters,
 	id: string
 ): TabCandyClusters {
-	if (!hasCluster(clusters, id) || clusters[id].pairedWith === null) {
+	if (!hasCluster(
+		clusters,
+		id
+	) || clusters[id].pairedWith === null) {
 		return clusters;
 	}
 
-	return clearPairingsTo(clusters, id);
+	return clearPairingsTo(
+		clusters,
+		id
+	);
 }
 
 /**
@@ -346,9 +433,7 @@ export function getMissingMembers(
  * @param clusters - The current Clusters.
  * @returns The Cluster, or null when there are none.
  */
-export function getMostRecentCluster(
-	clusters: TabCandyClusters
-): TabCandyCluster | null {
+export function getMostRecentCluster(clusters: TabCandyClusters): TabCandyCluster | null {
 	let mostRecent: TabCandyCluster | null = null;
 	for (const cluster of Object.values(clusters)) {
 		if (mostRecent === null || cluster.lastTouchedAt > mostRecent.lastTouchedAt) {
@@ -425,7 +510,10 @@ function replacePathInLayout(
 			oldPath,
 			newPath
 		));
-		return mapped.some((child, index) => child !== node[index]) ? mapped : node;
+		return mapped.some((
+			child,
+			index
+		) => child !== node[index]) ? mapped : node;
 	}
 	if (!isRecord(node)) {
 		return node;
@@ -438,7 +526,10 @@ function replacePathInLayout(
 				...node,
 				state: {
 					...state,
-					state: { ...state.state, file: newPath },
+					state: {
+						...state.state,
+						file: newPath
+					},
 				},
 			};
 		}
@@ -447,7 +538,10 @@ function replacePathInLayout(
 
 	let changed = false;
 	const next: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(node)) {
+	for (const [
+		key,
+		value
+	] of Object.entries(node)) {
 		next[key] = replacePathInLayout(
 			value,
 			oldPath,
@@ -481,7 +575,10 @@ export function replaceMemberPath(
 
 	let changed = false;
 	const next: TabCandyClusters = {};
-	for (const [id, cluster] of Object.entries(clusters)) {
+	for (const [
+		id,
+		cluster
+	] of Object.entries(clusters)) {
 		const members = replacePathInMembers(
 			cluster.members,
 			oldPath,
@@ -501,7 +598,10 @@ export function replaceMemberPath(
 		}
 
 		changed = true;
-		next[id] = { ...cluster, members };
+		next[id] = {
+			...cluster,
+			members
+		};
 		if (isRecord(layoutSnapshot)) {
 			next[id].layoutSnapshot = layoutSnapshot;
 		}

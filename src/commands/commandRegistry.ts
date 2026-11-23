@@ -47,7 +47,10 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 			settingsStore,
 			promptForClusterChoice
 		),
-		buildAddToMostRecentClusterCommand(app, settingsStore),
+		buildAddToMostRecentClusterCommand(
+			app,
+			settingsStore
+		),
 		buildCloseClusterCommand(
 			app,
 			settingsStore,
@@ -55,8 +58,14 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 		),
 		buildCloseDuplicateTabsCommand(app),
 		buildCloseOtherTabsCommand(app),
-		buildCloseTabsInFolderCommand(app, settingsStore),
-		buildCreateClusterCommand(settingsStore, promptForCluster),
+		buildCloseTabsInFolderCommand(
+			app,
+			settingsStore
+		),
+		buildCreateClusterCommand(
+			settingsStore,
+			promptForCluster
+		),
 		buildCreateClusterFromActivePaneCommand(
 			app,
 			settingsStore,
@@ -79,7 +88,10 @@ export function buildCommands(dependencies: CommandDependencies): Command[] {
 			settingsStore,
 			promptForClusterChoice
 		),
-		buildOpenRecentClusterTrayCommand(app, settingsStore),
+		buildOpenRecentClusterTrayCommand(
+			app,
+			settingsStore
+		),
 		buildOpenTabCandyCommand(app),
 		buildPairClusterWithCommand(
 			app,

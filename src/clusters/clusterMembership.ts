@@ -68,7 +68,10 @@ export function addToMostRecentCluster(
 		cluster.id,
 		path
 	).then((added) => {
-		new Notice(describeAddition(cluster.name, added));
+		new Notice(describeAddition(
+			cluster.name,
+			added
+		));
 	});
 }
 
@@ -174,7 +177,10 @@ export function promptAndAdd(
 			id,
 			path
 		).then((added) => {
-			new Notice(describeAddition(cluster.name, added));
+			new Notice(describeAddition(
+				cluster.name,
+				added
+			));
 		});
 	});
 }
@@ -193,7 +199,10 @@ export function promptAndRemove(
 	prompt: PromptForClusterRemoval,
 	path: string
 ): void {
-	const holding = getClustersContainingPath(settingsStore.get().clusters, path);
+	const holding = getClustersContainingPath(
+		settingsStore.get().clusters,
+		path
+	);
 	if (holding.length === 0) {
 		return;
 	}
@@ -263,7 +272,10 @@ export async function removePathFromClusters(
 	clusterIds: string[],
 	path: string
 ): Promise<number> {
-	const { clusters, keepPairedClustersInSync } = settingsStore.get();
+	const {
+		clusters,
+		keepPairedClustersInSync
+	} = settingsStore.get();
 	let next = clusters;
 	let count = 0;
 	for (const id of clusterIds) {
@@ -307,7 +319,10 @@ export async function reorderClusterMember(
 	fromIndex: number,
 	toIndex: number
 ): Promise<boolean> {
-	const { clusters, keepPairedClustersInSync } = settingsStore.get();
+	const {
+		clusters,
+		keepPairedClustersInSync
+	} = settingsStore.get();
 	let next = reorderMember(
 		clusters,
 		clusterId,
@@ -366,8 +381,9 @@ export async function resolveMissingMember(
 		return false;
 	}
 
-	await settingsStore.update({
-		clusters: { ...clusters, [clusterId]: replaced[clusterId] },
-	});
+	await settingsStore.update({ clusters: {
+		...clusters,
+		[clusterId]: replaced[clusterId]
+	} });
 	return true;
 }

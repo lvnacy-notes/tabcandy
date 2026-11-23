@@ -28,13 +28,22 @@ function openModal(): {
 	const modal = new ChooseClusterModal(
 		createConfiguredApp(),
 		[
-			buildCluster({ id: 'one', name: 'One' }),
-			buildCluster({ id: 'two', name: 'Two' }),
+			buildCluster({
+				id: 'one',
+				name: 'One'
+			}),
+			buildCluster({
+				id: 'two',
+				name: 'Two'
+			}),
 		],
 		onSubmit
 	);
 	modal.open();
-	return { modal, onSubmit };
+	return {
+		modal,
+		onSubmit
+	};
 }
 
 /**
@@ -67,30 +76,54 @@ describe('ChooseClusterModal', () => {
 		const options = Array.from(modal.contentEl.querySelectorAll('option'))
 			.map((option) => option.textContent);
 
-		expect(options).toEqual(['One', 'Two']);
+		expect(options).toEqual([
+			'One',
+			'Two'
+		]);
 	});
 
 	it('submits the first Cluster when nothing is picked', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Add').click();
+		findButton(
+			modal,
+			'Add'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith('one');
 	});
 
 	it('submits the picked Cluster', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		pick(modal, 'two');
-		findButton(modal, 'Add').click();
+		pick(
+			modal,
+			'two'
+		);
+		findButton(
+			modal,
+			'Add'
+		).click();
 
 		expect(onSubmit).toHaveBeenCalledWith('two');
 	});
 
 	it('does not submit when cancelled', () => {
-		const { modal, onSubmit } = openModal();
+		const {
+			modal,
+			onSubmit
+		} = openModal();
 
-		findButton(modal, 'Cancel').click();
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
@@ -98,7 +131,10 @@ describe('ChooseClusterModal', () => {
 	it('empties its content when closed', () => {
 		const { modal } = openModal();
 
-		findButton(modal, 'Cancel').click();
+		findButton(
+			modal,
+			'Cancel'
+		).click();
 
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});
@@ -106,14 +142,23 @@ describe('ChooseClusterModal', () => {
 	it('uses the wording it is given', () => {
 		const modal = new ChooseClusterModal(
 			createConfiguredApp(),
-			[buildCluster({ id: 'one', name: 'One' })],
+			[buildCluster({
+				id: 'one',
+				name: 'One'
+			})],
 			vi.fn(),
-			{ action: 'Open', title: 'Open a cluster tray' }
+			{
+				action: 'Open',
+				title: 'Open a cluster tray'
+			}
 		);
 
 		modal.open();
 
 		expect(modal.contentEl.textContent).toContain('Open a cluster tray');
-		expect(findButton(modal, 'Open')).toBeDefined();
+		expect(findButton(
+			modal,
+			'Open'
+		)).toBeDefined();
 	});
 });

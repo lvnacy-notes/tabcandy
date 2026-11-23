@@ -348,7 +348,10 @@ export const useBookmarks = (
  * @returns The number of events seen since mount.
  */
 export const useVaultRevision = (app: App): number => {
-	const [revision, setRevision] = useState(0);
+	const [
+		revision,
+		setRevision
+	] = useState(0);
 
 	useEffect(() => {
 		/** Counts one vault event. */
@@ -356,9 +359,18 @@ export const useVaultRevision = (app: App): number => {
 			setRevision((current) => current + 1);
 		};
 		const refs = [
-			app.vault.on('create', bump),
-			app.vault.on('delete', bump),
-			app.vault.on('rename', bump),
+			app.vault.on(
+				'create',
+				bump
+			),
+			app.vault.on(
+				'delete',
+				bump
+			),
+			app.vault.on(
+				'rename',
+				bump
+			),
 		];
 
 		return () => {

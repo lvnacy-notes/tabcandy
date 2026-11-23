@@ -1,8 +1,17 @@
 /** @file The unlink-clusters command. */
-import { App, Command } from 'obsidian';
-import { getActiveClusters, promptAndUnlink } from '../clusters/clusterPairing';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	getActiveClusters,
+	promptAndUnlink
+} from '../clusters/clusterPairing';
 import SettingsStore from '../settings/SettingsStore';
-import type { PromptForClusterChoice, PromptForConfirmation } from '../types';
+import type {
+	PromptForClusterChoice,
+	PromptForConfirmation
+} from '../types';
 
 /**
  * Builds the command that unlinks the active Cluster from its partner. Available only when the active Tray or tab belongs to a paired Cluster.
@@ -23,7 +32,10 @@ export function buildInvokeCommand(
 		id: 'unlink-clusters',
 		name: 'Unlink clusters',
 		checkCallback: (checking) => {
-			const paired = getActiveClusters(app, settingsStore).filter((cluster) => cluster.pairedWith !== null);
+			const paired = getActiveClusters(
+				app,
+				settingsStore
+			).filter((cluster) => cluster.pairedWith !== null);
 			if (paired.length === 0) {
 				return false;
 			}

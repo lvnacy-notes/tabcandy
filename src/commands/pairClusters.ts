@@ -1,11 +1,18 @@
 /** @file The pair-clusters command. */
-import { Command, Notice } from 'obsidian';
+import {
+	Command,
+	Notice
+} from 'obsidian';
 import { pairWithConfirmation } from '../clusters/clusterPairing';
 import SettingsStore from '../settings/SettingsStore';
-import type { PromptForClusterPair, PromptForConfirmation } from '../types';
+import type {
+	PromptForClusterPair,
+	PromptForConfirmation
+} from '../types';
 
 /**
- * Builds the command that pairs two Clusters picked in one modal. Always available. Shows a notice when there are fewer than two Clusters.
+ * Builds the command that pairs two Clusters picked in one modal. Always
+ * available. Shows a notice when there are fewer than two Clusters.
  *
  * @param settingsStore - Store holding the Clusters.
  * @param promptPair - Collects the two Clusters.

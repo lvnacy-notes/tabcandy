@@ -1,12 +1,18 @@
 /** @file Tab-header context menu items that add a file to Clusters and remove it from them. */
-import { App, EventRef } from 'obsidian';
+import {
+	App,
+	EventRef
+} from 'obsidian';
 import { getTabPath } from '../clusters/clusterCreation';
 import {
 	addToMostRecentCluster,
 	promptAndAdd,
 	promptAndRemove
 } from '../clusters/clusterMembership';
-import { getClustersContainingPath, getMostRecentCluster } from '../clusters/clusters';
+import {
+	getClustersContainingPath,
+	getMostRecentCluster
+} from '../clusters/clusters';
 import SettingsStore from '../settings/SettingsStore';
 import {
 	TAB_HEADER_SOURCE,
@@ -33,8 +39,14 @@ export function registerClusterMembershipMenu(
 	promptToAdd: PromptForClusterChoice,
 	promptToRemove: PromptForClusterRemoval
 ): void {
-	registerEvent(
-		app.workspace.on('file-menu', (menu, _file, source, leaf) => {
+	registerEvent(app.workspace.on(
+		'file-menu',
+		(
+			menu,
+			_file,
+			source,
+			leaf
+		) => {
 			if (source !== TAB_HEADER_SOURCE || leaf === undefined) {
 				return;
 			}
@@ -67,12 +79,18 @@ export function registerClusterMembershipMenu(
 						.setTitle(`Add to ${ mostRecent.name }`)
 						.setIcon('layers')
 						.onClick(() => {
-							addToMostRecentCluster(settingsStore, path);
+							addToMostRecentCluster(
+								settingsStore,
+								path
+							);
 						});
 				});
 			}
 
-			if (getClustersContainingPath(clusters, path).length > 0) {
+			if (getClustersContainingPath(
+				clusters,
+				path
+			).length > 0) {
 				menu.addItem((item) => {
 					item
 						.setTitle('Remove from cluster')
@@ -86,6 +104,6 @@ export function registerClusterMembershipMenu(
 						});
 				});
 			}
-		})
-	);
+		}
+	));
 }

@@ -1,6 +1,12 @@
 /** @file The command that creates a Cluster from the active tab. */
-import { App, Command } from 'obsidian';
-import { getTabPath, promptAndCreate } from '../clusters/clusterCreation';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	getTabPath,
+	promptAndCreate
+} from '../clusters/clusterCreation';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForCluster } from '../types';
 

@@ -1,6 +1,12 @@
 /** @file The add-to-most-recent-cluster command. */
-import { App, Command } from 'obsidian';
-import { addToMostRecentCluster, getActiveTabPath } from '../clusters/clusterMembership';
+import {
+	App,
+	Command
+} from 'obsidian';
+import {
+	addToMostRecentCluster,
+	getActiveTabPath
+} from '../clusters/clusterMembership';
 import SettingsStore from '../settings/SettingsStore';
 
 /**
@@ -25,7 +31,10 @@ export function buildInvokeCommand(
 				return false;
 			}
 			if (!checking) {
-				addToMostRecentCluster(settingsStore, path);
+				addToMostRecentCluster(
+					settingsStore,
+					path
+				);
 			}
 			return true;
 		},

@@ -10,7 +10,10 @@ import type { TabCandyCluster } from '../types';
 /** Asks which Cluster to pair with which. The target list never holds the source. */
 export default class PairClustersModal extends Modal {
 	_clusters: TabCandyCluster[];
-	_onSubmit: (sourceId: string, targetId: string) => void;
+	_onSubmit: (
+		sourceId: string,
+		targetId: string
+	) => void;
 	_sourceId: string;
 	_targetId: string;
 
@@ -22,7 +25,10 @@ export default class PairClustersModal extends Modal {
 	constructor(
 		app: App,
 		clusters: TabCandyCluster[],
-		onSubmit: (sourceId: string, targetId: string) => void
+		onSubmit: (
+			sourceId: string,
+			targetId: string
+		) => void
 	) {
 		super(app);
 		this._clusters = clusters;
@@ -50,13 +56,19 @@ export default class PairClustersModal extends Modal {
 		const { contentEl } = this;
 		let targetDropdown: DropdownComponent | null = null;
 
-		contentEl.createEl('h2', { text: 'Pair clusters' });
+		contentEl.createEl(
+			'h2',
+			{ text: 'Pair clusters' }
+		);
 
 		new Setting(contentEl)
 			.setName('Cluster')
 			.addDropdown((dropdown) => {
 				for (const cluster of this._clusters) {
-					dropdown.addOption(cluster.id, cluster.name);
+					dropdown.addOption(
+						cluster.id,
+						cluster.name
+					);
 				}
 				dropdown.setValue(this._sourceId);
 				dropdown.onChange((value) => {
@@ -102,14 +114,20 @@ export default class PairClustersModal extends Modal {
 	fillTargets(dropdown: DropdownComponent): void {
 		dropdown.selectEl.empty();
 		for (const cluster of this.getTargets()) {
-			dropdown.addOption(cluster.id, cluster.name);
+			dropdown.addOption(
+				cluster.id,
+				cluster.name
+			);
 		}
 		dropdown.setValue(this._targetId);
 	}
 
 	/** Passes the chosen ids to `onSubmit`, then closes. */
 	submit(): void {
-		this._onSubmit(this._sourceId, this._targetId);
+		this._onSubmit(
+			this._sourceId,
+			this._targetId
+		);
 		this.close();
 	}
 }

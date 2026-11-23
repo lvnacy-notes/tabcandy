@@ -52,8 +52,14 @@ function buildCountingStore(...clusters: Parameters<typeof buildClusters>): {
 	save: ReturnType<typeof vi.fn>;
 } {
 	const save = vi.fn(async () => {});
-	const store = new SettingsStore(buildSettings({ clusters: buildClusters(...clusters) }), save);
-	return { store, save };
+	const store = new SettingsStore(
+		buildSettings({ clusters: buildClusters(...clusters) }),
+		save
+	);
+	return {
+		store,
+		save
+	};
 }
 
 describe('addPathToCluster', () => {
@@ -66,7 +72,10 @@ describe('addPathToCluster', () => {
 			'b.md'
 		);
 
-		expect(store.get().clusters['cluster-a'].members).toEqual(['a.md', 'b.md']);
+		expect(store.get().clusters['cluster-a'].members).toEqual([
+			'a.md',
+			'b.md'
+		]);
 	});
 
 	it('bumps the Cluster\'s lastTouchedAt', async () => {
@@ -106,7 +115,10 @@ describe('addPathToCluster', () => {
 	});
 
 	it('saves nothing when the Cluster already holds the file', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ members: ['a.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({ members: ['a.md'] }));
 
 		await addPathToCluster(
 			store,
@@ -118,7 +130,10 @@ describe('addPathToCluster', () => {
 	});
 
 	it('returns false and saves nothing when the Cluster does not exist', async () => {
-		const { store, save } = buildCountingStore();
+		const {
+			store,
+			save
+		} = buildCountingStore();
 
 		const result = await addPathToCluster(
 			store,
@@ -126,37 +141,67 @@ describe('addPathToCluster', () => {
 			'a.md'
 		);
 
-		expect([result, save.mock.calls.length]).toEqual([false, 0]);
+		expect([
+			result,
+			save.mock.calls.length
+		]).toEqual([
+			false,
+			0
+		]);
 	});
 });
 
 describe('addToMostRecentCluster', () => {
 	it('adds the file to the Cluster with the highest lastTouchedAt', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'old', lastTouchedAt: 1 }),
-			buildCluster({ id: 'new', lastTouchedAt: 9 })
+			buildCluster({
+				id: 'old',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'new',
+				lastTouchedAt: 9
+			})
 		);
 
-		addToMostRecentCluster(store, 'a.md');
+		addToMostRecentCluster(
+			store,
+			'a.md'
+		);
 
 		expect(store.get().clusters['new'].members).toEqual(['a.md']);
 	});
 
 	it('leaves the other Clusters untouched', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'old', lastTouchedAt: 1 }),
-			buildCluster({ id: 'new', lastTouchedAt: 9 })
+			buildCluster({
+				id: 'old',
+				lastTouchedAt: 1
+			}),
+			buildCluster({
+				id: 'new',
+				lastTouchedAt: 9
+			})
 		);
 
-		addToMostRecentCluster(store, 'a.md');
+		addToMostRecentCluster(
+			store,
+			'a.md'
+		);
 
 		expect(store.get().clusters['old'].members).toEqual([]);
 	});
 
 	it('does nothing when there are no Clusters', () => {
-		const { store, save } = buildCountingStore();
+		const {
+			store,
+			save
+		} = buildCountingStore();
 
-		addToMostRecentCluster(store, 'a.md');
+		addToMostRecentCluster(
+			store,
+			'a.md'
+		);
 
 		expect(save).not.toHaveBeenCalled();
 	});
@@ -164,11 +209,17 @@ describe('addToMostRecentCluster', () => {
 
 describe('describeAddition', () => {
 	it('says the file was added', () => {
-		expect(describeAddition('Reading', true)).toBe('Added to Reading.');
+		expect(describeAddition(
+			'Reading',
+			true
+		)).toBe('Added to Reading.');
 	});
 
 	it('says the Cluster already held the file', () => {
-		expect(describeAddition('Reading', false)).toBe('Already in Reading.');
+		expect(describeAddition(
+			'Reading',
+			false
+		)).toBe('Already in Reading.');
 	});
 });
 
@@ -185,7 +236,14 @@ describe('describeRemoval', () => {
 describe('getActiveTabPath', () => {
 	it('returns the file path of the most recent tab', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addFileTab(app, 'a.md', {}));
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
+				'a.md',
+				{}
+			)
+		);
 
 		const result = getActiveTabPath(app);
 
@@ -194,7 +252,13 @@ describe('getActiveTabPath', () => {
 
 	it('returns null when the most recent tab has no file', async () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, await addNonFileTab(app, {}));
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
+		);
 
 		const result = getActiveTabPath(app);
 
@@ -203,7 +267,10 @@ describe('getActiveTabPath', () => {
 
 	it('returns null when there is no most recent tab', () => {
 		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(app, null);
+		setMostRecentLeaf(
+			app,
+			null
+		);
 
 		const result = getActiveTabPath(app);
 
@@ -215,19 +282,34 @@ describe('openMemberFile', () => {
 	it('opens a present file in the active pane', async () => {
 		const app = createConfiguredApp({ files: { 'a.md': '' } });
 		const leaf = app.workspace.getLeaf(true);
-		const openFile = vi.spyOn(leaf, 'openFile').mockResolvedValue();
-		vi.spyOn(app.workspace, 'getLeaf').mockReturnValue(leaf);
+		const openFile = vi.spyOn(
+			leaf,
+			'openFile'
+		).mockResolvedValue();
+		vi.spyOn(
+			app.workspace,
+			'getLeaf'
+		).mockReturnValue(leaf);
 
-		await openMemberFile(app, 'a.md');
+		await openMemberFile(
+			app,
+			'a.md'
+		);
 
 		expect(openFile).toHaveBeenCalledTimes(1);
 	});
 
 	it('does nothing when the file is missing', async () => {
 		const app = createConfiguredApp();
-		const getLeaf = vi.spyOn(app.workspace, 'getLeaf');
+		const getLeaf = vi.spyOn(
+			app.workspace,
+			'getLeaf'
+		);
 
-		await openMemberFile(app, 'gone.md');
+		await openMemberFile(
+			app,
+			'gone.md'
+		);
 
 		expect(getLeaf).not.toHaveBeenCalled();
 	});
@@ -235,9 +317,15 @@ describe('openMemberFile', () => {
 	it('does nothing when the path is a folder', async () => {
 		const app = createConfiguredApp();
 		await app.vault.createFolder('Folder');
-		const getLeaf = vi.spyOn(app.workspace, 'getLeaf');
+		const getLeaf = vi.spyOn(
+			app.workspace,
+			'getLeaf'
+		);
 
-		await openMemberFile(app, 'Folder');
+		await openMemberFile(
+			app,
+			'Folder'
+		);
 
 		expect(getLeaf).not.toHaveBeenCalled();
 	});
@@ -247,15 +335,24 @@ describe('promptAndAdd', () => {
 	it('offers every Cluster to the prompt', () => {
 		const first = buildCluster({ id: 'one' });
 		const second = buildCluster({ id: 'two' });
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 
 		promptAndAdd(
-			buildStoreWith(first, second),
+			buildStoreWith(
+				first,
+				second
+			),
 			prompt,
 			'a.md'
 		);
 
-		expect(spy.mock.calls[0][0]).toEqual([first, second]);
+		expect(spy.mock.calls[0][0]).toEqual([
+			first,
+			second
+		]);
 	});
 
 	it('adds the file to the chosen Cluster', () => {
@@ -289,7 +386,10 @@ describe('promptAndAdd', () => {
 	});
 
 	it('adds nothing when the prompt is cancelled', () => {
-		const { store, save } = buildCountingStore(buildCluster());
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster());
 
 		promptAndAdd(
 			store,
@@ -301,7 +401,10 @@ describe('promptAndAdd', () => {
 	});
 
 	it('does not prompt when there are no Clusters', () => {
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 
 		promptAndAdd(
 			buildStore(),
@@ -313,7 +416,10 @@ describe('promptAndAdd', () => {
 	});
 
 	it('adds nothing when the chosen Cluster no longer exists', () => {
-		const { store, save } = buildCountingStore(buildCluster());
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster());
 
 		promptAndAdd(
 			store,
@@ -328,7 +434,13 @@ describe('promptAndAdd', () => {
 describe('promptAndRemove', () => {
 	it('removes the file directly when exactly one Cluster holds it', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md', 'b.md'] }),
+			buildCluster({
+				id: 'one',
+				members: [
+					'a.md',
+					'b.md'
+				]
+			}),
 			buildCluster({ id: 'two' })
 		);
 
@@ -342,7 +454,10 @@ describe('promptAndRemove', () => {
 	});
 
 	it('does not prompt when exactly one Cluster holds the file', () => {
-		const { prompt, spy } = selectingNothing();
+		const {
+			prompt,
+			spy
+		} = selectingNothing();
 
 		promptAndRemove(
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
@@ -354,10 +469,19 @@ describe('promptAndRemove', () => {
 	});
 
 	it('offers only the Clusters holding the file when several do', () => {
-		const first = buildCluster({ id: 'one', members: ['a.md'] });
-		const second = buildCluster({ id: 'two', members: ['a.md'] });
+		const first = buildCluster({
+			id: 'one',
+			members: ['a.md']
+		});
+		const second = buildCluster({
+			id: 'two',
+			members: ['a.md']
+		});
 		const other = buildCluster({ id: 'three' });
-		const { prompt, spy } = selectingNothing();
+		const {
+			prompt,
+			spy
+		} = selectingNothing();
 
 		promptAndRemove(
 			buildStoreWith(
@@ -369,13 +493,22 @@ describe('promptAndRemove', () => {
 			'a.md'
 		);
 
-		expect(spy.mock.calls[0][0]).toEqual([first, second]);
+		expect(spy.mock.calls[0][0]).toEqual([
+			first,
+			second
+		]);
 	});
 
 	it('removes the file from the selected Clusters only', () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 
 		promptAndRemove(
@@ -384,13 +517,28 @@ describe('promptAndRemove', () => {
 			'a.md'
 		);
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([['a.md'], []]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			['a.md'],
+			[]
+		]);
 	});
 
 	it('removes nothing when the prompt is cancelled', () => {
-		const { store, save } = buildCountingStore(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+		const {
+			store,
+			save
+		} = buildCountingStore(
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 
 		promptAndRemove(
@@ -403,8 +551,14 @@ describe('promptAndRemove', () => {
 	});
 
 	it('does nothing when no Cluster holds the file', () => {
-		const { store, save } = buildCountingStore(buildCluster());
-		const { prompt, spy } = selectingNothing();
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster());
+		const {
+			prompt,
+			spy
+		} = selectingNothing();
 
 		promptAndRemove(
 			store,
@@ -412,35 +566,68 @@ describe('promptAndRemove', () => {
 			'a.md'
 		);
 
-		expect([save.mock.calls.length, spy.mock.calls.length]).toEqual([0, 0]);
+		expect([
+			save.mock.calls.length,
+			spy.mock.calls.length
+		]).toEqual([
+			0,
+			0
+		]);
 	});
 });
 
 describe('removePathFromClusters', () => {
 	it('removes the file from every listed Cluster', async () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 
 		await removePathFromClusters(
 			store,
-			['one', 'two'],
+			[
+				'one',
+				'two'
+			],
 			'a.md'
 		);
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([[], []]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			[],
+			[]
+		]);
 	});
 
 	it('saves once however many Clusters change', async () => {
-		const { store, save } = buildCountingStore(
-			buildCluster({ id: 'one', members: ['a.md'] }),
-			buildCluster({ id: 'two', members: ['a.md'] })
+		const {
+			store,
+			save
+		} = buildCountingStore(
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['a.md']
+			})
 		);
 
 		await removePathFromClusters(
 			store,
-			['one', 'two'],
+			[
+				'one',
+				'two'
+			],
 			'a.md'
 		);
 
@@ -449,13 +636,19 @@ describe('removePathFromClusters', () => {
 
 	it('returns the number of Clusters the file was removed from', async () => {
 		const store = buildStoreWith(
-			buildCluster({ id: 'one', members: ['a.md'] }),
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
 			buildCluster({ id: 'two' })
 		);
 
 		const result = await removePathFromClusters(
 			store,
-			['one', 'two'],
+			[
+				'one',
+				'two'
+			],
 			'a.md'
 		);
 
@@ -463,7 +656,11 @@ describe('removePathFromClusters', () => {
 	});
 
 	it('keeps the other members in order', async () => {
-		const store = buildStoreWith(buildCluster({ members: ['a.md', 'b.md', 'c.md'] }));
+		const store = buildStoreWith(buildCluster({ members: [
+			'a.md',
+			'b.md',
+			'c.md'
+		] }));
 
 		await removePathFromClusters(
 			store,
@@ -471,11 +668,17 @@ describe('removePathFromClusters', () => {
 			'b.md'
 		);
 
-		expect(store.get().clusters['cluster-a'].members).toEqual(['a.md', 'c.md']);
+		expect(store.get().clusters['cluster-a'].members).toEqual([
+			'a.md',
+			'c.md'
+		]);
 	});
 
 	it('saves nothing when no listed Cluster holds the file', async () => {
-		const { store, save } = buildCountingStore(buildCluster());
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster());
 
 		await removePathFromClusters(
 			store,
@@ -489,7 +692,17 @@ describe('removePathFromClusters', () => {
 
 describe('reorderClusterMember', () => {
 	it('moves the member and saves', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md', 'c.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md',
+				'c.md'
+			]
+		}));
 
 		const moved = await reorderClusterMember(
 			store,
@@ -498,12 +711,31 @@ describe('reorderClusterMember', () => {
 			2
 		);
 
-		expect([moved, store.get().clusters['one'].members]).toEqual([true, ['b.md', 'c.md', 'a.md']]);
+		expect([
+			moved,
+			store.get().clusters['one'].members
+		]).toEqual([
+			true,
+			[
+				'b.md',
+				'c.md',
+				'a.md'
+			]
+		]);
 		expect(save).toHaveBeenCalledTimes(1);
 	});
 
 	it('saves nothing when the move changes nothing', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		const moved = await reorderClusterMember(
 			store,
@@ -517,7 +749,16 @@ describe('reorderClusterMember', () => {
 	});
 
 	it('saves nothing for a Cluster that does not exist', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'b.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'b.md'
+			]
+		}));
 
 		const moved = await reorderClusterMember(
 			store,
@@ -533,20 +774,45 @@ describe('reorderClusterMember', () => {
 
 describe('removeMissingMembers', () => {
 	it('removes the given paths in one save', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'gone.md', 'also-gone.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'gone.md',
+				'also-gone.md'
+			]
+		}));
 
 		const removed = await removeMissingMembers(
 			store,
 			'one',
-			['gone.md', 'also-gone.md']
+			[
+				'gone.md',
+				'also-gone.md'
+			]
 		);
 
-		expect([removed, store.get().clusters['one'].members]).toEqual([true, ['a.md']]);
+		expect([
+			removed,
+			store.get().clusters['one'].members
+		]).toEqual([
+			true,
+			['a.md']
+		]);
 		expect(save).toHaveBeenCalledTimes(1);
 	});
 
 	it('saves nothing when the Cluster holds none of the paths', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 
 		const removed = await removeMissingMembers(
 			store,
@@ -561,7 +827,14 @@ describe('removeMissingMembers', () => {
 
 describe('resolveMissingMember', () => {
 	it('replaces the stale path at its position', async () => {
-		const { store } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md', 'gone.md', 'c.md'] }));
+		const { store } = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'gone.md',
+				'c.md'
+			]
+		}));
 
 		const replaced = await resolveMissingMember(
 			store,
@@ -570,13 +843,29 @@ describe('resolveMissingMember', () => {
 			'b.md'
 		);
 
-		expect([replaced, store.get().clusters['one'].members]).toEqual([true, ['a.md', 'b.md', 'c.md']]);
+		expect([
+			replaced,
+			store.get().clusters['one'].members
+		]).toEqual([
+			true,
+			[
+				'a.md',
+				'b.md',
+				'c.md'
+			]
+		]);
 	});
 
 	it('leaves other Clusters holding the same stale path as they are', async () => {
 		const { store } = buildCountingStore(
-			buildCluster({ id: 'one', members: ['gone.md'] }),
-			buildCluster({ id: 'two', members: ['gone.md'] })
+			buildCluster({
+				id: 'one',
+				members: ['gone.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['gone.md']
+			})
 		);
 
 		await resolveMissingMember(
@@ -586,11 +875,23 @@ describe('resolveMissingMember', () => {
 			'b.md'
 		);
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([['b.md'], ['gone.md']]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			['b.md'],
+			['gone.md']
+		]);
 	});
 
 	it('saves nothing when the Cluster does not hold the stale path', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['a.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: ['a.md']
+		}));
 
 		const replaced = await resolveMissingMember(
 			store,
@@ -604,7 +905,13 @@ describe('resolveMissingMember', () => {
 	});
 
 	it('saves nothing when the Cluster does not exist', async () => {
-		const { store, save } = buildCountingStore(buildCluster({ id: 'one', members: ['gone.md'] }));
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: ['gone.md']
+		}));
 
 		const replaced = await resolveMissingMember(
 			store,
@@ -646,7 +953,18 @@ function buildSyncedStore(one: string[], two: string[]): SettingsStore {
 
 describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 	it('makes the same move in the paired Cluster', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md', 'z.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md',
+				'c.md'
+			],
+			[
+				'x.md',
+				'y.md',
+				'z.md'
+			]
+		);
 
 		await reorderClusterMember(
 			store,
@@ -655,11 +973,25 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 			2
 		);
 
-		expect(store.get().clusters['two'].members).toEqual(['y.md', 'z.md', 'x.md']);
+		expect(store.get().clusters['two'].members).toEqual([
+			'y.md',
+			'z.md',
+			'x.md'
+		]);
 	});
 
 	it('does nothing to the paired Cluster when a position is out of its range', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md',
+				'c.md'
+			],
+			[
+				'x.md',
+				'y.md'
+			]
+		);
 
 		await reorderClusterMember(
 			store,
@@ -668,19 +1000,31 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 			2
 		);
 
-		expect(store.get().clusters['two'].members).toEqual(['x.md', 'y.md']);
+		expect(store.get().clusters['two'].members).toEqual([
+			'x.md',
+			'y.md'
+		]);
 	});
 
 	it('does not mirror when the move changes nothing', async () => {
-		const { store, save } = buildCountingStore(
+		const {
+			store,
+			save
+		} = buildCountingStore(
 			buildCluster({
 				id: 'one',
-				members: ['a.md', 'b.md'],
+				members: [
+					'a.md',
+					'b.md'
+				],
 				pairedWith: 'two',
 			}),
 			buildCluster({
 				id: 'two',
-				members: ['x.md', 'y.md'],
+				members: [
+					'x.md',
+					'y.md'
+				],
 				pairedWith: 'one',
 			})
 		);
@@ -696,20 +1040,24 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 	});
 
 	it('leaves the paired Cluster alone when sync is off', async () => {
-		const store = buildStore({
-			clusters: buildClusters(
-				buildCluster({
-					id: 'one',
-					members: ['a.md', 'b.md'],
-					pairedWith: 'two',
-				}),
-				buildCluster({
-					id: 'two',
-					members: ['x.md', 'y.md'],
-					pairedWith: 'one',
-				})
-			),
-		});
+		const store = buildStore({ clusters: buildClusters(
+			buildCluster({
+				id: 'one',
+				members: [
+					'a.md',
+					'b.md'
+				],
+				pairedWith: 'two',
+			}),
+			buildCluster({
+				id: 'two',
+				members: [
+					'x.md',
+					'y.md'
+				],
+				pairedWith: 'one',
+			})
+		) });
 
 		await reorderClusterMember(
 			store,
@@ -718,7 +1066,10 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 			1
 		);
 
-		expect(store.get().clusters['two'].members).toEqual(['x.md', 'y.md']);
+		expect(store.get().clusters['two'].members).toEqual([
+			'x.md',
+			'y.md'
+		]);
 	});
 
 	it('saves both Clusters in one save', async () => {
@@ -729,12 +1080,18 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 				clusters: buildClusters(
 					buildCluster({
 						id: 'one',
-						members: ['a.md', 'b.md'],
+						members: [
+							'a.md',
+							'b.md'
+						],
 						pairedWith: 'two',
 					}),
 					buildCluster({
 						id: 'two',
-						members: ['x.md', 'y.md'],
+						members: [
+							'x.md',
+							'y.md'
+						],
 						pairedWith: 'one',
 					})
 				),
@@ -755,7 +1112,18 @@ describe('reorderClusterMember with keepPairedClustersInSync on', () => {
 
 describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 	it('removes the member at the same position from the paired Cluster', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md', 'y.md', 'z.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md',
+				'c.md'
+			],
+			[
+				'x.md',
+				'y.md',
+				'z.md'
+			]
+		);
 
 		await removePathFromClusters(
 			store,
@@ -763,11 +1131,21 @@ describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 			'b.md'
 		);
 
-		expect(store.get().clusters['two'].members).toEqual(['x.md', 'z.md']);
+		expect(store.get().clusters['two'].members).toEqual([
+			'x.md',
+			'z.md'
+		]);
 	});
 
 	it('does nothing to the paired Cluster when it has no member at that position', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md', 'c.md'], ['x.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md',
+				'c.md'
+			],
+			['x.md']
+		);
 
 		await removePathFromClusters(
 			store,
@@ -779,7 +1157,16 @@ describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 	});
 
 	it('removes by position even when the paired member\'s file is missing', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md'], ['gone.md', 'y.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md'
+			],
+			[
+				'gone.md',
+				'y.md'
+			]
+		);
 
 		await removePathFromClusters(
 			store,
@@ -791,7 +1178,10 @@ describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 	});
 
 	it('does not count the mirrored removal', async () => {
-		const store = buildSyncedStore(['a.md'], ['x.md']);
+		const store = buildSyncedStore(
+			['a.md'],
+			['x.md']
+		);
 
 		const count = await removePathFromClusters(
 			store,
@@ -803,32 +1193,48 @@ describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 	});
 
 	it('does not mirror onto a paired Cluster that was listed too', async () => {
-		const store = buildSyncedStore(['a.md', 'b.md'], ['a.md', 'b.md']);
+		const store = buildSyncedStore(
+			[
+				'a.md',
+				'b.md'
+			],
+			[
+				'a.md',
+				'b.md'
+			]
+		);
 
 		await removePathFromClusters(
 			store,
-			['one', 'two'],
+			[
+				'one',
+				'two'
+			],
 			'a.md'
 		);
 
-		expect([store.get().clusters['one'].members, store.get().clusters['two'].members]).toEqual([['b.md'], ['b.md']]);
+		expect([
+			store.get().clusters['one'].members,
+			store.get().clusters['two'].members
+		]).toEqual([
+			['b.md'],
+			['b.md']
+		]);
 	});
 
 	it('leaves the paired Cluster alone when sync is off', async () => {
-		const store = buildStore({
-			clusters: buildClusters(
-				buildCluster({
-					id: 'one',
-					members: ['a.md'],
-					pairedWith: 'two',
-				}),
-				buildCluster({
-					id: 'two',
-					members: ['x.md'],
-					pairedWith: 'one',
-				})
-			),
-		});
+		const store = buildStore({ clusters: buildClusters(
+			buildCluster({
+				id: 'one',
+				members: ['a.md'],
+				pairedWith: 'two',
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['x.md'],
+				pairedWith: 'one',
+			})
+		) });
 
 		await removePathFromClusters(
 			store,
@@ -853,7 +1259,10 @@ describe('removePathFromClusters with keepPairedClustersInSync on', () => {
 					members: ['x.md'],
 					pairedWith: 'one',
 				}),
-				buildCluster({ id: 'three', members: ['q.md'] })
+				buildCluster({
+					id: 'three',
+					members: ['q.md']
+				})
 			),
 		});
 

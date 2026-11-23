@@ -198,9 +198,10 @@ describe('parseQuoteBlockquotes', () => {
 
 	it('strips markers and surrounding whitespace regardless of spacing after ">" (none, single, multiple)', () => {
 		// ">  Two spaces" and ">No space" both join with a single space.
-		const raw = ['>No space before this.', '>  Two spaces before this.'].join(
-			'\n'
-		);
+		const raw = [
+			'>No space before this.',
+			'>  Two spaces before this.'
+		].join('\n');
 
 		const result = parseQuoteBlockquotes(raw);
 
@@ -319,7 +320,10 @@ describe('serializeQuotesAsBlockquotes', () => {
 
 	it('drops a quote with empty text on re-parse, rather than round-tripping it', () => {
 		// An empty quote serializes to a block that parsing drops, so it doesn't round-trip.
-		const quotes = [{ text: '', author: 'An Author' }];
+		const quotes = [{
+			text: '',
+			author: 'An Author'
+		}];
 
 		const result = parseQuoteBlockquotes(serializeQuotesAsBlockquotes(quotes));
 

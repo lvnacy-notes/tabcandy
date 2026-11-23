@@ -1,8 +1,14 @@
 /** @file The Cluster sidebar component. */
-import { App, TFile } from 'obsidian';
+import {
+	App,
+	TFile
+} from 'obsidian';
 import { useState } from 'react';
 import { ClusterRow } from './components';
-import { useSettings, useVaultRevision } from './hooks';
+import {
+	useSettings,
+	useVaultRevision
+} from './hooks';
 import { addPathToCluster } from '../clusters/clusterMembership';
 import { unlinkCluster } from '../clusters/clusterPairing';
 import { buildMemberActions } from '../obsidian/clusterMemberActions';
@@ -11,7 +17,10 @@ import {
 	getOpenMembers,
 	openCluster
 } from '../obsidian/clusterOpenClose';
-import { openClusterTray, openClusterTrayAt } from '../obsidian/trayLeaves';
+import {
+	openClusterTray,
+	openClusterTrayAt
+} from '../obsidian/trayLeaves';
 import { getDraggedFilePath } from '../obsidian/fileDrag';
 import SettingsStore from '../settings/SettingsStore';
 
@@ -43,7 +52,10 @@ export default function ClusterSidebar({
 }: ClusterSidebarProps) {
 	const { clusters } = useSettings(settingsStore);
 	useVaultRevision(app);
-	const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(new Set());
+	const [
+		expandedIds,
+		setExpandedIds
+	] = useState<ReadonlySet<string>>(new Set());
 
 	/**
 	 * Expands the Cluster `id` when collapsed and collapses it when expanded.
@@ -92,7 +104,10 @@ export default function ClusterSidebar({
 						cluster = { cluster }
 						expanded = { expandedIds.has(cluster.id) }
 						getDraggedPath = { () => getDraggedFilePath(app) }
-						hasOpenMember = { () => getOpenMembers(app, cluster).size > 0 }
+						hasOpenMember = { () => getOpenMembers(
+							app,
+							cluster
+						).size > 0 }
 						isFilePresent = { (path) => app.vault.getAbstractFileByPath(path) instanceof TFile }
 						onCloseCluster = { () => {
 							void closeCluster(
@@ -139,7 +154,10 @@ export default function ClusterSidebar({
 						onResolveMissing = { actions.resolveMissing }
 						onToggle = { () => toggle(cluster.id) }
 						onUnlink = { () => {
-							void unlinkCluster(settingsStore, cluster.id);
+							void unlinkCluster(
+								settingsStore,
+								cluster.id
+							);
 						} }
 						pairedName = { cluster.pairedWith === null ? null : clusters[cluster.pairedWith]?.name ?? null }
 					/>

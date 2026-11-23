@@ -4,7 +4,10 @@ import {
 	ViewStateResult,
 	WorkspaceLeaf
 } from 'obsidian';
-import { Root, createRoot } from 'react-dom/client';
+import {
+	Root,
+	createRoot
+} from 'react-dom/client';
 import TrayReturnTracker from './TrayReturnTracker';
 import ClusterTray from '../app/ClusterTray';
 import SettingsStore from '../settings/SettingsStore';
@@ -87,24 +90,22 @@ export class ClusterTrayView extends ItemView {
 			return;
 		}
 
-		this.root?.render(
-			<ClusterTray
-				app = { this.app }
-				settingsStore = { this.settingsStore }
-				clusterId = { this.clusterId }
-				onConfirmUnlink = { this.onConfirmUnlink }
-				onOpenMember = { (path) => {
-					if (this.clusterId !== null) {
-						void this.trayReturn.openMember(
-							this.leaf,
-							this.clusterId,
-							path
-						);
-					}
-				} }
-				onPair = { this.onPair }
-			/>
-		);
+		this.root?.render(<ClusterTray
+			app = { this.app }
+			settingsStore = { this.settingsStore }
+			clusterId = { this.clusterId }
+			onConfirmUnlink = { this.onConfirmUnlink }
+			onOpenMember = { (path) => {
+				if (this.clusterId !== null) {
+					void this.trayReturn.openMember(
+						this.leaf,
+						this.clusterId,
+						path
+					);
+				}
+			} }
+			onPair = { this.onPair }
+		/>);
 	}
 
 	/**
@@ -119,6 +120,9 @@ export class ClusterTrayView extends ItemView {
 		}
 		this.hasState = true;
 		this.render();
-		await super.setState(state, result);
+		await super.setState(
+			state,
+			result
+		);
 	}
 }

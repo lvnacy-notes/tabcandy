@@ -569,9 +569,15 @@ describe('normalizeSettings', () => {
 			return {
 				id: 'a',
 				name: 'Research',
-				members: ['one.md', 'two.md'],
+				members: [
+					'one.md',
+					'two.md'
+				],
 				flavor: '#ff8800',
-				layoutSnapshot: { main: { type: 'split', children: [] } },
+				layoutSnapshot: { main: {
+					type: 'split',
+					children: []
+				} },
 				lastTouchedAt: 1700000000000,
 				pairedWith: null,
 				...overrides,
@@ -595,7 +601,11 @@ describe('normalizeSettings', () => {
 		});
 
 		it('loads settings saved before Clusters existed with no Clusters and everything else intact', () => {
-			const raw = { settingsVersion: 1, showTime: false, greetingText: 'Hi' };
+			const raw = {
+				settingsVersion: 1,
+				showTime: false,
+				greetingText: 'Hi'
+			};
 
 			const result = normalizeSettings(raw);
 
@@ -615,29 +625,65 @@ describe('normalizeSettings', () => {
 		});
 
 		it.each([
-			['a string', 'not an object'],
-			['a number', 5],
-			['null', null],
-			['an array', [storedCluster()]],
-		])('falls back to an empty record when clusters is %s', (_kind, value) => {
-			const raw = { clusters: value };
+			[
+				'a string',
+				'not an object'
+			],
+			[
+				'a number',
+				5
+			],
+			[
+				'null',
+				null
+			],
+			[
+				'an array',
+				[storedCluster()]
+			],
+		])(
+			'falls back to an empty record when clusters is %s',
+			(
+				_kind,
+				value
+			) => {
+				const raw = { clusters: value };
 
-			const result = normalizeSettings(raw);
+				const result = normalizeSettings(raw);
 
-			expect(result.clusters).toEqual({});
-		});
+				expect(result.clusters).toEqual({});
+			}
+		);
 
 		it.each([
-			['a string', 'oops'],
-			['null', null],
-			['an array', ['oops']],
-		])('drops a stored Cluster that is %s without touching the others', (_kind, value) => {
-			const raw = { clusters: { bad: value, a: storedCluster() } };
+			[
+				'a string',
+				'oops'
+			],
+			[
+				'null',
+				null
+			],
+			[
+				'an array',
+				['oops']
+			],
+		])(
+			'drops a stored Cluster that is %s without touching the others',
+			(
+				_kind,
+				value
+			) => {
+				const raw = { clusters: {
+					bad: value,
+					a: storedCluster()
+				} };
 
-			const result = normalizeSettings(raw);
+				const result = normalizeSettings(raw);
 
-			expect(Object.keys(result.clusters)).toEqual(['a']);
-		});
+				expect(Object.keys(result.clusters)).toEqual(['a']);
+			}
+		);
 
 		it('takes the id from the storage key when the stored id disagrees', () => {
 			const raw = { clusters: { real: storedCluster({ id: 'something-else' }) } };
@@ -648,7 +694,10 @@ describe('normalizeSettings', () => {
 		});
 
 		it('takes the id from the storage key when the stored id is missing', () => {
-			const { id: _id, ...withoutId } = storedCluster();
+			const {
+				id: _id,
+				...withoutId
+			} = storedCluster();
 			const raw = { clusters: { real: withoutId } };
 
 			const result = normalizeSettings(raw);
@@ -657,9 +706,7 @@ describe('normalizeSettings', () => {
 		});
 
 		it('ignores a __proto__ key instead of letting it replace the record prototype', () => {
-			const raw: unknown = JSON.parse(
-				'{"clusters": {"__proto__": {"name": "sneaky"}, "a": {"name": "fine"}}}'
-			);
+			const raw: unknown = JSON.parse('{"clusters": {"__proto__": {"name": "sneaky"}, "a": {"name": "fine"}}}');
 
 			const result = normalizeSettings(raw);
 
@@ -684,13 +731,20 @@ describe('normalizeSettings', () => {
 		});
 
 		it('drops non-string members one at a time and keeps the rest in order', () => {
-			const raw = {
-				clusters: { a: storedCluster({ members: ['one.md', 7, null, 'two.md', {}] }) },
-			};
+			const raw = { clusters: { a: storedCluster({ members: [
+				'one.md',
+				7,
+				null,
+				'two.md',
+				{}
+			] }) } };
 
 			const result = normalizeSettings(raw);
 
-			expect(result.clusters.a.members).toEqual(['one.md', 'two.md']);
+			expect(result.clusters.a.members).toEqual([
+				'one.md',
+				'two.md'
+			]);
 		});
 
 		it('falls back to no members when members is not an array', () => {
@@ -715,22 +769,49 @@ describe('normalizeSettings', () => {
 		});
 
 		it.each([
-			['a color name', 'red'],
-			['a hex without the hash', 'ff8800'],
-			['a hex of the wrong length', '#ff88'],
-			['non-hex digits', '#gggggg'],
-			['CSS that would escape the property', '#fff; background: url(x)'],
-			['a number', 0xff8800],
-		])('drops a Flavor that is %s, leaving it unset', (_kind, flavor) => {
-			const raw = { clusters: { a: storedCluster({ flavor }) } };
+			[
+				'a color name',
+				'red'
+			],
+			[
+				'a hex without the hash',
+				'ff8800'
+			],
+			[
+				'a hex of the wrong length',
+				'#ff88'
+			],
+			[
+				'non-hex digits',
+				'#gggggg'
+			],
+			[
+				'CSS that would escape the property',
+				'#fff; background: url(x)'
+			],
+			[
+				'a number',
+				0xff8800
+			],
+		])(
+			'drops a Flavor that is %s, leaving it unset',
+			(
+				_kind,
+				flavor
+			) => {
+				const raw = { clusters: { a: storedCluster({ flavor }) } };
 
-			const result = normalizeSettings(raw);
+				const result = normalizeSettings(raw);
 
-			expect(result.clusters.a).not.toHaveProperty('flavor');
-		});
+				expect(result.clusters.a).not.toHaveProperty('flavor');
+			}
+		);
 
 		it('leaves Flavor unset when it was never stored', () => {
-			const { flavor: _flavor, ...withoutFlavor } = storedCluster();
+			const {
+				flavor: _flavor,
+				...withoutFlavor
+			} = storedCluster();
 			const raw = { clusters: { a: withoutFlavor } };
 
 			const result = normalizeSettings(raw);
@@ -739,22 +820,52 @@ describe('normalizeSettings', () => {
 		});
 
 		it.each([
-			['a string', 'main'],
-			['an array', [1, 2]],
-			['null', null],
-		])('drops a layoutSnapshot that is %s, leaving it unset', (_kind, layoutSnapshot) => {
-			const raw = { clusters: { a: storedCluster({ layoutSnapshot }) } };
+			[
+				'a string',
+				'main'
+			],
+			[
+				'an array',
+				[
+					1,
+					2
+				]
+			],
+			[
+				'null',
+				null
+			],
+		])(
+			'drops a layoutSnapshot that is %s, leaving it unset',
+			(
+				_kind,
+				layoutSnapshot
+			) => {
+				const raw = { clusters: { a: storedCluster({ layoutSnapshot }) } };
 
-			const result = normalizeSettings(raw);
+				const result = normalizeSettings(raw);
 
-			expect(result.clusters.a).not.toHaveProperty('layoutSnapshot');
-		});
+				expect(result.clusters.a).not.toHaveProperty('layoutSnapshot');
+			}
+		);
 
 		it.each([
-			['a string', '1700000000000'],
-			['NaN', Number.NaN],
-			['Infinity', Number.POSITIVE_INFINITY],
-			['null', null],
+			[
+				'a string',
+				'1700000000000'
+			],
+			[
+				'NaN',
+				Number.NaN
+			],
+			[
+				'Infinity',
+				Number.POSITIVE_INFINITY
+			],
+			[
+				'null',
+				null
+			],
 		])('falls back to 0 when lastTouchedAt is %s', (_kind, lastTouchedAt) => {
 			const raw = { clusters: { a: storedCluster({ lastTouchedAt }) } };
 
@@ -772,12 +883,16 @@ describe('normalizeSettings', () => {
 		});
 
 		it('keeps a Pairing when both Clusters point at each other', () => {
-			const raw = {
-				clusters: {
-					a: storedCluster({ id: 'a', pairedWith: 'b' }),
-					b: storedCluster({ id: 'b', pairedWith: 'a' }),
-				},
-			};
+			const raw = { clusters: {
+				a: storedCluster({
+					id: 'a',
+					pairedWith: 'b'
+				}),
+				b: storedCluster({
+					id: 'b',
+					pairedWith: 'a'
+				}),
+			} };
 
 			const result = normalizeSettings(raw);
 
@@ -802,12 +917,16 @@ describe('normalizeSettings', () => {
 		});
 
 		it('unpairs a one-sided Pairing, where the partner does not point back', () => {
-			const raw = {
-				clusters: {
-					a: storedCluster({ id: 'a', pairedWith: 'b' }),
-					b: storedCluster({ id: 'b', pairedWith: null }),
-				},
-			};
+			const raw = { clusters: {
+				a: storedCluster({
+					id: 'a',
+					pairedWith: 'b'
+				}),
+				b: storedCluster({
+					id: 'b',
+					pairedWith: null
+				}),
+			} };
 
 			const result = normalizeSettings(raw);
 
@@ -816,13 +935,20 @@ describe('normalizeSettings', () => {
 		});
 
 		it('keeps only the reciprocal Pairing when a third Cluster points into it', () => {
-			const raw = {
-				clusters: {
-					a: storedCluster({ id: 'a', pairedWith: 'b' }),
-					b: storedCluster({ id: 'b', pairedWith: 'c' }),
-					c: storedCluster({ id: 'c', pairedWith: 'b' }),
-				},
-			};
+			const raw = { clusters: {
+				a: storedCluster({
+					id: 'a',
+					pairedWith: 'b'
+				}),
+				b: storedCluster({
+					id: 'b',
+					pairedWith: 'c'
+				}),
+				c: storedCluster({
+					id: 'c',
+					pairedWith: 'b'
+				}),
+			} };
 
 			const result = normalizeSettings(raw);
 
@@ -832,12 +958,13 @@ describe('normalizeSettings', () => {
 		});
 
 		it('unpairs a Cluster whose partner was dropped for not being an object', () => {
-			const raw = {
-				clusters: {
-					a: storedCluster({ id: 'a', pairedWith: 'b' }),
-					b: 'corrupt',
-				},
-			};
+			const raw = { clusters: {
+				a: storedCluster({
+					id: 'a',
+					pairedWith: 'b'
+				}),
+				b: 'corrupt',
+			} };
 
 			const result = normalizeSettings(raw);
 

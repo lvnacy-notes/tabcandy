@@ -14,11 +14,15 @@ import {
 	choosingNothing,
 	isAvailable
 } from '../test/clusterHelpers';
-import { buildCluster, buildStore } from '../test/fakes';
+import {
+	buildCluster,
+	buildStore
+} from '../test/fakes';
 
-vi.mock('../obsidian/clusterOpenClose', () => ({
-	openCluster: vi.fn(),
-}));
+vi.mock(
+	'../obsidian/clusterOpenClose',
+	() => ({ openCluster: vi.fn() })
+);
 
 describe('open-cluster command', () => {
 	it('has its id and name', () => {
@@ -28,7 +32,13 @@ describe('open-cluster command', () => {
 			choosingNothing().prompt
 		);
 
-		expect([command.id, command.name]).toEqual(['open-cluster', 'Open cluster']);
+		expect([
+			command.id,
+			command.name
+		]).toEqual([
+			'open-cluster',
+			'Open cluster'
+		]);
 	});
 
 	it('is available when a Cluster exists', () => {
@@ -56,7 +66,10 @@ describe('open-cluster command', () => {
 	});
 
 	it('does not prompt when only checking availability', () => {
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const command = buildInvokeCommand(
 			createFakeWorkspaceApp(),
 			buildStoreWith(buildCluster()),
@@ -69,21 +82,33 @@ describe('open-cluster command', () => {
 	});
 
 	it('offers every Cluster to the prompt', () => {
-		const { prompt, spy } = choosingNothing();
+		const {
+			prompt,
+			spy
+		} = choosingNothing();
 		const command = buildInvokeCommand(
 			createFakeWorkspaceApp(),
-			buildStoreWith(buildCluster({ id: 'one' }), buildCluster({ id: 'two' })),
+			buildStoreWith(
+				buildCluster({ id: 'one' }),
+				buildCluster({ id: 'two' })
+			),
 			prompt
 		);
 
 		command.checkCallback?.(false);
 
-		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual(['one', 'two']);
+		expect((spy.mock.calls[0][0] as { id: string }[]).map((cluster) => cluster.id)).toEqual([
+			'one',
+			'two'
+		]);
 	});
 
 	it('opens the chosen Cluster', () => {
 		const app = createFakeWorkspaceApp();
-		const store = buildStoreWith(buildCluster({ id: 'one' }), buildCluster({ id: 'two' }));
+		const store = buildStoreWith(
+			buildCluster({ id: 'one' }),
+			buildCluster({ id: 'two' })
+		);
 		const command = buildInvokeCommand(
 			app,
 			store,

@@ -69,7 +69,11 @@ describe('registerClusterCreationMenu', () => {
 
 	it('adds both items to a tab header\'s menu', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -87,7 +91,11 @@ describe('registerClusterCreationMenu', () => {
 
 	it('adds nothing to a menu from another source', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addFileTab(app, 'a.md', {});
+		const leaf = await addFileTab(
+			app,
+			'a.md',
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -116,7 +124,10 @@ describe('registerClusterCreationMenu', () => {
 
 	it('adds nothing for a tab with no file in a pane with none', async () => {
 		const app = createFakeWorkspaceApp();
-		const leaf = await addNonFileTab(app, {});
+		const leaf = await addNonFileTab(
+			app,
+			{}
+		);
 
 		const items = openMenu(
 			app,
@@ -132,8 +143,15 @@ describe('registerClusterCreationMenu', () => {
 	it('adds only the pane item for a tab with no file in a pane with files', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'a.md', pane);
-		const leaf = await addNonFileTab(app, pane);
+		await addFileTab(
+			app,
+			'a.md',
+			pane
+		);
+		const leaf = await addNonFileTab(
+			app,
+			pane
+		);
 
 		const items = openMenu(
 			app,
@@ -149,8 +167,16 @@ describe('registerClusterCreationMenu', () => {
 	it('creates a Cluster of the clicked tab only from "Create cluster from tab"', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'sibling.md', pane);
-		const clicked = await addFileTab(app, 'clicked.md', pane);
+		await addFileTab(
+			app,
+			'sibling.md',
+			pane
+		);
+		const clicked = await addFileTab(
+			app,
+			'clicked.md',
+			pane
+		);
 		const store = buildStore();
 		const items = openMenu(
 			app,
@@ -169,8 +195,16 @@ describe('registerClusterCreationMenu', () => {
 	it('creates a Cluster of the whole pane from "Create cluster from pane"', async () => {
 		const app = createFakeWorkspaceApp();
 		const pane = {};
-		await addFileTab(app, 'sibling.md', pane);
-		const clicked = await addFileTab(app, 'clicked.md', pane);
+		await addFileTab(
+			app,
+			'sibling.md',
+			pane
+		);
+		const clicked = await addFileTab(
+			app,
+			'clicked.md',
+			pane
+		);
 		const store = buildStore();
 		const items = openMenu(
 			app,
@@ -183,12 +217,19 @@ describe('registerClusterCreationMenu', () => {
 		items[1].click();
 
 		const [created] = Object.values(store.get().clusters);
-		expect(created.members).toEqual(['sibling.md', 'clicked.md']);
+		expect(created.members).toEqual([
+			'sibling.md',
+			'clicked.md'
+		]);
 	});
 
 	it('creates nothing when the prompt is cancelled', async () => {
 		const app = createFakeWorkspaceApp();
-		const clicked = await addFileTab(app, 'clicked.md', {});
+		const clicked = await addFileTab(
+			app,
+			'clicked.md',
+			{}
+		);
 		const store = buildStore();
 		const items = openMenu(
 			app,
