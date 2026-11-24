@@ -1,9 +1,5 @@
 /** @file Tests for the Cluster sidebar. */
-import { 
-	App, 
-	Menu 
-} from 'obsidian';
-import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
+import { App } from 'obsidian';
 import { act } from 'react';
 import {
 	afterEach,
@@ -16,8 +12,7 @@ import {
 	cleanup,
 	fireEvent,
 	render,
-	screen,
-	waitFor
+	screen
 } from '@testing-library/react';
 import ClusterSidebar from './ClusterSidebar';
 import { buildStoreWith } from '../test/clusterHelpers';
@@ -29,39 +24,83 @@ import {
 	buildCluster, 
 	createConfiguredApp 
 } from '../test/fakes';
+import { captureMenus } from '../test/menuHelpers';
 import SettingsStore from '../settings/SettingsStore';
 
+/** Constructor arguments of each resolve modal created. */
 const opened = vi.hoisted((): unknown[][] => []);
+
+/** Arguments of each `openClusterTray` call. */
 const openedTrays = vi.hoisted((): unknown[][] => []);
+
+/** Arguments of each `openClusterTrayAt` call. */
 const openedTraysAt = vi.hoisted((): unknown[][] => []);
+
+/** Arguments of each `openCluster` call. */
 const openedClusters = vi.hoisted((): unknown[][] => []);
+
+/** Arguments of each `closeCluster` call. */
 const closedClusters = vi.hoisted((): unknown[][] => []);
+
+/** Number of open members the mocked `getOpenMembers` reports. */
 const openMembers = vi.hoisted(() => ({ size: 0 }));
 
+/** Replaces opening and closing a Cluster with recorders. */
 vi.mock('../obsidian/clusterOpenClose', () => ({
+	/**
+	 * Records a close.
+	 *
+	 * @param args - The arguments the sidebar passed.
+	 */
 	closeCluster: (...args: unknown[]) => {
 		closedClusters.push(args);
 	},
+	/**
+	 * Reports the open members as a count.
+	 *
+	 * @returns An object holding `size`.
+	 */
 	getOpenMembers: () => ({ size: openMembers.size }),
+	/**
+	 * Records an open.
+	 *
+	 * @param args - The arguments the sidebar passed.
+	 */
 	openCluster: (...args: unknown[]) => {
 		openedClusters.push(args);
 	},
 }));
 
+/** Replaces opening a Tray with recorders. */
 vi.mock('../obsidian/trayLeaves', () => ({
+	/**
+	 * Records a Tray opened in the active pane.
+	 *
+	 * @param args - The arguments the sidebar passed.
+	 */
 	openClusterTray: (...args: unknown[]) => {
 		openedTrays.push(args);
 	},
+	/**
+	 * Records a Tray opened where a heading was dropped.
+	 *
+	 * @param args - The arguments the sidebar passed.
+	 */
 	openClusterTrayAt: (...args: unknown[]) => {
 		openedTraysAt.push(args);
 	},
 }));
 
+/** Replaces the resolve modal with one that records its arguments and opens nothing. */
 vi.mock('../ui/ResolveMissingModal', () => ({default: class {
+	/**
+	 * @param args - The arguments the sidebar passed.
+	 */
 	constructor(...args: unknown[]) {
 		opened.push(args);
 	}
 
+	/** Opens nothing. */
 	open(): void {}
 },}));
 
@@ -76,6 +115,7 @@ afterEach(cleanup);
  * @param store - The store.
  * @param onCreateCluster - Called when the create button is clicked.
  * @param pairing - Called with a Cluster's id to pair it or to unlink it after a confirmation.
+ * @param management - Called with a Cluster's id to edit it or to delete it after a confirmation.
  * @returns The render result.
  */
 function renderSidebar(
@@ -85,6 +125,10 @@ function renderSidebar(
 	pairing: { 
 		onConfirmUnlink?: (id: string) => void; 
 		onPair?: (id: string) => void 
+	} = {},
+	management: {
+		onDeleteCluster?: (id: string) => void;
+		onEditCluster?: (id: string) => void
 	} = {}
 ): ReturnType<typeof render> {
 	return render(<ClusterSidebar
@@ -92,6 +136,8 @@ function renderSidebar(
 		settingsStore = { store }
 		onConfirmUnlink = { pairing.onConfirmUnlink ?? (() => {}) }
 		onCreateCluster = { onCreateCluster }
+		onDeleteCluster = { management.onDeleteCluster ?? (() => {}) }
+		onEditCluster = { management.onEditCluster ?? (() => {}) }
 		onPair = { pairing.onPair ?? (() => {}) }
 	/>);
 }
@@ -311,10 +357,9 @@ describe('ClusterSidebar', () => {
 		fireEvent.click(screen.getByText('Cluster A'));
 
 		fireEvent.click(screen.getAllByLabelText('Remove from cluster')[0]);
+		await act(async () => {});
 
-		await waitFor(() => {
-			expect(screen.queryByText('a')).toBeNull();
-		});
+		expect(screen.queryByText('a')).toBeNull();
 	});
 
 	it('shows a Cluster added after it first rendered', async () => {
@@ -365,14 +410,13 @@ describe('ClusterSidebar', () => {
 			rows[2], 
 			{ dataTransfer }
 		);
+		await act(async () => {});
 
-		await waitFor(() => {
-			expect(store.get().clusters['one'].members).toEqual([
-				'b.md', 
-				'c.md', 
-				'a.md'
-			]);
-		});
+		expect(store.get().clusters['one'].members).toEqual([
+			'b.md', 
+			'c.md', 
+			'a.md'
+		]);
 	});
 
 	it('adds a dropped file to the Cluster it is dropped on', async () => {
@@ -398,13 +442,12 @@ describe('ClusterSidebar', () => {
 			screen.getByText('Cluster A'), 
 			{ dataTransfer: buildDataTransfer() }
 		);
+		await act(async () => {});
 
-		await waitFor(() => {
-			expect(store.get().clusters['one'].members).toEqual([
-				'a.md', 
-				'x.md'
-			]);
-		});
+		expect(store.get().clusters['one'].members).toEqual([
+			'a.md', 
+			'x.md'
+		]);
 	});
 
 	it('opens the resolve modal for the Cluster when its drawer has missing members', () => {
@@ -435,14 +478,7 @@ describe('ClusterSidebar', () => {
 
 	it('opens the Cluster\'s Tray from its context menu', () => {
 		openedTrays.length = 0;
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		const store = buildStoreWith(buildCluster({ id: 'one' }));
 		const app = createConfiguredApp();
 		renderSidebar(
@@ -567,28 +603,20 @@ describe('ClusterSidebar', () => {
 			'button', 
 			{ name: 'Unlink from Two' }
 		));
+		await act(async () => {});
 
-		await waitFor(() => {
-			expect([
-				store.get().clusters['one'].pairedWith, 
-				store.get().clusters['two'].pairedWith
-			]).toEqual([
-				null, 
-				null
-			]);
-		});
+		expect([
+			store.get().clusters['one'].pairedWith, 
+			store.get().clusters['two'].pairedWith
+		]).toEqual([
+			null, 
+			null
+		]);
 	});
 
 	it('opens the Cluster from its context menu', () => {
 		openedClusters.length = 0;
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		const store = buildStoreWith(buildCluster({ id: 'one' }));
 		const app = createConfiguredApp();
 		renderSidebar(
@@ -609,14 +637,7 @@ describe('ClusterSidebar', () => {
 	it('offers Close cluster, and closes the Cluster, while a member is open', () => {
 		closedClusters.length = 0;
 		openMembers.size = 1;
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		const store = buildStoreWith(buildCluster({ id: 'one' }));
 		const app = createConfiguredApp();
 		renderSidebar(
@@ -637,6 +658,8 @@ describe('ClusterSidebar', () => {
 				'Open tray', 
 				'Open cluster', 
 				'Close cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			],
 			[[
@@ -649,14 +672,7 @@ describe('ClusterSidebar', () => {
 
 	it('leaves Close cluster out while no member is open', () => {
 		openMembers.size = 0;
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderSidebar(
 			createConfiguredApp(), 
 			buildStoreWith(buildCluster({ id: 'one' }))
@@ -667,6 +683,8 @@ describe('ClusterSidebar', () => {
 		expect(menus[0].menuItems__.map((item) => item.title__)).toEqual([
 			'Open tray', 
 			'Open cluster', 
+			'Edit cluster',
+			'Delete cluster',
 			'Pair with…'
 		]);
 	});

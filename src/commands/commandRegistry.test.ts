@@ -5,6 +5,7 @@ import {
 	it
 } from 'vitest';
 import { buildCommands } from './commandRegistry';
+import ReadingCompanion from '../obsidian/ReadingCompanion';
 import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import {
 	cancelling,
@@ -22,14 +23,21 @@ describe('buildCommands', () => {
 	 * @returns The commands.
 	 */
 	function build(): ReturnType<typeof buildCommands> {
+		const app = createFakeWorkspaceApp();
+		const settingsStore = buildStore();
+
 		return buildCommands({
-			app: createFakeWorkspaceApp(),
-			settingsStore: buildStore(),
+			app,
+			settingsStore,
 			promptForCluster: cancelling().prompt,
 			promptForClusterChoice: choosingNothing().prompt,
 			promptForClusterPair: pairingNothing().prompt,
 			promptForClusterRemoval: selectingNothing().prompt,
 			promptForConfirmation: confirmingNothing().prompt,
+			readingCompanion: new ReadingCompanion(
+				app,
+				settingsStore
+			),
 		});
 	}
 
@@ -39,6 +47,7 @@ describe('buildCommands', () => {
 		expect(ids).toEqual([
 			'add-to-cluster',
 			'add-to-most-recent-cluster',
+			'clear-reading-companion',
 			'close-cluster',
 			'close-duplicate-tabs',
 			'close-other-tabs',
@@ -46,6 +55,8 @@ describe('buildCommands', () => {
 			'create-cluster',
 			'create-cluster-from-active-pane',
 			'create-cluster-from-active-tab',
+			'delete-cluster',
+			'edit-cluster',
 			'next-tab-across-groups',
 			'open-cluster',
 			'open-cluster-sidebar',
@@ -58,6 +69,7 @@ describe('buildCommands', () => {
 			'remove-from-cluster',
 			'reopen-closed-tab',
 			'search-open-tabs',
+			'set-reading-companion',
 			'unlink-clusters',
 		]);
 	});

@@ -884,6 +884,38 @@ describe('resolveMissingMember', () => {
 		]);
 	});
 
+	it('refuses a replacement the Cluster already holds and saves nothing', async () => {
+		const {
+			store,
+			save
+		} = buildCountingStore(buildCluster({
+			id: 'one',
+			members: [
+				'a.md',
+				'gone.md'
+			]
+		}));
+
+		const replaced = await resolveMissingMember(
+			store,
+			'one',
+			'gone.md',
+			'a.md'
+		);
+
+		expect([
+			replaced,
+			store.get().clusters['one'].members
+		]).toEqual([
+			false,
+			[
+				'a.md',
+				'gone.md'
+			]
+		]);
+		expect(save).not.toHaveBeenCalled();
+	});
+
 	it('saves nothing when the Cluster does not hold the stale path', async () => {
 		const {
 			store,

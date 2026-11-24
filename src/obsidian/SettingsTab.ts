@@ -1,3 +1,4 @@
+/** @file Tab Candy's settings tab. */
 import {
 	App,
 	Notice,
@@ -36,14 +37,14 @@ import {
 const capitalizeFirstLetter = (string: string) =>
 	string.charAt(0).toUpperCase() + string.slice(1);
 
-/** Settings that commit on every keystroke, so their writes are debounced. */
+/** Settings whose writes wait for a pause in typing. */
 const DEBOUNCED_SETTING_KEYS: ReadonlySet<keyof TabCandySettings> = new Set(['greetingText',]);
 
 /** Tab Candy's settings tab, split into Function and Design pages. */
 export default class TabCandySettingTab extends PluginSettingTab {
 	plugin: TabCandyPlugin;
 
-	/** Created once so debounced keystrokes share one timer across re-renders. */
+	/** Writes a patch after a pause. */
 	private readonly debouncedUpdateSettings: (patch: Partial<TabCandySettings>) => void;
 
 	/**
@@ -66,8 +67,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 
 	/**
 	 * Applies a settings patch through the store and optionally re-renders.
-	 * A failed save is logged and surfaced as a Notice, and no re-render
-	 * happens.
+	 * A failed save is logged, shown as a Notice and skips the re-render.
 	 *
 	 * @param patch - Settings fields to change.
 	 * @param options - `redraw: true` re-renders the tab after a successful save.
@@ -102,13 +102,8 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Writes a control's value through the store, so subscribers (the live
-	 * view) are notified. Debounced keys are written after a pause; all
-	 * others save immediately and re-render the tab.
-	 *
-	 * Controls here are only toggles, dropdowns, text and file/folder
-	 * pickers, so `value` is a boolean or string. Array and object fields
-	 * are written through `updateSettings()` by their modals instead.
+	 * Writes a control's value through the store. Debounced keys are written
+	 * after a pause; all others save at once and re-render the tab.
 	 *
 	 * @param key - The settings field the control is bound to.
 	 * @param value - The new value.
@@ -164,10 +159,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 	 * @returns The two settings pages.
 	 */
 	getSettingDefinitions(): SettingDefinitionItem<keyof TabCandySettings>[] {
-		/**
-		 * Display-only filter: hides recorded files that no longer exist.
-		 * Persisted pruning happens on load and on vault events.
-		 */
+		// Lists only the recorded background files that still exist.
 		const existingManualBackgroundFiles = filterExistingFiles(
 			this.app,
 			this.plugin.settings.manualBackgroundFiles
@@ -263,7 +255,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				items: existingBackgroundFiles.map((filePath) => ({
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
-						/** Rows share one `group.listEl`; tag it so they lay out as a grid. */
+						// Lays the rows out as a grid.
 						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
 						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
@@ -285,7 +277,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				addItem: {
 					name: 'Add vault image',
 					action: () => {
-						/** A modal rather than a `file` control: this appends to an array. */
+						// Appends the picked image to the manual backgrounds.
 						new ChooseImageSuggestModal(this.app, (result) => {
 							if (this.plugin.settings.manualBackgroundFiles.includes(result.path)) {
 								return;
@@ -302,7 +294,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 				},
 				onDelete: (index) => {
-					/** `index` refers to the filtered list, not the raw setting. */
+					// Removes the image at `index` of the listed backgrounds.
 					const filePath = existingManualBackgroundFiles[index];
 					if (!filePath) {return;}
 					void this.updateSettings(
@@ -314,7 +306,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 				items: existingManualBackgroundFiles.map((filePath) => ({
 					name: '',
 					render: (setting: Setting, group: SettingGroup) => {
-						/** Same grid layout as the synced-folder group above. */
+						// Lays the rows out as a grid.
 						group.listEl.addClass('tabcandy-settings-localbackgrounds-grid');
 						setting.settingEl.addClass('tabcandy-settings-localbackgrounds-background');
 						setting.controlEl.createEl('img', {
@@ -564,6 +556,28 @@ export default class TabCandySettingTab extends PluginSettingTab {
 								);
 								this.update();
 							})();
+						},
+					},
+				],
+			},
+			{
+				type: 'group',
+				heading: 'Clusters',
+				items: [
+					{
+						name: 'Keep paired clusters in sync',
+						desc: 'When on, reordering or removing a member, opening and closing a cluster also happen on the cluster it is paired with. Adding a member is not mirrored.',
+						control: {
+							type: 'toggle',
+							key: 'keepPairedClustersInSync',
+						},
+					},
+					{
+						name: 'Jump to clusters that are already open',
+						desc: 'When on, opening a cluster leaves members that are already open where they are, and opening a tray for a cluster that has one switches to it. When off, they open again.',
+						control: {
+							type: 'toggle',
+							key: 'jumpToExistingCluster',
 						},
 					},
 				],

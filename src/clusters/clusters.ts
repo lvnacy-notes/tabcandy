@@ -4,6 +4,7 @@ import {
 	isRecord
 } from '../utils/typeGuards';
 import {
+	ClusterDraft,
 	NewClusterInput,
 	TabCandyCluster,
 	TabCandyClusters,
@@ -607,4 +608,52 @@ export function replaceMemberPath(
 		}
 	}
 	return changed ? next : clusters;
+}
+
+/**
+ * Sets a Cluster's name and Flavor. A blank name becomes `UNTITLED_CLUSTER_NAME`
+ * and a Flavor that isn't a valid hex color is removed. `lastTouchedAt` is not changed.
+ *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param details - The new name and optional Flavor.
+ * @returns The next record, or `clusters` itself when `id` doesn't exist or
+ * nothing changes.
+ */
+export function updateCluster(
+	clusters: TabCandyClusters,
+	id: string,
+	details: ClusterDraft
+): TabCandyClusters {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
+		return clusters;
+	}
+
+	const current = clusters[id];
+	const name = details.name.trim() === '' ? UNTITLED_CLUSTER_NAME : details.name;
+	const flavor = isHexColor(details.flavor) ? details.flavor : undefined;
+	if (name === current.name && flavor === current.flavor) {
+		return clusters;
+	}
+
+	const {
+		flavor: _previous,
+		...rest
+	} = current;
+	return {
+		...clusters,
+		[id]: flavor === undefined
+			? {
+				...rest,
+				name
+			}
+			: {
+				...rest,
+				name,
+				flavor
+			}
+	};
 }

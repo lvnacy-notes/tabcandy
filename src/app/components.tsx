@@ -18,6 +18,7 @@ import {
 import {
 	ClosedTabEntry,
 	ClusterMenuActions,
+	ClusterMenuHandlers,
 	Quote,
 	TabCandyCluster
 } from '../types';
@@ -40,14 +41,13 @@ interface BookmarksProps {
 	onOpen: (file: TFile) => void;
 }
 
-interface ClusterRowProps {
+interface ClusterRowProps extends ClusterMenuHandlers<() => void> {
 	cluster: TabCandyCluster;
 	expanded: boolean;
 	getDraggedPath: () => string | null;
 	hasOpenMember: () => boolean;
 	isFilePresent: (path: string) => boolean;
 	onCloseCluster: () => void;
-	onConfirmUnlink: () => void;
 	onDragCluster: (target: Element | null) => void;
 	onDragMember: (
 		path: string,
@@ -61,7 +61,6 @@ interface ClusterRowProps {
 	onOpenCluster: () => void;
 	onOpenMember: (path: string) => void;
 	onOpenTray: () => void;
-	onPair: () => void;
 	onRemoveMember: (path: string) => void;
 	onResolveMissing: (focusPath?: string) => void;
 	onToggle: () => void;
@@ -200,7 +199,7 @@ export function Bookmarks({
 }
 
 /**
- * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. Its options button and its context menu offer Open tray, Open cluster, Close cluster while a member is open, and Pair with… or Unlink. Its 🔗 icon pairs when unpaired and unlinks at once when paired. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
+ * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. Its options button and its context menu offer Open tray, Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink. Its 🔗 icon pairs when unpaired and unlinks at once when paired. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
  *
  * @param props.cluster - The Cluster.
  * @param props.expanded - Whether the member list is shown.
@@ -209,7 +208,9 @@ export function Bookmarks({
  * @param props.isFilePresent - Whether a member's file exists.
  * @param props.onCloseCluster - Called when Close cluster is chosen from the row's menu.
  * @param props.onConfirmUnlink - Called when Unlink is chosen from the row's menu.
+ * @param props.onDeleteCluster - Called when Delete cluster is chosen from the row's menu.
  * @param props.onDragCluster - Called with the element under the pointer when a drag of the Cluster's row ends.
+ * @param props.onEditCluster - Called when Edit cluster is chosen from the row's menu.
  * @param props.onDragMember - Called with a member's path and the drag start event when a member row starts to drag.
  * @param props.onDropPath - Called with the path of a file or tab dropped on the Cluster's row.
  * @param props.onMoveMember - Called with a member's current and new positions when it is reordered.
@@ -231,9 +232,11 @@ export function ClusterRow({
 	isFilePresent,
 	onCloseCluster,
 	onConfirmUnlink,
+	onDeleteCluster,
 	onDragCluster,
 	onDragMember,
 	onDropPath,
+	onEditCluster,
 	onMoveMember,
 	onOpenCluster,
 	onOpenMember,
@@ -253,6 +256,8 @@ export function ClusterRow({
 		hasOpenMember,
 		onCloseCluster,
 		onConfirmUnlink,
+		onDeleteCluster,
+		onEditCluster,
 		onOpenCluster,
 		onOpenTray,
 		onPair,
@@ -740,7 +745,7 @@ function getMemberLabel(path: string): string {
 }
 
 /**
- * Opens a Cluster's options menu: Open tray (the row only), Open cluster, Close cluster while a member is open, and Pair with… or Unlink.
+ * Opens a Cluster's options menu: Open tray (the row only), Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink.
  *
  * @param event - The event that opened the menu.
  * @param actions - What the menu offers.
@@ -761,6 +766,12 @@ export function openClusterMenu(event: MouseEvent, actions: ClusterMenuActions):
 			item.setTitle('Close cluster').setIcon('folder-closed').onClick(actions.onCloseCluster);
 		});
 	}
+	menu.addItem((item) => {
+		item.setTitle('Edit cluster').setIcon('pencil').onClick(actions.onEditCluster);
+	});
+	menu.addItem((item) => {
+		item.setTitle('Delete cluster').setIcon('trash').onClick(actions.onDeleteCluster);
+	});
 	menu.addItem((item) => {
 		if (actions.pairedName === null) {
 			item.setTitle('Pair with…').setIcon('link').onClick(actions.onPair);

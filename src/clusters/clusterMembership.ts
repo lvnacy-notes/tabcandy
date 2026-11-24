@@ -350,8 +350,8 @@ export async function reorderClusterMember(
 /**
  * Replaces a missing path with another file in one Cluster, in `members` and
  * in its `layoutSnapshot`, and saves. Other Clusters holding the same path are
- * left as they are. Saves nothing when the Cluster doesn't exist or doesn't
- * hold the stale path.
+ * left as they are. Saves nothing when the Cluster doesn't exist, doesn't
+ * hold the stale path, or already holds the new one.
  *
  * @param settingsStore - Store holding the Clusters.
  * @param clusterId - Id of the Cluster.
@@ -367,7 +367,7 @@ export async function resolveMissingMember(
 ): Promise<boolean> {
 	const { clusters } = settingsStore.get();
 	const cluster = clusters[clusterId];
-	if (cluster === undefined) {
+	if (cluster === undefined || cluster.members.includes(newPath)) {
 		return false;
 	}
 

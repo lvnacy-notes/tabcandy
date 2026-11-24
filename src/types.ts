@@ -4,6 +4,7 @@ import {
 	ViewState,
 	WorkspaceLeaf
 } from 'obsidian';
+import type ReadingCompanion from './obsidian/ReadingCompanion';
 import type SettingsStore from './settings/SettingsStore';
 
 /**
@@ -71,8 +72,11 @@ export type OverlayContrastCacheEntry = { mtime: number } & OverlayContrastResul
 
 export type OverlayContrastCache = Record<string, OverlayContrastCacheEntry>;
 
-/** Asks the user for Cluster details; calls `onSubmit` once with them, or never if cancelled. */
-export type PromptForCluster = (onSubmit: (draft: ClusterDraft) => void) => void;
+/** Asks the user for Cluster details; calls `onSubmit` once with them, or never if cancelled. `existing` fills the form with a Cluster's current details and turns it into an edit form. */
+export type PromptForCluster = (
+	onSubmit: (draft: ClusterDraft) => void,
+	existing?: ClusterDraft
+) => void;
 
 /** Asks the user to pick one of `clusters`; calls `onSubmit` once with its id, or never if cancelled. `labels` replaces the default wording. */
 export type PromptForClusterChoice = (
@@ -126,6 +130,11 @@ export interface ClosedTabEntry {
 	title: string;
 }
 
+export interface ClusterBaseProps extends ClusterMenuHandlers<(id: string) => void> {
+	app: App;
+	settingsStore: SettingsStore;
+}
+
 /** Cluster details entered by the user. */
 export interface ClusterDraft {
 	/** Display name. May be blank. */
@@ -160,12 +169,21 @@ export interface ClusterMenuActions {
 	hasOpenMember: () => boolean;
 	onCloseCluster: () => void;
 	onConfirmUnlink: () => void;
+	onDeleteCluster: () => void;
+	onEditCluster: () => void;
 	onOpenCluster: () => void;
 	/** Left out of the Tray's menu, which is already a Tray. */
 	onOpenTray?: () => void;
 	onPair: () => void;
 	/** Name of the paired Cluster, or null when unpaired. */
 	pairedName: string | null;
+}
+
+export interface ClusterMenuHandlers<Handler> {
+	onConfirmUnlink: Handler;
+	onDeleteCluster: Handler;
+	onEditCluster: Handler;
+	onPair: Handler;
 }
 
 /** What the commands need from the plugin. */
@@ -184,6 +202,8 @@ export interface CommandDependencies {
 	promptForClusterRemoval: PromptForClusterRemoval;
 	/** Collects a confirmation. */
 	promptForConfirmation: PromptForConfirmation;
+	/** The reading companion. */
+	readingCompanion: ReadingCompanion;
 }
 
 /** A user-supplied quote with its author. */

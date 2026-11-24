@@ -1,4 +1,4 @@
-/** @file The modal that collects a new Cluster's name and Flavor. */
+/** @file The modal that collects a Cluster's name and Flavor, to create it or to edit it. */
 import {
 	App,
 	ColorComponent,
@@ -13,19 +13,28 @@ import {
 /** Color the swatch shows while no Flavor is set. */
 const UNSET_SWATCH_COLOR = '#808080';
 
-/** Collects a Cluster's name and optional Flavor. */
+/** Collects a Cluster's name and optional Flavor. Fills the form from `existing` and offers Save in place of Create when editing. */
 export default class CreateClusterModal extends Modal {
 	_onSubmit: (draft: ClusterDraft) => void;
-	_name: string = '';
-	_flavor: string | undefined = undefined;
+	_name: string;
+	_flavor: string | undefined;
+	_editing: boolean;
 
 	/**
 	 * @param app - The Obsidian app.
 	 * @param onSubmit - Called with the entered details when the user confirms.
+	 * @param existing - The details of the Cluster being edited. Leave out to create one.
 	 */
-	constructor(app: App, onSubmit: (draft: ClusterDraft) => void) {
+	constructor(
+		app: App,
+		onSubmit: (draft: ClusterDraft) => void,
+		existing?: ClusterDraft
+	) {
 		super(app);
 		this._onSubmit = onSubmit;
+		this._editing = existing !== undefined;
+		this._name = existing?.name ?? '';
+		this._flavor = existing?.flavor;
 	}
 
 	/** Builds the name field, Flavor picker and buttons. */
@@ -34,13 +43,14 @@ export default class CreateClusterModal extends Modal {
 
 		contentEl.createEl(
 			'h2',
-			{ text: 'Create cluster' }
+			{ text: this._editing ? 'Edit cluster' : 'Create cluster' }
 		);
 
 		new Setting(contentEl)
 			.setName('Name')
 			.addText((text) => {
 				text.setPlaceholder(UNTITLED_CLUSTER_NAME);
+				text.setValue(this._name);
 				text.onChange((value) => {
 					this._name = value;
 				});
@@ -58,7 +68,7 @@ export default class CreateClusterModal extends Modal {
 			.setDesc('Optional. Colors the cluster\'s header.')
 			.addColorPicker((color) => {
 				swatch = color;
-				color.setValue(UNSET_SWATCH_COLOR);
+				color.setValue(this._flavor === undefined ? UNSET_SWATCH_COLOR : toSwatchColor(this._flavor));
 				color.onChange((value) => {
 					this._flavor = value;
 				});
@@ -74,7 +84,7 @@ export default class CreateClusterModal extends Modal {
 
 		new Setting(contentEl)
 			.addButton((button) => {
-				button.setButtonText('Create');
+				button.setButtonText(this._editing ? 'Save' : 'Create');
 				button.setCta();
 				button.onClick(() => {
 					this.submit();
@@ -101,4 +111,25 @@ export default class CreateClusterModal extends Modal {
 		});
 		this.close();
 	}
+}
+
+/**
+ * Shows a Flavor as the `#rrggbb` color a color picker accepts: a short color is expanded and an alpha channel is dropped.
+ *
+ * @param flavor - A hex color of three, six or eight digits.
+ * @returns The color as `#rrggbb`.
+ */
+function toSwatchColor(flavor: string): string {
+	if (flavor.length === 4) {
+		const [
+			r,
+			g,
+			b
+		] = flavor.slice(1);
+		return `#${ r }${ r }${ g }${ g }${ b }${ b }`;
+	}
+	return flavor.slice(
+		0,
+		7
+	);
 }

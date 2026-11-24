@@ -266,3 +266,85 @@ describe('CreateClusterModal', () => {
 		expect(modal.contentEl.childElementCount).toBe(0);
 	});
 });
+
+describe('CreateClusterModal when editing', () => {
+	/**
+	 * Opens a modal on a Cluster's existing details.
+	 *
+	 * @param existing - The details to fill the form with.
+	 * @returns The modal and the spy receiving submitted drafts.
+	 */
+	function openEditModal(existing: ClusterDraft): {
+		modal: CreateClusterModal;
+		onSubmit: Mock<(draft: ClusterDraft) => void>;
+	} {
+		const onSubmit = vi.fn<(draft: ClusterDraft) => void>();
+		const modal = new CreateClusterModal(
+			createConfiguredApp(),
+			onSubmit,
+			existing
+		);
+		modal.open();
+		return {
+			modal,
+			onSubmit
+		};
+	}
+
+	it('is titled Edit cluster and offers Save in place of Create', () => {
+		const { modal } = openEditModal({ name: 'Reading' });
+
+		expect([
+			modal.contentEl.querySelector('h2')?.textContent,
+			findButton(
+				modal,
+				'Save'
+			).textContent,
+			Array.from(modal.contentEl.querySelectorAll('button')).some((button) => button.textContent === 'Create')
+		]).toEqual([
+			'Edit cluster',
+			'Save',
+			false
+		]);
+	});
+
+	it('fills the name field with the current name', () => {
+		const { modal } = openEditModal({ name: 'Reading' });
+
+		const input = modal.contentEl.querySelector<HTMLInputElement>('input[type="text"], input:not([type])');
+
+		expect(input?.value).toBe('Reading');
+	});
+
+	it('shows the current Flavor on the swatch', () => {
+		const { modal } = openEditModal({
+			name: 'Reading',
+			flavor: '#ff0000'
+		});
+
+		const swatch = modal.contentEl.querySelector<HTMLInputElement>('input[type="color"]');
+
+		expect(swatch?.value).toBe('#ff0000');
+	});
+
+	it('submits the current details when nothing is changed', () => {
+		const {
+			modal,
+			onSubmit
+		} = openEditModal({
+			name: 'Reading',
+			flavor: '#ff0000'
+		});
+
+		findButton(
+			modal,
+			'Save'
+		).click();
+
+		expect(onSubmit).toHaveBeenCalledWith({
+			name: 'Reading',
+			flavor: '#ff0000',
+		});
+	});
+
+});

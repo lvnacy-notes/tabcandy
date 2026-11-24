@@ -1,8 +1,5 @@
 /** @file The Cluster Tray component. */
-import {
-	App,
-	TFile
-} from 'obsidian';
+import { TFile } from 'obsidian';
 import {
 	MemberList,
 	openClusterMenu
@@ -17,15 +14,11 @@ import {
 	getOpenMembers,
 	openCluster
 } from '../obsidian/clusterOpenClose';
-import SettingsStore from '../settings/SettingsStore';
+import { ClusterBaseProps } from '../types';
 
-interface ClusterTrayProps {
-	app: App;
-	settingsStore: SettingsStore;
+interface ClusterTrayProps extends ClusterBaseProps {
 	clusterId: string | null;
-	onConfirmUnlink: (id: string) => void;
 	onOpenMember?: (path: string) => void;
-	onPair: (id: string) => void;
 }
 
 /**
@@ -35,6 +28,8 @@ interface ClusterTrayProps {
  * @param props.settingsStore - Store holding the Clusters.
  * @param props.clusterId - Id of the Cluster to show, or null for none.
  * @param props.onConfirmUnlink - Called with the Cluster's id when Unlink is chosen from the menu.
+ * @param props.onDeleteCluster - Called with the Cluster's id when Delete cluster is chosen from the menu.
+ * @param props.onEditCluster - Called with the Cluster's id when Edit cluster is chosen from the menu.
  * @param props.onOpenMember - Called with a clicked member's path. Defaults to opening it in the active pane.
  * @param props.onPair - Called with the Cluster's id when Pair with… is chosen from the menu.
  */
@@ -43,6 +38,8 @@ export default function ClusterTray({
 	settingsStore,
 	clusterId,
 	onConfirmUnlink,
+	onDeleteCluster,
+	onEditCluster,
 	onOpenMember,
 	onPair,
 }: ClusterTrayProps) {
@@ -86,6 +83,8 @@ export default function ClusterTray({
 				);
 			},
 			onConfirmUnlink: () => onConfirmUnlink(cluster.id),
+			onDeleteCluster: () => onDeleteCluster(cluster.id),
+			onEditCluster: () => onEditCluster(cluster.id),
 			onOpenCluster: () => {
 				void openCluster(
 					app,

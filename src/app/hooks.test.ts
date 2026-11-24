@@ -10,6 +10,10 @@ import {
 } from 'vitest';
 import { act } from 'react';
 import {
+	cleanup,
+	renderHook
+} from '@testing-library/react';
+import {
 	resolveActiveBackgroundPath,
 	useBackground,
 	useClock,
@@ -18,16 +22,11 @@ import {
 } from './hooks';
 import { DEFAULT_OVERLAY_COLOR } from '../newtab/overlayContrast';
 import {
-	cleanup,
-	renderHook,
-	waitFor
-} from '@testing-library/react';
-import {
 	buildSettings,
+	buildStore,
 	createConfiguredApp,
 	getExistingFile
 } from '../test/fakes';
-import SettingsStore from '../settings/SettingsStore';
 import {
 	BackgroundTheme,
 	TIME_FORMAT
@@ -35,6 +34,7 @@ import {
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+afterEach(cleanup);
 
 describe('useClock', () => {
 	beforeEach(() => {
@@ -42,7 +42,6 @@ describe('useClock', () => {
 	});
 
 	afterEach(() => {
-		cleanup();
 		vi.useRealTimers();
 		vi.restoreAllMocks();
 	});
@@ -181,10 +180,6 @@ describe('useClock', () => {
 });
 
 describe('useBackground', () => {
-	afterEach(() => {
-		cleanup();
-	});
-
 	it('resolves customBackground to a resource URL when the file exists in the vault', () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const settings = buildSettings({
@@ -312,23 +307,6 @@ describe('resolveActiveBackgroundPath', () => {
 });
 
 describe('useOverlayContrast', () => {
-	afterEach(() => {
-		cleanup();
-	});
-
-	/**
-	 * Builds a store over default settings with `overrides` applied.
-	 *
-	 * @param overrides - Settings to replace.
-	 * @returns The store.
-	 */
-	function buildStore(overrides: Parameters<typeof buildSettings>[0] = {}) {
-		return new SettingsStore(
-			buildSettings(overrides),
-			async () => {}
-		);
-	}
-
 	/**
 	 * Reads a vault file's mtime.
 	 *
@@ -349,7 +327,7 @@ describe('useOverlayContrast', () => {
 	 *
 	 * @param app - The app.
 	 */
-	function stubBinaryRead(app: ReturnType<typeof createConfiguredApp>) {
+	function stubBinaryRead(app: ReturnType<typeof createConfiguredApp>): void {
 		vi.spyOn(
 			app.vault,
 			'readBinary'
@@ -395,7 +373,7 @@ describe('useOverlayContrast', () => {
 		expect(result.current).toBeNull();
 	});
 
-	it('returns a cached value without recomputing when the cache is fresh', async () => {
+	it('returns a cached value without recomputing when the cache is fresh', () => {
 		const app = createConfiguredApp({ files: { 'Backgrounds/sunset.png': '' } });
 		const mtime = getMtime(
 			app,
@@ -424,7 +402,7 @@ describe('useOverlayContrast', () => {
 				'app://local/Backgrounds/sunset.png'
 			));
 
-		await waitFor(() => expect(result.current).toBe('#123456'));
+		expect(result.current).toBe('#123456');
 		expect(updateSpy).not.toHaveBeenCalled();
 	});
 
@@ -449,7 +427,9 @@ describe('useOverlayContrast', () => {
 				'app://local/Backgrounds/sunset.png'
 			));
 
-		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
+		await act(async () => {});
+
+		expect(result.current).toBe(DEFAULT_OVERLAY_COLOR);
 		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png']).toEqual({
 			mtime,
 			dominantColor: DEFAULT_OVERLAY_COLOR,
@@ -483,7 +463,9 @@ describe('useOverlayContrast', () => {
 				'app://local/Backgrounds/sunset.png'
 			));
 
-		await waitFor(() => expect(result.current).toBe(DEFAULT_OVERLAY_COLOR));
+		await act(async () => {});
+
+		expect(result.current).toBe(DEFAULT_OVERLAY_COLOR);
 		expect(store.get().overlayTextContrastCache['Backgrounds/sunset.png'].mtime).toBe(mtime);
 	});
 });

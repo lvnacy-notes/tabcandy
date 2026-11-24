@@ -2,6 +2,10 @@
 import type { EventRef } from 'obsidian';
 import { promptAndCreate } from './clusters/clusterCreation';
 import {
+	promptAndDelete,
+	promptAndEdit
+} from './clusters/clusterManagement';
+import {
 	promptAndPair,
 	promptAndUnlink
 } from './clusters/clusterPairing';
@@ -14,9 +18,11 @@ import {
 import { syncQuotesFile } from './newtab/quotes';
 import { ClusterSidebarView } from './obsidian/ClusterSidebarView';
 import { ClusterTrayView } from './obsidian/ClusterTrayView';
+import ReadingCompanion from './obsidian/ReadingCompanion';
 import { registerClusterMembershipMenu } from './obsidian/clusterMembershipMenu';
 import { registerClusterCreationMenu } from './obsidian/clusterMenu';
 import { registerNewTabHijack } from './obsidian/newTabHijack';
+import { registerReadingCompanionMenu } from './obsidian/readingCompanionMenu';
 import TabCandySettingTab from './obsidian/SettingsTab';
 import { registerStackedTabPanes } from './obsidian/stackedTabPanes';
 import { TabCandyView } from './obsidian/TabCandyView';
@@ -203,6 +209,32 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		}
 	};
 
+	/**
+	 * Starts editing a Cluster.
+	 *
+	 * @param id - Id of the Cluster.
+	 */
+	const onEditCluster = (id: string): void => {
+		promptAndEdit(
+			settingsStore,
+			promptForCluster,
+			id
+		);
+	};
+
+	/**
+	 * Starts deleting a Cluster, after a confirmation.
+	 *
+	 * @param id - Id of the Cluster.
+	 */
+	const onDeleteCluster = (id: string): void => {
+		promptAndDelete(
+			settingsStore,
+			promptForConfirmation,
+			id
+		);
+	};
+
 	plugin.registerView(
 		CLUSTER_SIDEBAR_VIEW_TYPE,
 		(leaf) => new ClusterSidebarView(
@@ -216,6 +248,8 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 			},
 			onPair,
 			onConfirmUnlink,
+			onEditCluster,
+			onDeleteCluster,
 			leaf
 		)
 	);
@@ -235,8 +269,19 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 			trayReturn,
 			onPair,
 			onConfirmUnlink,
+			onEditCluster,
+			onDeleteCluster,
 			leaf
 		)
+	);
+
+	const readingCompanion = new ReadingCompanion(
+		app,
+		settingsStore
+	);
+	readingCompanion.register(
+		registerEvent,
+		(cleanup) => plugin.register(cleanup)
 	);
 
 	for (const command of buildCommands({
@@ -247,6 +292,7 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		promptForClusterPair,
 		promptForClusterRemoval,
 		promptForConfirmation,
+		readingCompanion,
 	})) {
 		plugin.addCommand(command);
 	}
@@ -264,6 +310,13 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		registerEvent,
 		promptForClusterChoice,
 		promptForClusterRemoval
+	);
+
+	registerReadingCompanionMenu(
+		app,
+		readingCompanion,
+		registerEvent,
+		promptForClusterChoice
 	);
 
 	registerTabTracking(

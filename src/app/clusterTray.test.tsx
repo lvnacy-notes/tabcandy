@@ -11,19 +11,20 @@ import {
 	cleanup,
 	fireEvent,
 	render,
-	screen,
-	waitFor
+	screen
 } from '@testing-library/react';
-import { Menu } from 'obsidian';
-import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 import ClusterTray from './ClusterTray';
 import { buildStoreWith } from '../test/clusterHelpers';
 import { 
 	buildCluster, 
 	createConfiguredApp 
 } from '../test/fakes';
+import { captureMenus } from '../test/menuHelpers';
 
+/** Number of open members the mocked `getOpenMembers` reports. */
 const openMembers = vi.hoisted(() => ({ size: 0 }));
+
+/** Arguments of each call the mocked `openCluster` and `closeCluster` received. */
 const calls = vi.hoisted((): { 
 	opened: unknown[][]; 
 	closed: unknown[][] 
@@ -32,17 +33,35 @@ const calls = vi.hoisted((): {
 	closed: [] 
 }));
 
+/** Replaces opening and closing a Cluster with recorders. */
 vi.mock('../obsidian/clusterOpenClose', () => ({
+	/**
+	 * Records a close.
+	 *
+	 * @param args - The arguments the Tray passed.
+	 */
 	closeCluster: (...args: unknown[]) => {
 		calls.closed.push(args);
 	},
+	/**
+	 * Reports the open members as a count.
+	 *
+	 * @returns An object holding `size`.
+	 */
 	getOpenMembers: () => ({ size: openMembers.size }),
+	/**
+	 * Records an open.
+	 *
+	 * @param args - The arguments the Tray passed.
+	 */
 	openCluster: (...args: unknown[]) => {
 		calls.opened.push(args);
 	},
 }));
 
+/** Replaces the resolve modal with one that opens nothing. */
 vi.mock('../ui/ResolveMissingModal', () => ({default: class {
+	/** Opens nothing. */
 	open(): void {}
 },}));
 
@@ -68,6 +87,8 @@ describe('ClusterTray', () => {
 			settingsStore = { store }
 			clusterId = 'one'
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -89,6 +110,8 @@ describe('ClusterTray', () => {
 			settingsStore = { store }
 			clusterId = 'one'
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -105,6 +128,8 @@ describe('ClusterTray', () => {
 			settingsStore = { buildStoreWith() }
 			clusterId = { null }
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -121,6 +146,8 @@ describe('ClusterTray', () => {
 			settingsStore = { store }
 			clusterId = 'one'
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -128,9 +155,7 @@ describe('ClusterTray', () => {
 			await store.update({ clusters: {} });
 		});
 
-		await waitFor(() => {
-			expect(screen.getByText('This cluster no longer exists.')).toBeDefined();
-		});
+		expect(screen.getByText('This cluster no longer exists.')).toBeDefined();
 		expect(screen.queryByRole(
 			'heading', 
 			{ name: 'Reading' }
@@ -147,6 +172,8 @@ describe('ClusterTray', () => {
 			settingsStore = { store }
 			clusterId = 'one'
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -157,12 +184,10 @@ describe('ClusterTray', () => {
 			}) } });
 		});
 
-		await waitFor(() => {
-			expect(screen.getByRole(
-				'heading', 
-				{ name: 'Writing' }
-			)).toBeDefined();
-		});
+		expect(screen.getByRole(
+			'heading', 
+			{ name: 'Writing' }
+		)).toBeDefined();
 	});
 
 	it('hands a clicked member to onOpenMember when it is given', () => {
@@ -177,6 +202,8 @@ describe('ClusterTray', () => {
 			clusterId = 'one'
 			onOpenMember = { onOpenMember }
 			onConfirmUnlink = { () => {} }
+			onDeleteCluster = { () => {} }
+			onEditCluster = { () => {} }
 			onPair = { () => {} }
 		/>);
 
@@ -186,23 +213,6 @@ describe('ClusterTray', () => {
 	});
 
 	describe('options menu', () => {
-		/**
-		 * Captures the menus the Tray opens.
-		 *
-		 * @returns The captured menus.
-		 */
-		function captureMenus(): MenuMock[] {
-			const menus: MenuMock[] = [];
-			vi.spyOn(
-				Menu.prototype, 
-				'showAtMouseEvent'
-			).mockImplementation(function (this: Menu) {
-				menus.push(this as unknown as MenuMock);
-				return this;
-			});
-			return menus;
-		}
-
 		it('offers Open cluster and Pair with… from the options button, and no Open tray', () => {
 			const menus = captureMenus();
 			render(<ClusterTray
@@ -210,6 +220,8 @@ describe('ClusterTray', () => {
 				settingsStore = { buildStoreWith(buildCluster({ id: 'one' })) }
 				clusterId = 'one'
 				onConfirmUnlink = { () => {} }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { () => {} }
 			/>);
 
@@ -220,6 +232,8 @@ describe('ClusterTray', () => {
 
 			expect(menus[0].menuItems__.map((item) => item.title__)).toEqual([
 				'Open cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			]);
 		});
@@ -234,6 +248,8 @@ describe('ClusterTray', () => {
 				})) }
 				clusterId = 'one'
 				onConfirmUnlink = { () => {} }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { () => {} }
 			/>);
 
@@ -244,6 +260,8 @@ describe('ClusterTray', () => {
 
 			expect(menus[0].menuItems__.map((item) => item.title__)).toEqual([
 				'Open cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			]);
 		});
@@ -258,6 +276,8 @@ describe('ClusterTray', () => {
 				settingsStore = { store }
 				clusterId = 'one'
 				onConfirmUnlink = { () => {} }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { () => {} }
 			/>);
 
@@ -285,6 +305,8 @@ describe('ClusterTray', () => {
 				settingsStore = { store }
 				clusterId = 'one'
 				onConfirmUnlink = { () => {} }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { () => {} }
 			/>);
 
@@ -303,6 +325,8 @@ describe('ClusterTray', () => {
 				[
 					'Open cluster', 
 					'Close cluster', 
+					'Edit cluster',
+					'Delete cluster',
 					'Pair with…'
 				],
 				[[
@@ -321,6 +345,8 @@ describe('ClusterTray', () => {
 				settingsStore = { buildStoreWith(buildCluster({ id: 'one' })) }
 				clusterId = 'one'
 				onConfirmUnlink = { () => {} }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { onPair }
 			/>);
 
@@ -328,7 +354,7 @@ describe('ClusterTray', () => {
 				'button', 
 				{ name: 'Cluster options' }
 			));
-			menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+			menus[0].menuItems__[3].onClick__?.(new MouseEvent('click'));
 
 			expect(onPair).toHaveBeenCalledWith('one');
 		});
@@ -350,6 +376,8 @@ describe('ClusterTray', () => {
 				) }
 				clusterId = 'one'
 				onConfirmUnlink = { onConfirmUnlink }
+				onDeleteCluster = { () => {} }
+				onEditCluster = { () => {} }
 				onPair = { () => {} }
 			/>);
 
@@ -358,7 +386,7 @@ describe('ClusterTray', () => {
 				{ name: 'Cluster options' }
 			));
 			const items = menus[0].menuItems__;
-			items[1].onClick__?.(new MouseEvent('click'));
+			items[3].onClick__?.(new MouseEvent('click'));
 
 			expect([
 				items.map((item) => item.title__), 
@@ -366,6 +394,8 @@ describe('ClusterTray', () => {
 			]).toEqual([
 				[
 					'Open cluster', 
+					'Edit cluster',
+					'Delete cluster',
 					'Unlink'
 				], 
 				[['one']]

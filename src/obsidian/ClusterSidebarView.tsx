@@ -15,6 +15,8 @@ import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
 export class ClusterSidebarView extends ItemView {
 	onConfirmUnlink: (id: string) => void;
 	onCreateCluster: () => void;
+	onDeleteCluster: (id: string) => void;
+	onEditCluster: (id: string) => void;
 	onPair: (id: string) => void;
 	root: Root | null = null;
 	settingsStore: SettingsStore;
@@ -24,6 +26,8 @@ export class ClusterSidebarView extends ItemView {
 	 * @param onCreateCluster - Starts creating an empty Cluster.
 	 * @param onPair - Starts pairing a Cluster, by id.
 	 * @param onConfirmUnlink - Starts unlinking a Cluster after a confirmation, by id.
+	 * @param onEditCluster - Starts editing a Cluster, by id.
+	 * @param onDeleteCluster - Starts deleting a Cluster after a confirmation, by id.
 	 * @param leaf - The leaf hosting the view.
 	 */
 	constructor(
@@ -31,6 +35,8 @@ export class ClusterSidebarView extends ItemView {
 		onCreateCluster: () => void,
 		onPair: (id: string) => void,
 		onConfirmUnlink: (id: string) => void,
+		onEditCluster: (id: string) => void,
+		onDeleteCluster: (id: string) => void,
 		leaf: WorkspaceLeaf
 	) {
 		super(leaf);
@@ -38,6 +44,8 @@ export class ClusterSidebarView extends ItemView {
 		this.onCreateCluster = onCreateCluster;
 		this.onPair = onPair;
 		this.onConfirmUnlink = onConfirmUnlink;
+		this.onEditCluster = onEditCluster;
+		this.onDeleteCluster = onDeleteCluster;
 	}
 
 	/** @returns The view's title. */
@@ -73,6 +81,8 @@ export class ClusterSidebarView extends ItemView {
 			settingsStore = { this.settingsStore }
 			onConfirmUnlink = { this.onConfirmUnlink }
 			onCreateCluster = { this.onCreateCluster }
+			onDeleteCluster = { this.onDeleteCluster }
+			onEditCluster = { this.onEditCluster }
 			onPair = { this.onPair }
 		/>);
 		this.containerEl.addClass('tabcandy-sidebar');

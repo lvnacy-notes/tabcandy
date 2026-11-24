@@ -1,10 +1,8 @@
 /** @file Tests for the app components. */
 import {
-	Menu,
 	TFile,
 	addIcon
 } from 'obsidian';
-import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
 import { createRef } from 'react';
 import {
 	afterEach,
@@ -36,6 +34,7 @@ import {
 	buildCluster,
 	createConfiguredApp
 } from '../test/fakes';
+import { captureMenus } from '../test/menuHelpers';
 import {
 	ClosedTabEntry,
 	TabCandyCluster
@@ -77,9 +76,11 @@ function renderRow(
 		isFilePresent = { () => true }
 		onCloseCluster = { () => {} }
 		onConfirmUnlink = { () => {} }
+		onDeleteCluster = { () => {} }
 		onDragCluster = { () => {} }
 		onDragMember = { () => {} }
 		onDropPath = { () => {} }
+		onEditCluster = { () => {} }
 		onMoveMember = { () => {} }
 		onOpenCluster = { () => {} }
 		onOpenMember = { () => {} }
@@ -337,7 +338,7 @@ describe('ClusterRow', () => {
 			{ name: /Cluster A/ }
 		);
 
-		// jsdom has no DragEvent, so the pointer position is set on the event by hand.
+		// Sets the pointer position on the event.
 		const dragEnd = createEvent.dragEnd(
 			header, 
 			{ dataTransfer: buildDataTransfer() }
@@ -491,14 +492,7 @@ describe('ClusterRow', () => {
 
 	it('resolves a single missing member from its context menu', () => {
 		const onResolveMissing = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(buildCluster({ members: ['gone.md'] }), {
 			expanded: true,
 			isFilePresent: () => false,
@@ -520,14 +514,7 @@ describe('ClusterRow', () => {
 
 	it('offers Open tray from the Cluster row\'s context menu', () => {
 		const onOpenTray = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster(), 
 			{ onOpenTray }
@@ -547,23 +534,52 @@ describe('ClusterRow', () => {
 			[
 				'Open tray', 
 				'Open cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			], 
 			1
 		]);
 	});
 
+	it('starts editing the Cluster when Edit cluster is chosen from the row menu', () => {
+		const onEditCluster = vi.fn();
+		const menus = captureMenus();
+		renderRow(
+			buildCluster(),
+			{ onEditCluster }
+		);
+
+		fireEvent.click(screen.getByRole(
+			'button',
+			{ name: 'Cluster options' }
+		));
+		menus[0].menuItems__[2].onClick__?.(new MouseEvent('click'));
+
+		expect(onEditCluster).toHaveBeenCalledTimes(1);
+	});
+
+	it('starts deleting the Cluster when Delete cluster is chosen from the row menu', () => {
+		const onDeleteCluster = vi.fn();
+		const menus = captureMenus();
+		renderRow(
+			buildCluster(),
+			{ onDeleteCluster }
+		);
+
+		fireEvent.click(screen.getByRole(
+			'button',
+			{ name: 'Cluster options' }
+		));
+		menus[0].menuItems__[3].onClick__?.(new MouseEvent('click'));
+
+		expect(onDeleteCluster).toHaveBeenCalledTimes(1);
+	});
+
 	it('offers Open tray from the Cluster options button without toggling the row', () => {
 		const onOpenTray = vi.fn();
 		const onToggle = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster(), 
 			{ 
@@ -587,6 +603,8 @@ describe('ClusterRow', () => {
 			[
 				'Open tray', 
 				'Open cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			],
 			1,
@@ -658,14 +676,7 @@ describe('ClusterRow', () => {
 
 	it('offers Unlink, not Pair with…, from the options button when paired', () => {
 		const onConfirmUnlink = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster(), 
 			{ 
@@ -679,7 +690,7 @@ describe('ClusterRow', () => {
 			{ name: 'Cluster options' }
 		));
 		const items = menus[0].menuItems__;
-		items[2].onClick__?.(new MouseEvent('click'));
+		items[4].onClick__?.(new MouseEvent('click'));
 
 		expect([
 			items.map((item) => item.title__), 
@@ -688,6 +699,8 @@ describe('ClusterRow', () => {
 			[
 				'Open tray', 
 				'Open cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Unlink'
 			], 
 			1
@@ -696,14 +709,7 @@ describe('ClusterRow', () => {
 
 	it('opens the Cluster from the row menu', () => {
 		const onOpenCluster = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster(), 
 			{ onOpenCluster }
@@ -720,14 +726,7 @@ describe('ClusterRow', () => {
 
 	it('offers Close cluster only while a member is open', () => {
 		const onCloseCluster = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster(), 
 			{ 
@@ -751,6 +750,8 @@ describe('ClusterRow', () => {
 				'Open tray', 
 				'Open cluster', 
 				'Close cluster', 
+				'Edit cluster',
+				'Delete cluster',
 				'Pair with…'
 			],
 			1,
@@ -759,14 +760,7 @@ describe('ClusterRow', () => {
 
 	it('offers Move down from the first member\'s options button', () => {
 		const onMoveMember = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype, 
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		renderRow(
 			buildCluster({ members: [
 				'a.md', 
@@ -1424,14 +1418,7 @@ describe('MemberRow', () => {
 
 	it('offers Move up and Move down from the middle of the list', () => {
 		const onMove = vi.fn();
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype,
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		const row = renderMovableRow(
 			1,
 			3,
@@ -1465,14 +1452,7 @@ describe('MemberRow', () => {
 	});
 
 	it('offers only Move down on the first row and only Move up on the last', () => {
-		const menus: MenuMock[] = [];
-		vi.spyOn(
-			Menu.prototype,
-			'showAtMouseEvent'
-		).mockImplementation(function (this: Menu) {
-			menus.push(this as unknown as MenuMock);
-			return this;
-		});
+		const menus = captureMenus();
 		const first = renderMovableRow(
 			0,
 			2,

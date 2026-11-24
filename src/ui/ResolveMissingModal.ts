@@ -2,6 +2,7 @@
 import {
 	App,
 	Modal,
+	Notice,
 	Setting,
 	TFile
 } from 'obsidian';
@@ -126,11 +127,18 @@ export default class ResolveMissingModal extends Modal {
 
 	/**
 	 * Replaces a missing path of this modal's Cluster with the picked file, then rebuilds the list.
+	 * Shows a notice and replaces nothing when the Cluster already holds the file.
 	 *
 	 * @param stalePath - The missing member path.
 	 * @param file - The file to use instead.
 	 */
 	async resolve(stalePath: string, file: TFile): Promise<void> {
+		if (this._settingsStore.get().clusters[this._clusterId]?.members.includes(file.path)) {
+			new Notice('Already in this cluster.');
+			this.render();
+			return;
+		}
+
 		await resolveMissingMember(
 			this._settingsStore,
 			this._clusterId,

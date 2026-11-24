@@ -1,8 +1,5 @@
 /** @file The Cluster sidebar component. */
-import {
-	App,
-	TFile
-} from 'obsidian';
+import { TFile } from 'obsidian';
 import { useState } from 'react';
 import { ClusterRow } from './components';
 import {
@@ -22,14 +19,10 @@ import {
 	openClusterTrayAt
 } from '../obsidian/trayLeaves';
 import { getDraggedFilePath } from '../obsidian/fileDrag';
-import SettingsStore from '../settings/SettingsStore';
+import { ClusterBaseProps } from '../types';
 
-interface ClusterSidebarProps {
-	app: App;
-	settingsStore: SettingsStore;
-	onConfirmUnlink: (id: string) => void;
+interface ClusterSidebarProps extends ClusterBaseProps {
 	onCreateCluster: () => void;
-	onPair: (id: string) => void;
 }
 
 /**
@@ -41,6 +34,8 @@ interface ClusterSidebarProps {
  * @param props.settingsStore - Store holding the Clusters.
  * @param props.onConfirmUnlink - Called with a Cluster's id when Unlink is chosen from its menu.
  * @param props.onCreateCluster - Called when the create button is clicked.
+ * @param props.onDeleteCluster - Called with a Cluster's id when Delete cluster is chosen from its menu.
+ * @param props.onEditCluster - Called with a Cluster's id when Edit cluster is chosen from its menu.
  * @param props.onPair - Called with a Cluster's id when it is to be paired with another.
  */
 export default function ClusterSidebar({
@@ -48,6 +43,8 @@ export default function ClusterSidebar({
 	settingsStore,
 	onConfirmUnlink,
 	onCreateCluster,
+	onDeleteCluster,
+	onEditCluster,
 	onPair,
 }: ClusterSidebarProps) {
 	const { clusters } = useSettings(settingsStore);
@@ -117,6 +114,7 @@ export default function ClusterSidebar({
 							);
 						} }
 						onConfirmUnlink = { () => onConfirmUnlink(cluster.id) }
+						onDeleteCluster = { () => onDeleteCluster(cluster.id) }
 						onDragCluster = { (target) => {
 							void openClusterTrayAt(
 								app,
@@ -133,6 +131,7 @@ export default function ClusterSidebar({
 								path
 							);
 						} }
+						onEditCluster = { () => onEditCluster(cluster.id) }
 						onMoveMember = { actions.moveMember }
 						onOpenCluster = { () => {
 							void openCluster(

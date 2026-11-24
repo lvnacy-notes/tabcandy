@@ -1,3 +1,4 @@
+/** @file Tests for the settings tab. */
 import {
 	SettingDefinitionGroup,
 	SettingDefinitionList,
@@ -22,12 +23,10 @@ import {
 } from '../types';
 
 /**
- * A minimal stand-in for TabCandyPlugin, narrowed to just the two members
- * SettingsTab.ts actually reads (`settings`, `settingsStore`) - the same
- * cast-through-`unknown` shape src/test/fakes.ts already uses for
- * narrowing Obsidian's own private-registry fixtures, rather than
- * constructing a real `Plugin` subclass (which needs a manifest, a real
- * plugin lifecycle, etc. that this file's assertions have no use for).
+ * Builds a plugin with only the members the settings tab reads.
+ *
+ * @param settings - The settings it holds.
+ * @returns The plugin.
  */
 function buildPlugin(settings: TabCandySettings): TabCandyPlugin {
 	const settingsStore = new SettingsStore(
@@ -40,16 +39,13 @@ function buildPlugin(settings: TabCandySettings): TabCandyPlugin {
 	} as unknown as TabCandyPlugin;
 }
 
+/**
+ * Builds a settings tab over an app with empty private registries, which the Bookmarks group reads.
+ *
+ * @param settings - The settings it shows.
+ * @returns The tab.
+ */
 function buildTab(settings: TabCandySettings = buildSettings()): TabCandySettingTab {
-	// getSettingDefinitions() calls getBookmarkGroups(this.app) to build
-	// the Bookmarks-group dropdown's options regardless of which page it
-	// ends up nested under, which touches the same undocumented
-	// internalPlugins registry commands.ts/bookmarks.ts's own tests
-	// fixture via src/test/fakes.ts - not this file's concern to
-	// re-verify (Testing Specification, "commands.ts/bookmarks.ts
-	// private-registry fixtures"), just something this file's app needs
-	// present-but-empty to avoid the strict-proxy's throw-on-unassigned-
-	// access.
 	const app = withEmptyPrivateRegistries(createConfiguredApp({ files: {} }));
 	return new TabCandySettingTab(
 		app,
@@ -71,7 +67,7 @@ describe('getSettingDefinitions', () => {
 		]);
 	});
 
-	it('relocates New tab behavior, Search, Time, Greeting, Recent files, Bookmark, Recently closed tabs, Quote, and Workspace settings under Function', () => {
+	it('relocates New tab behavior, Search, Time, Greeting, Recent files, Bookmark, Recently closed tabs, Quote, Clusters, and Workspace settings under Function', () => {
 		const tab = buildTab();
 
 		const [functionPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
@@ -86,6 +82,7 @@ describe('getSettingDefinitions', () => {
 			'Bookmark settings',
 			'Recently closed tabs settings',
 			'Quote settings',
+			'Clusters',
 			'Workspace',
 		]);
 	});
@@ -115,6 +112,19 @@ describe('getSettingDefinitions', () => {
 		const toggleItem = (newTabBehaviorGroup.items ?? [])[0] as { control?: { key?: string } };
 
 		expect(toggleItem.control?.key).toBe('replaceEmptyTabsWithTabCandy');
+	});
+
+	it('binds the Clusters group to the sync and jump settings', () => {
+		const tab = buildTab();
+
+		const [functionPage] = tab.getSettingDefinitions() as SettingDefinitionPage<keyof TabCandySettings>[];
+		const clustersGroup = (functionPage.items ?? []).find((item) => (item as SettingDefinitionGroup).heading === 'Clusters') as SettingDefinitionGroup<keyof TabCandySettings>;
+		const keys = (clustersGroup.items ?? []).map((item) => (item as { control?: { key?: string } }).control?.key);
+
+		expect(keys).toEqual([
+			'keepPairedClustersInSync',
+			'jumpToExistingCluster',
+		]);
 	});
 
 	describe("Design page's status badge", () => {
@@ -183,6 +193,12 @@ describe('getSettingDefinitions', () => {
 	});
 
 	describe('Auto-contrast overlay text toggle', () => {
+		/**
+		 * Reads the Auto-contrast overlay text item.
+		 *
+		 * @param settings - The settings the tab shows.
+		 * @returns The item.
+		 */
 		function getToggleItem(settings: TabCandySettings): {
 			visible?: () => boolean;
 			control?: { key?: string }

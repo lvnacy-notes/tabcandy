@@ -1,8 +1,28 @@
+/** @file Helpers for driving context menus in tests. */
 import {
 	App,
+	Menu,
 	WorkspaceLeaf
 } from 'obsidian';
+import { vi } from 'vitest';
 import { Menu as MenuMock } from 'obsidian-test-mocks/obsidian';
+
+/**
+ * Records each menu a component shows, in the order shown, without displaying it.
+ *
+ * @returns The recorded menus, filled as menus are shown.
+ */
+export function captureMenus(): MenuMock[] {
+	const menus: MenuMock[] = [];
+	vi.spyOn(
+		Menu.prototype,
+		'showAtMouseEvent'
+	).mockImplementation(function (this: Menu) {
+		menus.push(this as unknown as MenuMock);
+		return this;
+	});
+	return menus;
+}
 
 /**
  * Opens a context menu the way Obsidian does and reads the items that
