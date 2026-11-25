@@ -3,16 +3,14 @@ import {
 	App,
 	Notice
 } from 'obsidian';
-import { getTabPath } from './clusterCreation';
+import { getTabPath } from '../tabs/tabPaths';
 import {
 	getClustersContainingPath,
 	pairClusters,
 	unpairCluster
 } from './clusters';
-import { getTrayClusterId } from '../obsidian/trayLeaves';
 import SettingsStore from '../settings/SettingsStore';
 import {
-	CLUSTER_TRAY_VIEW_TYPE,
 	type PromptForClusterChoice,
 	type PromptForConfirmation,
 	type TabCandyCluster,
@@ -59,7 +57,7 @@ export function describeUnlinks(
 }
 
 /**
- * Finds the Clusters the user is working in: the Cluster of the active Tray, otherwise every Cluster holding the active tab's file.
+ * Finds the Clusters the user is working in: every Cluster holding the active tab's file.
  *
  * @param app - The Obsidian app.
  * @param settingsStore - Store holding the Clusters.
@@ -72,12 +70,6 @@ export function getActiveClusters(app: App, settingsStore: SettingsStore): TabCa
 	}
 
 	const { clusters } = settingsStore.get();
-	if (leaf.getViewState().type === CLUSTER_TRAY_VIEW_TYPE) {
-		const id = getTrayClusterId(leaf);
-		const cluster = id === null ? undefined : clusters[id];
-		return cluster === undefined ? [] : [cluster];
-	}
-
 	const path = getTabPath(leaf);
 	return path === null ? [] : getClustersContainingPath(
 		clusters,

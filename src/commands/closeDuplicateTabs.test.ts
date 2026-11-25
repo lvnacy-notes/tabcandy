@@ -12,10 +12,15 @@ import {
 } from '../test/FakeWorkspace';
 import { createFakeLeaf } from '../test/FakeWorkspaceLeaf';
 import { collectRootLeaves } from '../test/commandHelpers';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('close-duplicate-tabs command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createFakeWorkspaceApp());
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -52,7 +57,10 @@ describe('close-duplicate-tabs command', () => {
 			duplicate
 		);
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 
 		expect(collectRootLeaves(app)).toEqual([pinned]);
 	});

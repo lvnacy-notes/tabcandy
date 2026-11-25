@@ -12,6 +12,7 @@ import {
 } from '../newtab/backgrounds';
 import { syncQuotesFile } from '../newtab/quotes';
 import SettingsStore from '../settings/SettingsStore';
+import { watchVault } from './vaultWatch';
 import debounce from '../utils/debounce';
 
 /** Milliseconds a burst of vault events is collapsed into one re-sync. */
@@ -40,61 +41,48 @@ export function registerBackgroundVaultWatchers(
 		);
 	}, SYNC_DEBOUNCE_MS);
 
-	registerEvent(app.vault.on('create', (file) => {
-		if (isInBackgroundsFolder(
-			file,
-			settingsStore.get().backgroundsFolder
-		)) {
-			debouncedSync();
-		}
-	}));
-
-	registerEvent(app.vault.on('modify', (file) => {
-		if (isInBackgroundsFolder(
-			file,
-			settingsStore.get().backgroundsFolder
-		)) {
-			debouncedSync();
-		}
-	}));
-
-	registerEvent(app.vault.on('delete', (file) => {
-		const settings = settingsStore.get();
-		if (settings.manualBackgroundFiles.includes(file.path)) {
-			void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.filter((path) =>
-				path !== file.path) });
-		}
-		if (isInBackgroundsFolder(
-			file,
-			settings.backgroundsFolder
-		)) {
-			debouncedSync();
-		}
-	}));
-
-	registerEvent(app.vault.on('rename', (file, oldPath) => {
-		const settings = settingsStore.get();
-		if (file instanceof TFile &&
-			settings.manualBackgroundFiles.includes(oldPath))
+	watchVault(
+		app,
+		registerEvent,
 		{
-			void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.map((path) =>
-				(path === oldPath ? file.path : path)) });
+			onChange: (file) => {
+				if (isInBackgroundsFolder(
+					file,
+					settingsStore.get().backgroundsFolder
+				)) {
+					debouncedSync();
+				}
+			},
+			onDelete: (file) => {
+				const settings = settingsStore.get();
+				if (settings.manualBackgroundFiles.includes(file.path)) {
+					void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.filter((path) => path !== file.path) });
+				}
+				if (isInBackgroundsFolder(
+					file,
+					settings.backgroundsFolder
+				)) {
+					debouncedSync();
+				}
+			},
+			onRename: (file, oldPath) => {
+				const settings = settingsStore.get();
+				if (file instanceof TFile && settings.manualBackgroundFiles.includes(oldPath)) {
+					void settingsStore.update({ manualBackgroundFiles: settings.manualBackgroundFiles.map((path) => (path === oldPath ? file.path : path)) });
+				}
+				const oldParentPath = oldPath.includes('/') ? oldPath.slice(
+					0,
+					oldPath.lastIndexOf('/')
+				) : '';
+				if (isInBackgroundsFolder(
+					file,
+					settings.backgroundsFolder
+				) || (settings.backgroundsFolder && oldParentPath === normalizePath(settings.backgroundsFolder))) {
+					debouncedSync();
+				}
+			},
 		}
-		const oldParentPath = oldPath.includes('/')
-			? oldPath.slice(
-				0,
-				oldPath.lastIndexOf('/')
-			)
-			: '';
-		if (isInBackgroundsFolder(
-			file,
-			settings.backgroundsFolder
-		) || (settings.backgroundsFolder &&
-				oldParentPath === normalizePath(settings.backgroundsFolder)))
-		{
-			debouncedSync();
-		}
-	}));
+	);
 }
 
 /**

@@ -4,7 +4,7 @@ import {
 	TFile,
 	WorkspaceLeaf
 } from 'obsidian';
-import { getTabPath } from '../clusters/clusterCreation';
+import { getTabPath } from '../tabs/tabPaths';
 
 interface Draggable {
 	file?: unknown;

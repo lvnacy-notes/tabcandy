@@ -574,7 +574,7 @@ export default class TabCandySettingTab extends PluginSettingTab {
 					},
 					{
 						name: 'Jump to clusters that are already open',
-						desc: 'When on, opening a cluster leaves members that are already open where they are, and opening a tray for a cluster that has one switches to it. When off, they open again.',
+						desc: 'When on, opening a cluster leaves members that are already open where they are. When off, they open again.',
 						control: {
 							type: 'toggle',
 							key: 'jumpToExistingCluster',

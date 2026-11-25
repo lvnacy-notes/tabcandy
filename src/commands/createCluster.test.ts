@@ -10,13 +10,16 @@ import {
 	submitting
 } from '../test/clusterHelpers';
 import { buildStore } from '../test/fakes';
+import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('create-cluster command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStore(),
-			cancelling().prompt
-		);
+			{ promptForCluster: cancelling().prompt }
+		));
 
 		expect([
 			command.id,
@@ -29,13 +32,10 @@ describe('create-cluster command', () => {
 
 	it('creates an empty Cluster from the submitted details', () => {
 		const store = buildStore();
-		const command = buildInvokeCommand(
-			store,
-			submitting({
-				name: 'Blank',
-				flavor: '#00ff00'
-			}).prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), store, { promptForCluster: submitting({
+			name: 'Blank',
+			flavor: '#00ff00'
+		}).prompt }));
 
 		command.callback?.();
 
@@ -47,10 +47,11 @@ describe('create-cluster command', () => {
 
 	it('creates nothing when the prompt is cancelled', () => {
 		const store = buildStore();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			store,
-			cancelling().prompt
-		);
+			{ promptForCluster: cancelling().prompt }
+		));
 
 		command.callback?.();
 

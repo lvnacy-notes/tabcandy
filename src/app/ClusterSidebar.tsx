@@ -14,10 +14,6 @@ import {
 	getOpenMembers,
 	openCluster
 } from '../obsidian/clusterOpenClose';
-import {
-	openClusterTray,
-	openClusterTrayAt
-} from '../obsidian/trayLeaves';
 import { getDraggedFilePath } from '../obsidian/fileDrag';
 import { ClusterBaseProps } from '../types';
 
@@ -115,14 +111,6 @@ export default function ClusterSidebar({
 						} }
 						onConfirmUnlink = { () => onConfirmUnlink(cluster.id) }
 						onDeleteCluster = { () => onDeleteCluster(cluster.id) }
-						onDragCluster = { (target) => {
-							void openClusterTrayAt(
-								app,
-								settingsStore,
-								cluster.id,
-								target
-							);
-						} }
 						onDragMember = { actions.dragMember }
 						onDropPath = { (path) => {
 							void addPathToCluster(
@@ -141,13 +129,6 @@ export default function ClusterSidebar({
 							);
 						} }
 						onOpenMember = { actions.openMember }
-						onOpenTray = { () => {
-							void openClusterTray(
-								app,
-								settingsStore,
-								cluster.id
-							);
-						} }
 						onPair = { () => onPair(cluster.id) }
 						onRemoveMember = { actions.removeMember }
 						onResolveMissing = { actions.resolveMissing }

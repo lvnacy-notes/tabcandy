@@ -5,7 +5,7 @@ import {
 	TFile,
 	WorkspaceLeaf
 } from 'obsidian';
-import { getTabPath } from '../clusters/clusterCreation';
+import { getTabPath } from '../tabs/tabPaths';
 import {
 	setLayoutSnapshot,
 	touchCluster
@@ -144,7 +144,7 @@ async function closeOne(
 }
 
 /**
- * Lists the root leaves showing each member of a Cluster. Tray leaves show no file, so they are never listed.
+ * Lists the root leaves showing each member of a Cluster.
  *
  * @param app - The Obsidian app.
  * @param cluster - The Cluster.

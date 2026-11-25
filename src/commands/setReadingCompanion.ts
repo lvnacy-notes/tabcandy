@@ -1,39 +1,20 @@
 /** @file The set-reading-companion command. */
+import type { Command } from 'obsidian';
 import {
-	App,
-	Command
-} from 'obsidian';
-import ReadingCompanion from '../obsidian/ReadingCompanion';
-import type { PromptForClusterChoice } from '../types';
+	buildTabActionCommand,
+	SET_READING_COMPANION
+} from '../clusters/tabActions';
+import type { CommandDependencies } from '../types';
 
 /**
- * Builds the command that makes the active tab the reading companion of a Cluster. Available when the active tab is a file-backed root tab and a Cluster exists.
+ * Builds the command that makes the active tab the reading companion of a Cluster.
  *
- * @param app - The Obsidian app.
- * @param readingCompanion - The reading companion.
- * @param prompt - Collects the choice of Cluster.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `set-reading-companion` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	readingCompanion: ReadingCompanion,
-	prompt: PromptForClusterChoice
-): Command {
-	return {
-		id: 'set-reading-companion',
-		name: 'Set reading companion',
-		checkCallback: (checking) => {
-			const leaf = app.workspace.getMostRecentLeaf();
-			if (!readingCompanion.canSet(leaf)) {
-				return false;
-			}
-			if (!checking) {
-				readingCompanion.promptAndSet(
-					prompt,
-					leaf
-				);
-			}
-			return true;
-		},
-	};
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	return buildTabActionCommand(
+		dependencies,
+		SET_READING_COMPANION
+	);
 }

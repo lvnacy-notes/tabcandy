@@ -20,6 +20,7 @@ import { buildSettings } from '../test/fakes';
 import { collectRootLeaves } from '../test/commandHelpers';
 import ChooseFolderModal from '../ui/ChooseFolderModal';
 import SettingsStore from '../settings/SettingsStore';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -45,10 +46,10 @@ function invoke(app: App, recursive: boolean): ChooseFolderModal {
 		async () => {}
 	);
 
-	buildInvokeCommand(
+	buildInvokeCommand(buildDependencies(
 		app,
 		store
-	).callback?.();
+	)).callback?.();
 
 	return opened[0];
 }
@@ -105,13 +106,10 @@ function getFolder(app: App, path: string): TFolder {
 
 describe('close-tabs-in-folder command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
-			createFakeWorkspaceApp(),
-			new SettingsStore(
-				buildSettings(),
-				async () => {}
-			)
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), new SettingsStore(
+			buildSettings(),
+			async () => {}
+		)));
 
 		expect([
 			command.id,

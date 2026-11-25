@@ -11,6 +11,8 @@ import {
 import { buildInvokeCommand } from './openClusterSidebar';
 import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 /**
  * Builds a stand-in leaf that records the view state it is given.
@@ -38,7 +40,10 @@ describe('open-cluster-sidebar command', () => {
 	});
 
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createFakeWorkspaceApp());
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -68,7 +73,10 @@ describe('open-cluster-sidebar command', () => {
 			'revealLeaf'
 		).mockResolvedValue(undefined);
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 		await vi.runAllTimersAsync();
 
 		expect(reveal).toHaveBeenCalledWith(leaf);
@@ -94,7 +102,10 @@ describe('open-cluster-sidebar command', () => {
 			'revealLeaf'
 		).mockResolvedValue(undefined);
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 		await vi.runAllTimersAsync();
 
 		expect(reveal).toHaveBeenCalledWith(leaf);
@@ -116,7 +127,10 @@ describe('open-cluster-sidebar command', () => {
 			'revealLeaf'
 		).mockResolvedValue(undefined);
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 		await vi.runAllTimersAsync();
 
 		expect(reveal).not.toHaveBeenCalled();

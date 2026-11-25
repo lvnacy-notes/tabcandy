@@ -1,33 +1,25 @@
 /** @file The unlink-clusters command. */
-import {
-	App,
-	Command
-} from 'obsidian';
+import type { Command } from 'obsidian';
 import {
 	getActiveClusters,
 	promptAndUnlink
 } from '../clusters/clusterPairing';
-import SettingsStore from '../settings/SettingsStore';
-import type {
-	PromptForClusterChoice,
-	PromptForConfirmation
-} from '../types';
+import type { CommandDependencies } from '../types';
 
 /**
- * Builds the command that unlinks the active Cluster from its partner. Available only when the active Tray or tab belongs to a paired Cluster.
+ * Builds the command that unlinks the active Cluster from its partner. Available only when the active tab belongs to a paired Cluster.
  *
- * @param app - The Obsidian app.
- * @param settingsStore - Store holding the Clusters.
- * @param promptChoice - Collects the choice when several paired Clusters hold the file.
- * @param confirm - Collects the confirmation.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `unlink-clusters` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	settingsStore: SettingsStore,
-	promptChoice: PromptForClusterChoice,
-	confirm: PromptForConfirmation
-): Command {
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	const {
+		app,
+		settingsStore,
+		promptForClusterChoice: promptChoice,
+		promptForConfirmation: confirm
+	} = dependencies;
+
 	return {
 		id: 'unlink-clusters',
 		name: 'Unlink clusters',

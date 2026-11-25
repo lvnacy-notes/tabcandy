@@ -149,13 +149,13 @@ describe('ChooseClusterModal', () => {
 			vi.fn(),
 			{
 				action: 'Open',
-				title: 'Open a cluster tray'
+				title: 'Open a cluster'
 			}
 		);
 
 		modal.open();
 
-		expect(modal.contentEl.textContent).toContain('Open a cluster tray');
+		expect(modal.contentEl.textContent).toContain('Open a cluster');
 		expect(findButton(
 			modal,
 			'Open'

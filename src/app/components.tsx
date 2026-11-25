@@ -48,7 +48,6 @@ interface ClusterRowProps extends ClusterMenuHandlers<() => void> {
 	hasOpenMember: () => boolean;
 	isFilePresent: (path: string) => boolean;
 	onCloseCluster: () => void;
-	onDragCluster: (target: Element | null) => void;
 	onDragMember: (
 		path: string,
 		event: DragEvent
@@ -60,7 +59,6 @@ interface ClusterRowProps extends ClusterMenuHandlers<() => void> {
 	) => void;
 	onOpenCluster: () => void;
 	onOpenMember: (path: string) => void;
-	onOpenTray: () => void;
 	onRemoveMember: (path: string) => void;
 	onResolveMissing: (focusPath?: string) => void;
 	onToggle: () => void;
@@ -199,7 +197,7 @@ export function Bookmarks({
 }
 
 /**
- * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. Its options button and its context menu offer Open tray, Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink. Its 🔗 icon pairs when unpaired and unlinks at once when paired. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
+ * A Cluster as a tab-header-styled row. Clicking it, or pressing Enter or Space on it, calls `onToggle`. Its options button and its context menu offer Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink. Its 🔗 icon pairs when unpaired and unlinks at once when paired. While expanded it lists the members below. A Flavor is exposed as the CSS variable `--tabcandy-flavor` and paints the header background through the `tabcandy-cluster-header--flavored` class.
  *
  * @param props.cluster - The Cluster.
  * @param props.expanded - Whether the member list is shown.
@@ -209,14 +207,12 @@ export function Bookmarks({
  * @param props.onCloseCluster - Called when Close cluster is chosen from the row's menu.
  * @param props.onConfirmUnlink - Called when Unlink is chosen from the row's menu.
  * @param props.onDeleteCluster - Called when Delete cluster is chosen from the row's menu.
- * @param props.onDragCluster - Called with the element under the pointer when a drag of the Cluster's row ends.
  * @param props.onEditCluster - Called when Edit cluster is chosen from the row's menu.
  * @param props.onDragMember - Called with a member's path and the drag start event when a member row starts to drag.
  * @param props.onDropPath - Called with the path of a file or tab dropped on the Cluster's row.
  * @param props.onMoveMember - Called with a member's current and new positions when it is reordered.
  * @param props.onOpenCluster - Called when Open cluster is chosen from the row's menu.
  * @param props.onOpenMember - Called with the path of a clicked member.
- * @param props.onOpenTray - Called when Open tray is chosen from the row's context menu.
  * @param props.onPair - Called when the 🔗 icon is clicked while unpaired, and when Pair with… is chosen from the row's menu.
  * @param props.onRemoveMember - Called with the path of a member whose minus button is clicked.
  * @param props.onResolveMissing - Called to resolve missing members, with the path of a single missing member to focus or none for all.
@@ -233,14 +229,12 @@ export function ClusterRow({
 	onCloseCluster,
 	onConfirmUnlink,
 	onDeleteCluster,
-	onDragCluster,
 	onDragMember,
 	onDropPath,
 	onEditCluster,
 	onMoveMember,
 	onOpenCluster,
 	onOpenMember,
-	onOpenTray,
 	onPair,
 	onRemoveMember,
 	onResolveMissing,
@@ -259,7 +253,6 @@ export function ClusterRow({
 		onDeleteCluster,
 		onEditCluster,
 		onOpenCluster,
-		onOpenTray,
 		onPair,
 		pairedName,
 	};
@@ -284,19 +277,12 @@ export function ClusterRow({
 				aria-expanded = { expanded }
 				style = { getFlavorStyle(cluster.flavor) }
 				onClick = { onToggle }
-				draggable
 				onContextMenu = { (event: ReactMouseEvent<HTMLDivElement>) => {
 					event.preventDefault();
 					openClusterMenu(
 						event.nativeEvent,
 						menuActions
 					);
-				} }
-				onDragEnd = { (event: ReactDragEvent<HTMLDivElement>) => {
-					onDragCluster(event.currentTarget.ownerDocument.elementFromPoint(
-						event.clientX,
-						event.clientY
-					));
 				} }
 				onDragLeave = { () => setDragOver(false) }
 				onDragOver = { (event: ReactDragEvent<HTMLDivElement>) => {
@@ -305,13 +291,6 @@ export function ClusterRow({
 						event.dataTransfer.dropEffect = 'copy';
 						setDragOver(true);
 					}
-				} }
-				onDragStart = { (event: ReactDragEvent<HTMLDivElement>) => {
-					event.dataTransfer.setData(
-						'text/plain',
-						cluster.name
-					);
-					event.dataTransfer.effectAllowed = 'copy';
 				} }
 				onDrop = { (event: ReactDragEvent<HTMLDivElement>) => {
 					setDragOver(false);
@@ -745,19 +724,13 @@ function getMemberLabel(path: string): string {
 }
 
 /**
- * Opens a Cluster's options menu: Open tray (the row only), Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink.
+ * Opens a Cluster's options menu: Open cluster, Close cluster while a member is open, Edit cluster, Delete cluster, and Pair with… or Unlink.
  *
  * @param event - The event that opened the menu.
  * @param actions - What the menu offers.
  */
 export function openClusterMenu(event: MouseEvent, actions: ClusterMenuActions): void {
 	const menu = new Menu();
-	if (actions.onOpenTray !== undefined) {
-		const { onOpenTray } = actions;
-		menu.addItem((item) => {
-			item.setTitle('Open tray').setIcon('layers').onClick(onOpenTray);
-		});
-	}
 	menu.addItem((item) => {
 		item.setTitle('Open cluster').setIcon('folder-open').onClick(actions.onOpenCluster);
 	});

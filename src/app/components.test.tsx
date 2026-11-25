@@ -13,7 +13,6 @@ import {
 } from 'vitest';
 import {
 	cleanup,
-	createEvent,
 	fireEvent,
 	render,
 	screen
@@ -77,14 +76,12 @@ function renderRow(
 		onCloseCluster = { () => {} }
 		onConfirmUnlink = { () => {} }
 		onDeleteCluster = { () => {} }
-		onDragCluster = { () => {} }
 		onDragMember = { () => {} }
 		onDropPath = { () => {} }
 		onEditCluster = { () => {} }
 		onMoveMember = { () => {} }
 		onOpenCluster = { () => {} }
 		onOpenMember = { () => {} }
-		onOpenTray = { () => {} }
 		onPair = { () => {} }
 		onRemoveMember = { () => {} }
 		onResolveMissing = { () => {} }
@@ -317,53 +314,6 @@ describe('ClusterRow', () => {
 		expect(onRemoveMember).toHaveBeenCalledWith('Notes/a.md');
 	});
 
-	it('can be dragged, and reports the element under the pointer when the drag ends', () => {
-		const target = createDiv();
-		const elementFromPoint = vi.fn(() => target);
-		Object.defineProperty(
-			document, 
-			'elementFromPoint', 
-			{ 
-				value: elementFromPoint, 
-				configurable: true 
-			}
-		);
-		const onDragCluster = vi.fn();
-		renderRow(
-			buildCluster(), 
-			{ onDragCluster }
-		);
-		const header = screen.getByRole(
-			'button', 
-			{ name: /Cluster A/ }
-		);
-
-		// Sets the pointer position on the event.
-		const dragEnd = createEvent.dragEnd(
-			header, 
-			{ dataTransfer: buildDataTransfer() }
-		);
-		Object.defineProperties(dragEnd, {
-			clientX: { value: 30 },
-			clientY: { value: 40 },
-		});
-		fireEvent(
-			header, 
-			dragEnd
-		);
-		Reflect.deleteProperty(
-			document, 
-			'elementFromPoint'
-		);
-
-		expect(header.getAttribute('draggable')).toBe('true');
-		expect(elementFromPoint).toHaveBeenCalledWith(
-			30, 
-			40
-		);
-		expect(onDragCluster).toHaveBeenCalledWith(target);
-	});
-
 	it('accepts a dropped file or tab by its path', () => {
 		const onDropPath = vi.fn();
 		renderRow(
@@ -512,36 +462,6 @@ describe('ClusterRow', () => {
 		]);
 	});
 
-	it('offers Open tray from the Cluster row\'s context menu', () => {
-		const onOpenTray = vi.fn();
-		const menus = captureMenus();
-		renderRow(
-			buildCluster(), 
-			{ onOpenTray }
-		);
-
-		fireEvent.contextMenu(screen.getByRole(
-			'button', 
-			{ name: /Cluster A/ }
-		));
-		const items = menus[0].menuItems__;
-		items[0].onClick__?.(new MouseEvent('click'));
-
-		expect([
-			items.map((item) => item.title__), 
-			onOpenTray.mock.calls.length
-		]).toEqual([
-			[
-				'Open tray', 
-				'Open cluster', 
-				'Edit cluster',
-				'Delete cluster',
-				'Pair with…'
-			], 
-			1
-		]);
-	});
-
 	it('starts editing the Cluster when Edit cluster is chosen from the row menu', () => {
 		const onEditCluster = vi.fn();
 		const menus = captureMenus();
@@ -554,7 +474,7 @@ describe('ClusterRow', () => {
 			'button',
 			{ name: 'Cluster options' }
 		));
-		menus[0].menuItems__[2].onClick__?.(new MouseEvent('click'));
+		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
 
 		expect(onEditCluster).toHaveBeenCalledTimes(1);
 	});
@@ -571,45 +491,9 @@ describe('ClusterRow', () => {
 			'button',
 			{ name: 'Cluster options' }
 		));
-		menus[0].menuItems__[3].onClick__?.(new MouseEvent('click'));
+		menus[0].menuItems__[2].onClick__?.(new MouseEvent('click'));
 
 		expect(onDeleteCluster).toHaveBeenCalledTimes(1);
-	});
-
-	it('offers Open tray from the Cluster options button without toggling the row', () => {
-		const onOpenTray = vi.fn();
-		const onToggle = vi.fn();
-		const menus = captureMenus();
-		renderRow(
-			buildCluster(), 
-			{ 
-				onOpenTray, 
-				onToggle 
-			}
-		);
-
-		fireEvent.click(screen.getByRole(
-			'button', 
-			{ name: 'Cluster options' }
-		));
-		const items = menus[0].menuItems__;
-		items[0].onClick__?.(new MouseEvent('click'));
-
-		expect([
-			items.map((item) => item.title__), 
-			onOpenTray.mock.calls.length, 
-			onToggle.mock.calls.length
-		]).toEqual([
-			[
-				'Open tray', 
-				'Open cluster', 
-				'Edit cluster',
-				'Delete cluster',
-				'Pair with…'
-			],
-			1,
-			0,
-		]);
 	});
 
 	it('pairs from the 🔗 icon when unpaired, without toggling the row', () => {
@@ -690,14 +574,13 @@ describe('ClusterRow', () => {
 			{ name: 'Cluster options' }
 		));
 		const items = menus[0].menuItems__;
-		items[4].onClick__?.(new MouseEvent('click'));
+		items[3].onClick__?.(new MouseEvent('click'));
 
 		expect([
 			items.map((item) => item.title__), 
 			onConfirmUnlink.mock.calls.length
 		]).toEqual([
 			[
-				'Open tray', 
 				'Open cluster', 
 				'Edit cluster',
 				'Delete cluster',
@@ -719,7 +602,7 @@ describe('ClusterRow', () => {
 			'button', 
 			{ name: /Cluster A/ }
 		));
-		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+		menus[0].menuItems__[0].onClick__?.(new MouseEvent('click'));
 
 		expect(onOpenCluster).toHaveBeenCalledTimes(1);
 	});
@@ -740,14 +623,13 @@ describe('ClusterRow', () => {
 			{ name: /Cluster A/ }
 		));
 		const items = menus[0].menuItems__;
-		items[2].onClick__?.(new MouseEvent('click'));
+		items[1].onClick__?.(new MouseEvent('click'));
 
 		expect([
 			items.map((item) => item.title__), 
 			onCloseCluster.mock.calls.length
 		]).toEqual([
 			[
-				'Open tray', 
 				'Open cluster', 
 				'Close cluster', 
 				'Edit cluster',

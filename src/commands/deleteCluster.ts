@@ -1,50 +1,32 @@
 /** @file The delete-cluster command. */
-import { Command } from 'obsidian';
+import type { Command } from 'obsidian';
+import { buildChooseClusterCommand } from '../clusters/chooseClusterCommand';
 import { promptAndDelete } from '../clusters/clusterManagement';
-import SettingsStore from '../settings/SettingsStore';
-import type {
-	PromptForClusterChoice,
-	PromptForConfirmation
-} from '../types';
+import type { CommandDependencies } from '../types';
 
 /**
  * Builds the command that deletes a Cluster after a confirmation. Available when a Cluster exists and asks which.
  *
- * @param settingsStore - Store holding the Clusters.
- * @param prompt - Collects the choice of Cluster.
- * @param confirm - Collects the confirmation.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `delete-cluster` command.
  */
-export function buildInvokeCommand(
-	settingsStore: SettingsStore,
-	prompt: PromptForClusterChoice,
-	confirm: PromptForConfirmation
-): Command {
-	return {
-		id: 'delete-cluster',
-		name: 'Delete cluster',
-		checkCallback: (checking) => {
-			const clusters = Object.values(settingsStore.get().clusters);
-			if (clusters.length === 0) {
-				return false;
-			}
-			if (!checking) {
-				prompt(
-					clusters,
-					(id) => {
-						promptAndDelete(
-							settingsStore,
-							confirm,
-							id
-						);
-					},
-					{
-						action: 'Delete',
-						title: 'Delete cluster'
-					}
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	return buildChooseClusterCommand(
+		dependencies,
+		{
+			id: 'delete-cluster',
+			name: 'Delete cluster',
+			action: 'Delete',
+			onChoose: (clusterId, { 
+				settingsStore, 
+				promptForConfirmation 
+			}) => {
+				promptAndDelete(
+					settingsStore,
+					promptForConfirmation,
+					clusterId
 				);
-			}
-			return true;
-		},
-	};
+			},
+		}
+	);
 }

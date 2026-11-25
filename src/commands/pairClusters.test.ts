@@ -16,14 +16,19 @@ import {
 	buildCluster,
 	buildStore
 } from '../test/fakes';
+import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('pair-clusters command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStore(),
-			pairingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterPair: pairingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		expect([
 			command.id,
@@ -35,11 +40,14 @@ describe('pair-clusters command', () => {
 	});
 
 	it('is always available', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStore(),
-			pairingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterPair: pairingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		expect(command.callback).toBeDefined();
 		expect(command.checkCallback).toBeUndefined();
@@ -54,11 +62,14 @@ describe('pair-clusters command', () => {
 			prompt,
 			spy
 		} = pairingNothing();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			store,
-			prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterPair: prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.callback?.();
 
@@ -73,14 +84,10 @@ describe('pair-clusters command', () => {
 			buildCluster({ id: 'one' }),
 			buildCluster({ id: 'two' })
 		);
-		const command = buildInvokeCommand(
-			store,
-			pairing(
-				'one',
-				'two'
-			).prompt,
-			confirming().prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), store, { promptForClusterPair: pairing(
+			'one',
+			'two'
+		).prompt, promptForConfirmation: confirming().prompt }));
 
 		command.callback?.();
 
@@ -98,11 +105,14 @@ describe('pair-clusters command', () => {
 			buildCluster({ id: 'one' }),
 			buildCluster({ id: 'two' })
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			store,
-			pairingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterPair: pairingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.callback?.();
 
@@ -114,11 +124,14 @@ describe('pair-clusters command', () => {
 			prompt,
 			spy
 		} = pairingNothing();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(buildCluster({ id: 'one' })),
-			prompt,
-			confirmingNothing().prompt
-		);
+			{ 
+				promptForClusterPair: prompt, 
+				promptForConfirmation: confirmingNothing().prompt 
+			}
+		));
 
 		command.callback?.();
 

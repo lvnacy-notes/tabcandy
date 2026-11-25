@@ -13,14 +13,19 @@ import {
 	isAvailable
 } from '../test/clusterHelpers';
 import { buildCluster } from '../test/fakes';
+import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('edit-cluster command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(),
-			choosingNothing().prompt,
-			cancelling().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForCluster: cancelling().prompt 
+			}
+		));
 
 		expect([
 			command.id,
@@ -32,11 +37,14 @@ describe('edit-cluster command', () => {
 	});
 
 	it('is available when a Cluster exists', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(buildCluster()),
-			choosingNothing().prompt,
-			cancelling().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForCluster: cancelling().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -44,11 +52,14 @@ describe('edit-cluster command', () => {
 	});
 
 	it('is unavailable when there are no Clusters', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(),
-			choosingNothing().prompt,
-			cancelling().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForCluster: cancelling().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -60,21 +71,20 @@ describe('edit-cluster command', () => {
 			prompt,
 			spy
 		} = cancelling();
-		const command = buildInvokeCommand(
-			buildStoreWith(
-				buildCluster({
-					id: 'one',
-					name: 'First'
-				}),
-				buildCluster({
-					id: 'two',
-					name: 'Second',
-					flavor: '#ff0000'
-				})
-			),
-			choosing('two').prompt,
-			prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), buildStoreWith(
+			buildCluster({
+				id: 'one',
+				name: 'First'
+			}),
+			buildCluster({
+				id: 'two',
+				name: 'Second',
+				flavor: '#ff0000'
+			})
+		), { 
+			promptForClusterChoice: choosing('two').prompt, 
+			promptForCluster: prompt 
+		}));
 
 		command.checkCallback?.(false);
 

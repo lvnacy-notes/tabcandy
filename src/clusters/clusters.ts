@@ -45,6 +45,33 @@ function uniquePaths(paths: string[]): string[] {
 }
 
 /**
+ * Applies a change to one Cluster, keeping the no-op rule in one place.
+ *
+ * @param clusters - The current Clusters.
+ * @param id - Id of the Cluster.
+ * @param change - Builds the changed Cluster, or returns null when nothing changes.
+ * @returns The next record, or `clusters` itself when `id` doesn't exist or `change` returns null.
+ */
+function patchCluster(
+	clusters: TabCandyClusters,
+	id: string,
+	change: (cluster: TabCandyCluster) => TabCandyCluster | null
+): TabCandyClusters {
+	if (!hasCluster(
+		clusters,
+		id
+	)) {
+		return clusters;
+	}
+
+	const next = change(clusters[id]);
+	return next === null ? clusters : {
+		...clusters,
+		[id]: next
+	};
+}
+
+/**
  * Generates a random Cluster id.
  *
  * @returns 32 lowercase hex characters (128 random bits).
@@ -168,25 +195,18 @@ export function addMember(
 	path: string,
 	now: number = Date.now()
 ): TabCandyClusters {
-	if (!hasCluster(
+	return patchCluster(
 		clusters,
-		id
-	) || clusters[id].members.includes(path)) {
-		return clusters;
-	}
-
-	const cluster = clusters[id];
-	return {
-		...clusters,
-		[id]: {
+		id,
+		(cluster) => (cluster.members.includes(path) ? null : {
 			...cluster,
 			members: [
 				...cluster.members,
 				path
 			],
 			lastTouchedAt: now,
-		},
-	};
+		})
+	);
 }
 
 /**
@@ -206,22 +226,15 @@ export function removeMember(
 	path: string,
 	now: number = Date.now()
 ): TabCandyClusters {
-	if (!hasCluster(
+	return patchCluster(
 		clusters,
-		id
-	) || !clusters[id].members.includes(path)) {
-		return clusters;
-	}
-
-	const cluster = clusters[id];
-	return {
-		...clusters,
-		[id]: {
+		id,
+		(cluster) => (cluster.members.includes(path) ? {
 			...cluster,
 			members: cluster.members.filter((member) => member !== path),
 			lastTouchedAt: now,
-		},
-	};
+		} : null)
+	);
 }
 
 /**
@@ -241,38 +254,33 @@ export function reorderMember(
 	fromIndex: number,
 	toIndex: number
 ): TabCandyClusters {
-	if (!hasCluster(
+	return patchCluster(
 		clusters,
-		id
-	)) {
-		return clusters;
-	}
+		id,
+		(cluster) => {
+			const lastIndex = cluster.members.length - 1;
+			const isValidIndex = (index: number): boolean =>
+				Number.isInteger(index) && index >= 0 && index <= lastIndex;
+			if (!isValidIndex(fromIndex) || !isValidIndex(toIndex) || fromIndex === toIndex) {
+				return null;
+			}
 
-	const cluster = clusters[id];
-	const lastIndex = cluster.members.length - 1;
-	const isValidIndex = (index: number): boolean =>
-		Number.isInteger(index) && index >= 0 && index <= lastIndex;
-	if (!isValidIndex(fromIndex) || !isValidIndex(toIndex) || fromIndex === toIndex) {
-		return clusters;
-	}
-
-	const members = [...cluster.members];
-	const [moved] = members.splice(
-		fromIndex,
-		1
+			const members = [...cluster.members];
+			const [moved] = members.splice(
+				fromIndex,
+				1
+			);
+			members.splice(
+				toIndex,
+				0,
+				moved
+			);
+			return {
+				...cluster,
+				members
+			};
+		}
 	);
-	members.splice(
-		toIndex,
-		0,
-		moved
-	);
-	return {
-		...clusters,
-		[id]: {
-			...cluster,
-			members
-		},
-	};
 }
 
 /**

@@ -1,20 +1,14 @@
 /** @file The Obsidian view that hosts the new-tab app. */
-import {
-	ItemView,
-	WorkspaceLeaf
-} from 'obsidian';
-import {
-	Root,
-	createRoot
-} from 'react-dom/client';
+import { WorkspaceLeaf } from 'obsidian';
+import { ReactItemView } from './ReactItemView';
 import ReactApp from '../app/App';
 import SettingsStore from '../settings/SettingsStore';
 import { TAB_CANDY_VIEW_TYPE } from '../types';
 
 /** The new-tab view. Renders the React app into its content element. */
-export class TabCandyView extends ItemView {
-	root: Root | null = null;
+export class TabCandyView extends ReactItemView {
 	settingsStore: SettingsStore;
+	protected readonly hostClass = 'tabcandy';
 
 	/**
 	 * @param settingsStore - Store holding the settings.
@@ -44,26 +38,12 @@ export class TabCandyView extends ItemView {
 		return TAB_CANDY_VIEW_TYPE;
 	}
 
-	/** Replaces any existing content with a fresh React root. */
-	onOpen(): Promise<void> {
-		this.contentEl.empty();
-
-		this.root = createRoot(this.contentEl);
-		this.root.render(<ReactApp
+	/** @returns The new-tab app. */
+	protected renderApp() {
+		return <ReactApp
 			app = { this.app }
 			settingsStore = { this.settingsStore }
 			leaf = { this.leaf }
-		/>);
-		this.containerEl.addClass('tabcandy');
-
-		return Promise.resolve();
-	}
-
-	/** Unmounts the React root. */
-	onClose(): Promise<void> {
-		this.root?.unmount();
-		this.root = null;
-
-		return Promise.resolve();
+		/>;
 	}
 }

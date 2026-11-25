@@ -28,7 +28,6 @@ import {
 	setMostRecentLeaf
 } from '../test/FakeWorkspace';
 import FakeWorkspaceLeaf from '../test/FakeWorkspaceLeaf';
-import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 /**
  * Makes `openFile` show the file in the leaf, as Obsidian does.
@@ -200,36 +199,6 @@ describe('closeCluster', () => {
 			store,
 			'one'
 		)).toEqual(['a.md']);
-	});
-
-	it('never closes a Tray', async () => {
-		const app = createFakeWorkspaceApp();
-		await addFileTab(
-			app,
-			'a.md',
-			{}
-		);
-		const tray = await addFileTab(
-			app,
-			'tray-stand-in.md',
-			{}
-		);
-		await tray.setViewState({
-			type: CLUSTER_TRAY_VIEW_TYPE,
-			state: { clusterId: 'one' },
-		});
-		const store = buildStoreWith(buildCluster({
-			id: 'one',
-			members: ['a.md']
-		}));
-
-		await closeCluster(
-			app,
-			store,
-			'one'
-		);
-
-		expect(tray.getViewState().type).toBe(CLUSTER_TRAY_VIEW_TYPE);
 	});
 
 	it('captures the layout of the open members before closing', async () => {

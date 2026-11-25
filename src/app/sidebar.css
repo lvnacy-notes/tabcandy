@@ -1,5 +1,4 @@
-.tabcandy-sidebar .tabcandy-sidebar-root,
-.tabcandy-tray .tabcandy-tray-root {
+.tabcandy-sidebar .tabcandy-sidebar-root {
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-2-2);
@@ -91,11 +90,6 @@
 		justify-content: space-between;
 		color: var(--text-muted);
 		font-size: var(--font-ui-small);
-	}
-
-	.tabcandy-tray-title {
-		margin: 0;
-		color: var(--text-normal);
 	}
 
 	.workspace-tab-header-inner {

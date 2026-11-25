@@ -1,5 +1,5 @@
 /** @file Builds every command the plugin registers. */
-import { Command } from 'obsidian';
+import type { Command } from 'obsidian';
 import { buildInvokeCommand as buildAddToClusterCommand } from './addToCluster';
 import { buildInvokeCommand as buildAddToMostRecentClusterCommand } from './addToMostRecentCluster';
 import { buildInvokeCommand as buildClearReadingCompanionCommand } from './clearReadingCompanion';
@@ -15,8 +15,6 @@ import { buildInvokeCommand as buildEditClusterCommand } from './editCluster';
 import { buildInvokeCommand as buildNextTabAcrossGroupsCommand } from './nextTabAcrossGroups';
 import { buildInvokeCommand as buildOpenClusterCommand } from './openCluster';
 import { buildInvokeCommand as buildOpenClusterSidebarCommand } from './openClusterSidebar';
-import { buildInvokeCommand as buildOpenClusterTrayCommand } from './openClusterTray';
-import { buildInvokeCommand as buildOpenRecentClusterTrayCommand } from './openRecentClusterTray';
 import { buildInvokeCommand as buildOpenTabCandyCommand } from './openTabCandy';
 import { buildInvokeCommand as buildPairClusterWithCommand } from './pairClusterWith';
 import { buildInvokeCommand as buildPairClustersCommand } from './pairClusters';
@@ -28,116 +26,40 @@ import { buildInvokeCommand as buildSetReadingCompanionCommand } from './setRead
 import { buildInvokeCommand as buildUnlinkClustersCommand } from './unlinkClusters';
 import type { CommandDependencies } from '../types';
 
+/** Every command's builder, ordered by module name. A new command module is added here and nowhere else. */
+const COMMAND_BUILDERS: Array<(dependencies: CommandDependencies) => Command> = [
+	buildAddToClusterCommand,
+	buildAddToMostRecentClusterCommand,
+	buildClearReadingCompanionCommand,
+	buildCloseClusterCommand,
+	buildCloseDuplicateTabsCommand,
+	buildCloseOtherTabsCommand,
+	buildCloseTabsInFolderCommand,
+	buildCreateClusterCommand,
+	buildCreateClusterFromActivePaneCommand,
+	buildCreateClusterFromActiveTabCommand,
+	buildDeleteClusterCommand,
+	buildEditClusterCommand,
+	buildNextTabAcrossGroupsCommand,
+	buildOpenClusterCommand,
+	buildOpenClusterSidebarCommand,
+	buildOpenTabCandyCommand,
+	buildPairClusterWithCommand,
+	buildPairClustersCommand,
+	buildPreviousTabAcrossGroupsCommand,
+	buildRemoveFromClusterCommand,
+	buildReopenClosedTabCommand,
+	buildSearchOpenTabsCommand,
+	buildSetReadingCompanionCommand,
+	buildUnlinkClustersCommand,
+];
+
 /**
- * Builds every command the plugin registers, ordered by module name.
+ * Builds every command the plugin registers.
  *
  * @param dependencies - What the commands need from the plugin.
  * @returns The commands.
  */
 export function buildCommands(dependencies: CommandDependencies): Command[] {
-	const {
-		app,
-		settingsStore,
-		promptForCluster,
-		promptForClusterChoice,
-		promptForClusterPair,
-		promptForClusterRemoval,
-		promptForConfirmation,
-		readingCompanion
-	} = dependencies;
-
-	return [
-		buildAddToClusterCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice
-		),
-		buildAddToMostRecentClusterCommand(
-			app,
-			settingsStore
-		),
-		buildClearReadingCompanionCommand(readingCompanion),
-		buildCloseClusterCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice
-		),
-		buildCloseDuplicateTabsCommand(app),
-		buildCloseOtherTabsCommand(app),
-		buildCloseTabsInFolderCommand(
-			app,
-			settingsStore
-		),
-		buildCreateClusterCommand(
-			settingsStore,
-			promptForCluster
-		),
-		buildCreateClusterFromActivePaneCommand(
-			app,
-			settingsStore,
-			promptForCluster
-		),
-		buildCreateClusterFromActiveTabCommand(
-			app,
-			settingsStore,
-			promptForCluster
-		),
-		buildDeleteClusterCommand(
-			settingsStore,
-			promptForClusterChoice,
-			promptForConfirmation
-		),
-		buildEditClusterCommand(
-			settingsStore,
-			promptForClusterChoice,
-			promptForCluster
-		),
-		buildNextTabAcrossGroupsCommand(app),
-		buildOpenClusterCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice
-		),
-		buildOpenClusterSidebarCommand(app),
-		buildOpenClusterTrayCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice
-		),
-		buildOpenRecentClusterTrayCommand(
-			app,
-			settingsStore
-		),
-		buildOpenTabCandyCommand(app),
-		buildPairClusterWithCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice,
-			promptForConfirmation
-		),
-		buildPairClustersCommand(
-			settingsStore,
-			promptForClusterPair,
-			promptForConfirmation
-		),
-		buildPreviousTabAcrossGroupsCommand(app),
-		buildRemoveFromClusterCommand(
-			app,
-			settingsStore,
-			promptForClusterRemoval
-		),
-		buildReopenClosedTabCommand(app),
-		buildSearchOpenTabsCommand(app),
-		buildSetReadingCompanionCommand(
-			app,
-			readingCompanion,
-			promptForClusterChoice
-		),
-		buildUnlinkClustersCommand(
-			app,
-			settingsStore,
-			promptForClusterChoice,
-			promptForConfirmation
-		),
-	];
+	return COMMAND_BUILDERS.map((build) => build(dependencies));
 }

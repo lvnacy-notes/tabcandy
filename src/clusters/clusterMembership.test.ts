@@ -10,7 +10,6 @@ import {
 	addToMostRecentCluster,
 	describeAddition,
 	describeRemoval,
-	getActiveTabPath,
 	openMemberFile,
 	promptAndAdd,
 	promptAndRemove,
@@ -20,8 +19,6 @@ import {
 	resolveMissingMember
 } from './clusterMembership';
 import {
-	addFileTab,
-	addNonFileTab,
 	buildStoreWith,
 	choosing,
 	choosingNothing,
@@ -35,10 +32,6 @@ import {
 	buildStore,
 	createConfiguredApp
 } from '../test/fakes';
-import {
-	createFakeWorkspaceApp,
-	setMostRecentLeaf
-} from '../test/FakeWorkspace';
 import SettingsStore from '../settings/SettingsStore';
 
 /**
@@ -230,51 +223,6 @@ describe('describeRemoval', () => {
 
 	it('describes removal from several Clusters', () => {
 		expect(describeRemoval(3)).toBe('Removed from 3 clusters.');
-	});
-});
-
-describe('getActiveTabPath', () => {
-	it('returns the file path of the most recent tab', async () => {
-		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(
-			app,
-			await addFileTab(
-				app,
-				'a.md',
-				{}
-			)
-		);
-
-		const result = getActiveTabPath(app);
-
-		expect(result).toBe('a.md');
-	});
-
-	it('returns null when the most recent tab has no file', async () => {
-		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(
-			app,
-			await addNonFileTab(
-				app,
-				{}
-			)
-		);
-
-		const result = getActiveTabPath(app);
-
-		expect(result).toBeNull();
-	});
-
-	it('returns null when there is no most recent tab', () => {
-		const app = createFakeWorkspaceApp();
-		setMostRecentLeaf(
-			app,
-			null
-		);
-
-		const result = getActiveTabPath(app);
-
-		expect(result).toBeNull();
 	});
 });
 

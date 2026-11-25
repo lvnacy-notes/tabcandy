@@ -1,17 +1,18 @@
-/** @file Tests for Cluster creation: leaf path reading and the draft-to-Cluster flow. */
+/** @file Tests for reading the file paths of tabs and panes. */
 import {
 	describe,
 	expect,
-	it,
-	vi
+	it
 } from 'vitest';
 import {
-	createClusterFromDraft,
-	describeNewCluster,
+	getActiveTabPath,
 	getPanePaths,
 	getTabPath
-} from './clusterCreation';
-import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
+} from './tabPaths';
+import {
+	createFakeWorkspaceApp,
+	setMostRecentLeaf
+} from '../test/FakeWorkspace';
 import {
 	createFakeLeaf,
 	makeUnreadable
@@ -20,14 +21,6 @@ import {
 	addFileTab,
 	addNonFileTab
 } from '../test/clusterHelpers';
-import {
-	buildCluster,
-	buildClusters,
-	buildSettings,
-	buildStore
-} from '../test/fakes';
-import SettingsStore from '../settings/SettingsStore';
-import { UNTITLED_CLUSTER_NAME } from '../types';
 
 describe('getTabPath', () => {
 	it('returns the file path of a file-backed leaf', async () => {
@@ -240,128 +233,47 @@ describe('getPanePaths', () => {
 	});
 });
 
-describe('createClusterFromDraft', () => {
-	it('saves a Cluster with the draft\'s name, Flavor and the given members', async () => {
-		const store = buildStore();
-
-		const cluster = await createClusterFromDraft(
-			store,
-			{
-				name: 'Research',
-				flavor: '#ff8800'
-			},
-			[
+describe('getActiveTabPath', () => {
+	it('returns the file path of the most recent tab', async () => {
+		const app = createFakeWorkspaceApp();
+		setMostRecentLeaf(
+			app,
+			await addFileTab(
+				app,
 				'a.md',
-				'b.md'
-			],
-			500
+				{}
+			)
 		);
 
-		expect(store.get().clusters[cluster.id]).toEqual({
-			id: cluster.id,
-			name: 'Research',
-			flavor: '#ff8800',
-			members: [
-				'a.md',
-				'b.md'
-			],
-			lastTouchedAt: 500,
-			pairedWith: null,
-		});
+		const result = getActiveTabPath(app);
+
+		expect(result).toBe('a.md');
 	});
 
-	it('leaves the other Clusters untouched', async () => {
-		const existing = buildCluster({ id: 'existing' });
-		const store = new SettingsStore(
-			buildSettings({ clusters: buildClusters(existing) }),
-			async () => {}
+	it('returns null when the most recent tab has no file', async () => {
+		const app = createFakeWorkspaceApp();
+		setMostRecentLeaf(
+			app,
+			await addNonFileTab(
+				app,
+				{}
+			)
 		);
 
-		await createClusterFromDraft(
-			store,
-			{ name: 'New' },
-			[]
-		);
+		const result = getActiveTabPath(app);
 
-		expect(store.get().clusters.existing).toBe(existing);
+		expect(result).toBeNull();
 	});
 
-	it('persists the new settings', async () => {
-		const persist = vi.fn(async () => {});
-		const store = new SettingsStore(
-			buildSettings(),
-			persist
+	it('returns null when there is no most recent tab', () => {
+		const app = createFakeWorkspaceApp();
+		setMostRecentLeaf(
+			app,
+			null
 		);
 
-		await createClusterFromDraft(
-			store,
-			{ name: 'New' },
-			[]
-		);
+		const result = getActiveTabPath(app);
 
-		expect(persist).toHaveBeenCalledTimes(1);
+		expect(result).toBeNull();
 	});
-
-	it('names a Cluster with a blank name Untitled', async () => {
-		const store = buildStore();
-
-		const cluster = await createClusterFromDraft(
-			store,
-			{ name: '' },
-			[]
-		);
-
-		expect(cluster.name).toBe(UNTITLED_CLUSTER_NAME);
-	});
-
-	it('leaves Flavor unset when the draft has none', async () => {
-		const store = buildStore();
-
-		const cluster = await createClusterFromDraft(
-			store,
-			{ name: 'Plain' },
-			[]
-		);
-
-		expect(cluster).not.toHaveProperty('flavor');
-	});
-});
-
-describe('describeNewCluster', () => {
-	it.each([
-		[
-			'no members',
-			[],
-			'Created empty Cluster "Research".'
-		],
-		[
-			'one member',
-			['a.md'],
-			'Created Cluster "Research" with 1 tab.'
-		],
-		[
-			'several members',
-			[
-				'a.md',
-				'b.md'
-			],
-			'Created Cluster "Research" with 2 tabs.'
-		]
-	])(
-		'describes a Cluster with %s',
-		(
-			_kind,
-			members,
-			expected
-		) => {
-			const cluster = buildCluster({
-				name: 'Research',
-				members
-			});
-
-			const result = describeNewCluster(cluster);
-
-			expect(result).toBe(expected);
-		}
-	);
 });

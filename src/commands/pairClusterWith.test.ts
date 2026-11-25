@@ -22,15 +22,18 @@ import {
 	buildCluster,
 	buildStore
 } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('pair-cluster-with command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStore(),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		expect([
 			command.id,
@@ -51,12 +54,14 @@ describe('pair-cluster-with command', () => {
 				{}
 			)
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -73,12 +78,14 @@ describe('pair-cluster-with command', () => {
 				{}
 			)
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['other.md'] })),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -94,12 +101,14 @@ describe('pair-cluster-with command', () => {
 				{}
 			)
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -120,12 +129,14 @@ describe('pair-cluster-with command', () => {
 			prompt,
 			spy
 		} = choosingNothing();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		isAvailable(command);
 
@@ -146,12 +157,14 @@ describe('pair-cluster-with command', () => {
 			}),
 			buildCluster({ id: 'two' })
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			choosing('two').prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosing('two').prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.checkCallback?.(false);
 
@@ -189,12 +202,14 @@ describe('pair-cluster-with command', () => {
 			prompt,
 			spy
 		} = choosingNothing();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.checkCallback?.(false);
 

@@ -19,6 +19,7 @@ import {
 	buildCluster,
 	buildStore
 } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 vi.mock('../obsidian/clusterOpenClose', async (importOriginal) => ({
 	...await importOriginal<typeof import('../obsidian/clusterOpenClose')>(),
@@ -27,11 +28,11 @@ vi.mock('../obsidian/clusterOpenClose', async (importOriginal) => ({
 
 describe('close-cluster command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStore(),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		expect([
 			command.id,
@@ -49,11 +50,11 @@ describe('close-cluster command', () => {
 			'a.md',
 			{}
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		const result = isAvailable(command);
 
@@ -67,11 +68,11 @@ describe('close-cluster command', () => {
 			'other.md',
 			{}
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		const result = isAvailable(command);
 
@@ -89,20 +90,16 @@ describe('close-cluster command', () => {
 			prompt,
 			spy
 		} = choosingNothing();
-		const command = buildInvokeCommand(
-			app,
-			buildStoreWith(
-				buildCluster({
-					id: 'one',
-					members: ['a.md']
-				}),
-				buildCluster({
-					id: 'two',
-					members: ['b.md']
-				})
-			),
-			prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(app, buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md']
+			}),
+			buildCluster({
+				id: 'two',
+				members: ['b.md']
+			})
+		), { promptForClusterChoice: prompt }));
 
 		command.checkCallback?.(false);
 
@@ -120,11 +117,11 @@ describe('close-cluster command', () => {
 			id: 'one',
 			members: ['a.md']
 		}));
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			choosing('one').prompt
-		);
+			{ promptForClusterChoice: choosing('one').prompt }
+		));
 
 		command.checkCallback?.(false);
 

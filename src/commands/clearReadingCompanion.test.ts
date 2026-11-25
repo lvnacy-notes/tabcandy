@@ -6,6 +6,7 @@ import {
 } from 'vitest';
 import { buildInvokeCommand } from './clearReadingCompanion';
 import ReadingCompanion from '../obsidian/ReadingCompanion';
+import { buildDependencies } from '../test/dependencyHelpers';
 import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
 import {
 	addFileTab,
@@ -22,21 +23,31 @@ describe('clear-reading-companion command', () => {
 	 */
 	function setUp() {
 		const app = createFakeWorkspaceApp();
+		const store = buildStoreWith(buildCluster());
 		const readingCompanion = new ReadingCompanion(
 			app,
-			buildStoreWith(buildCluster())
+			store
 		);
 
 		return {
 			app,
-			readingCompanion
+			readingCompanion,
+			store
 		};
 	}
 
 	it('has its id and name', () => {
-		const { readingCompanion } = setUp();
+		const {
+			app,
+			readingCompanion,
+			store
+		} = setUp();
 
-		const command = buildInvokeCommand(readingCompanion);
+		const command = buildInvokeCommand(buildDependencies(
+			app, 
+			store, 
+			{ readingCompanion }
+		));
 
 		expect([
 			command.id,
@@ -48,9 +59,17 @@ describe('clear-reading-companion command', () => {
 	});
 
 	it('is unavailable while no companion is set', () => {
-		const { readingCompanion } = setUp();
+		const {
+			app,
+			readingCompanion,
+			store
+		} = setUp();
 
-		const result = isAvailable(buildInvokeCommand(readingCompanion));
+		const result = isAvailable(buildInvokeCommand(buildDependencies(
+			app, 
+			store, 
+			{ readingCompanion }
+		)));
 
 		expect(result).toBe(false);
 	});
@@ -58,7 +77,8 @@ describe('clear-reading-companion command', () => {
 	it('is available while a companion is set, and clears it', async () => {
 		const {
 			app,
-			readingCompanion
+			readingCompanion,
+			store
 		} = setUp();
 		await readingCompanion.set(
 			await addFileTab(
@@ -68,7 +88,11 @@ describe('clear-reading-companion command', () => {
 			),
 			'cluster-a'
 		);
-		const command = buildInvokeCommand(readingCompanion);
+		const command = buildInvokeCommand(buildDependencies(
+			app, 
+			store, 
+			{ readingCompanion }
+		));
 
 		const available = isAvailable(command);
 		command.checkCallback?.(false);

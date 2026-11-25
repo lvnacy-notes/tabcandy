@@ -19,6 +19,8 @@ import {
 } from '../test/FakeWorkspace';
 import { createFakeLeaf } from '../test/FakeWorkspaceLeaf';
 import { collectRootLeaves } from '../test/commandHelpers';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 beforeEach(() => {
 	resetTabTrackingState();
@@ -26,7 +28,10 @@ beforeEach(() => {
 
 describe('reopen-closed-tab command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createFakeWorkspaceApp());
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -60,7 +65,10 @@ describe('reopen-closed-tab command', () => {
 		);
 		app.workspace.trigger('layout-change');
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 
 		expect(getClosedTabs()).toEqual([]);
 		expect(collectRootLeaves(app)).toHaveLength(1);

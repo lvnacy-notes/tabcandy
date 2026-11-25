@@ -4,26 +4,22 @@ import {
 	Notice
 } from 'obsidian';
 import { pairWithConfirmation } from '../clusters/clusterPairing';
-import SettingsStore from '../settings/SettingsStore';
-import type {
-	PromptForClusterPair,
-	PromptForConfirmation
-} from '../types';
+import type { CommandDependencies } from '../types';
 
 /**
  * Builds the command that pairs two Clusters picked in one modal. Always
  * available. Shows a notice when there are fewer than two Clusters.
  *
- * @param settingsStore - Store holding the Clusters.
- * @param promptPair - Collects the two Clusters.
- * @param confirm - Collects the confirmation.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `pair-clusters` command.
  */
-export function buildInvokeCommand(
-	settingsStore: SettingsStore,
-	promptPair: PromptForClusterPair,
-	confirm: PromptForConfirmation
-): Command {
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	const {
+		settingsStore,
+		promptForClusterPair: promptPair,
+		promptForConfirmation: confirm
+	} = dependencies;
+
 	return {
 		id: 'pair-clusters',
 		name: 'Pair clusters…',

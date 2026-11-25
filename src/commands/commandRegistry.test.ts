@@ -1,4 +1,5 @@
 /** @file Tests for the command registry. */
+/// <reference types="vite/client" />
 import {
 	describe,
 	expect,
@@ -60,8 +61,6 @@ describe('buildCommands', () => {
 			'next-tab-across-groups',
 			'open-cluster',
 			'open-cluster-sidebar',
-			'open-cluster-tray',
-			'open-recent-cluster-tray',
 			'open-tab-candy',
 			'pair-cluster-with',
 			'pair-clusters',
@@ -72,6 +71,19 @@ describe('buildCommands', () => {
 			'set-reading-companion',
 			'unlink-clusters',
 		]);
+	});
+
+	it('registers every command module in this folder', () => {
+		const modules = Object.keys(import.meta.glob(
+			[
+				'./*.ts',
+				'!./*.test.ts',
+				'!./commandRegistry.ts'
+			],
+			{ eager: false }
+		)).length;
+
+		expect(build()).toHaveLength(modules);
 	});
 
 	it('gives every command a distinct id', () => {

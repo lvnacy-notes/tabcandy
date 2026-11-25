@@ -1,51 +1,28 @@
 /** @file The Obsidian view that hosts the Cluster sidebar. */
-import {
-	ItemView,
-	WorkspaceLeaf
-} from 'obsidian';
-import {
-	Root,
-	createRoot
-} from 'react-dom/client';
+import { WorkspaceLeaf } from 'obsidian';
+import { ReactItemView } from './ReactItemView';
 import ClusterSidebar from '../app/ClusterSidebar';
-import SettingsStore from '../settings/SettingsStore';
-import { CLUSTER_SIDEBAR_VIEW_TYPE } from '../types';
+import { buildSidebarHandlers } from '../clusters/sidebarHandlers';
+import {
+	CLUSTER_SIDEBAR_VIEW_TYPE,
+	type CommandDependencies
+} from '../types';
 
 /** The Cluster sidebar. Renders the React sidebar into its content element. */
-export class ClusterSidebarView extends ItemView {
-	onConfirmUnlink: (id: string) => void;
-	onCreateCluster: () => void;
-	onDeleteCluster: (id: string) => void;
-	onEditCluster: (id: string) => void;
-	onPair: (id: string) => void;
-	root: Root | null = null;
-	settingsStore: SettingsStore;
+export class ClusterSidebarView extends ReactItemView {
+	dependencies: CommandDependencies;
+	protected readonly hostClass = 'tabcandy-sidebar';
 
 	/**
-	 * @param settingsStore - Store holding the Clusters.
-	 * @param onCreateCluster - Starts creating an empty Cluster.
-	 * @param onPair - Starts pairing a Cluster, by id.
-	 * @param onConfirmUnlink - Starts unlinking a Cluster after a confirmation, by id.
-	 * @param onEditCluster - Starts editing a Cluster, by id.
-	 * @param onDeleteCluster - Starts deleting a Cluster after a confirmation, by id.
+	 * @param dependencies - What the sidebar needs from the plugin.
 	 * @param leaf - The leaf hosting the view.
 	 */
 	constructor(
-		settingsStore: SettingsStore,
-		onCreateCluster: () => void,
-		onPair: (id: string) => void,
-		onConfirmUnlink: (id: string) => void,
-		onEditCluster: (id: string) => void,
-		onDeleteCluster: (id: string) => void,
+		dependencies: CommandDependencies,
 		leaf: WorkspaceLeaf
 	) {
 		super(leaf);
-		this.settingsStore = settingsStore;
-		this.onCreateCluster = onCreateCluster;
-		this.onPair = onPair;
-		this.onConfirmUnlink = onConfirmUnlink;
-		this.onEditCluster = onEditCluster;
-		this.onDeleteCluster = onDeleteCluster;
+		this.dependencies = dependencies;
 	}
 
 	/** @returns The view's title. */
@@ -63,30 +40,12 @@ export class ClusterSidebarView extends ItemView {
 		return CLUSTER_SIDEBAR_VIEW_TYPE;
 	}
 
-	/** Unmounts the React root. */
-	onClose(): Promise<void> {
-		this.root?.unmount();
-		this.root = null;
-
-		return Promise.resolve();
-	}
-
-	/** Replaces any existing content with a fresh React root. */
-	onOpen(): Promise<void> {
-		this.contentEl.empty();
-
-		this.root = createRoot(this.contentEl);
-		this.root.render(<ClusterSidebar
+	/** @returns The Cluster sidebar. */
+	protected renderApp() {
+		return <ClusterSidebar
 			app = { this.app }
-			settingsStore = { this.settingsStore }
-			onConfirmUnlink = { this.onConfirmUnlink }
-			onCreateCluster = { this.onCreateCluster }
-			onDeleteCluster = { this.onDeleteCluster }
-			onEditCluster = { this.onEditCluster }
-			onPair = { this.onPair }
-		/>);
-		this.containerEl.addClass('tabcandy-sidebar');
-
-		return Promise.resolve();
+			settingsStore = { this.dependencies.settingsStore }
+			{ ...buildSidebarHandlers(this.dependencies) }
+		/>;
 	}
 }

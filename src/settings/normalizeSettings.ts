@@ -26,6 +26,92 @@ import {
  */
 export const CURRENT_SETTINGS_VERSION = 2;
 
+/** The keys of `TabCandySettings` whose value type is `Value`. */
+type FieldsOf<Value> = { [Key in keyof TabCandySettings]: TabCandySettings[Key] extends Value ? Key : never }[keyof TabCandySettings];
+
+/** Settings holding a boolean. */
+type BooleanField = FieldsOf<boolean>;
+
+/** Settings holding a string enum. Plain `string` fields are not enums. */
+type EnumField = { [Key in keyof TabCandySettings]: string extends TabCandySettings[Key] ? never : TabCandySettings[Key] extends string ? Key : never }[keyof TabCandySettings];
+
+/** Settings holding a plain string. */
+type StringField = Exclude<FieldsOf<string>, EnumField>;
+
+/** Every boolean setting. A new boolean setting that is missing here fails to compile. */
+const BOOLEAN_FIELDS: Record<BooleanField, true> = {
+	autoContrastOverlayText: true,
+	closeTabsInFolderRecursive: true,
+	dashboardFocusesOpenTab: true,
+	jumpToExistingCluster: true,
+	keepPairedClustersInSync: true,
+	replaceEmptyTabsWithTabCandy: true,
+	showBookmarks: true,
+	showGreeting: true,
+	showInlineSearch: true,
+	showQuote: true,
+	showRecentFiles: true,
+	showRecentlyClosedTabs: true,
+	showTime: true,
+	showTopLeftSearchButton: true,
+	widenStackedTabPanes: true,
+};
+
+/** Every enum setting with its enum. A new enum setting that is missing here, or paired with the wrong enum, fails to compile. */
+const ENUM_FIELDS: { [Key in EnumField]: Record<string, TabCandySettings[Key]> } = {
+	backgroundTheme: BackgroundTheme,
+	bookmarkSource: BOOKMARK_SOURCE,
+	timeFormat: TIME_FORMAT,
+};
+
+/** Every plain string setting. A new string setting that is missing here fails to compile. */
+const STRING_FIELDS: Record<StringField, true> = {
+	backgroundsFolder: true,
+	bookmarkGroup: true,
+	customBackground: true,
+	greetingText: true,
+	quotesFilePath: true,
+};
+
+/**
+ * Copies a field onto the settings when its raw value passes the check.
+ *
+ * @param target - The settings being built.
+ * @param key - The field.
+ * @param value - The raw value.
+ * @param isValid - Tests the raw value.
+ */
+function copyField<Key extends keyof TabCandySettings>(
+	target: TabCandySettings,
+	key: Key,
+	value: unknown,
+	isValid: (value: unknown) => value is TabCandySettings[Key]
+): void {
+	if (isValid(value)) {
+		target[key] = value;
+	}
+}
+
+/**
+ * Tests for a boolean.
+ *
+ * @param value - Value to test.
+ * @returns True when `value` is a boolean.
+ */
+function isBoolean(value: unknown): value is boolean {
+	return typeof value === 'boolean';
+}
+
+/**
+ * Tests for a string.
+ *
+ * @param value - Value to test.
+ * @returns True when `value` is a string.
+ */
+function isString(value: unknown): value is string {
+	return typeof value === 'string';
+}
+
 /**
  * Narrows to a non-null object. Arrays pass; use `isRecord()` to exclude them.
  *
@@ -214,87 +300,36 @@ export function normalizeSettings(raw: unknown): TabCandySettings {
 	const data = isPlainObject(raw) ? raw : {};
 	const normalized: TabCandySettings = { ...DEFAULT_SETTINGS };
 
-	/** Strings and booleans: accepted when the type matches. */
-	if (typeof data.replaceEmptyTabsWithTabCandy === 'boolean') {
-		normalized.replaceEmptyTabsWithTabCandy =
-			data.replaceEmptyTabsWithTabCandy;
+	/** Booleans and strings: accepted when the type matches. */
+	for (const key of Object.keys(BOOLEAN_FIELDS) as BooleanField[]) {
+		copyField(
+			normalized,
+			key,
+			data[key],
+			isBoolean
+		);
 	}
-	if (typeof data.dashboardFocusesOpenTab === 'boolean') {
-		normalized.dashboardFocusesOpenTab = data.dashboardFocusesOpenTab;
-	}
-	if (typeof data.customBackground === 'string') {
-		normalized.customBackground = data.customBackground;
-	}
-	if (typeof data.backgroundsFolder === 'string') {
-		normalized.backgroundsFolder = data.backgroundsFolder;
-	}
-	if (typeof data.showTopLeftSearchButton === 'boolean') {
-		normalized.showTopLeftSearchButton = data.showTopLeftSearchButton;
-	}
-	if (typeof data.showTime === 'boolean') {
-		normalized.showTime = data.showTime;
-	}
-	if (typeof data.showGreeting === 'boolean') {
-		normalized.showGreeting = data.showGreeting;
-	}
-	if (typeof data.greetingText === 'string') {
-		normalized.greetingText = data.greetingText;
-	}
-	if (typeof data.showInlineSearch === 'boolean') {
-		normalized.showInlineSearch = data.showInlineSearch;
-	}
-	if (typeof data.showRecentFiles === 'boolean') {
-		normalized.showRecentFiles = data.showRecentFiles;
-	}
-	if (typeof data.showBookmarks === 'boolean') {
-		normalized.showBookmarks = data.showBookmarks;
-	}
-	if (typeof data.bookmarkGroup === 'string') {
-		normalized.bookmarkGroup = data.bookmarkGroup;
-	}
-	if (typeof data.showQuote === 'boolean') {
-		normalized.showQuote = data.showQuote;
-	}
-	if (typeof data.quotesFilePath === 'string') {
-		normalized.quotesFilePath = data.quotesFilePath;
-	}
-	if (typeof data.autoContrastOverlayText === 'boolean') {
-		normalized.autoContrastOverlayText = data.autoContrastOverlayText;
-	}
-	if (typeof data.closeTabsInFolderRecursive === 'boolean') {
-		normalized.closeTabsInFolderRecursive = data.closeTabsInFolderRecursive;
-	}
-	if (typeof data.showRecentlyClosedTabs === 'boolean') {
-		normalized.showRecentlyClosedTabs = data.showRecentlyClosedTabs;
-	}
-	if (typeof data.widenStackedTabPanes === 'boolean') {
-		normalized.widenStackedTabPanes = data.widenStackedTabPanes;
-	}
-	if (typeof data.keepPairedClustersInSync === 'boolean') {
-		normalized.keepPairedClustersInSync = data.keepPairedClustersInSync;
-	}
-	if (typeof data.jumpToExistingCluster === 'boolean') {
-		normalized.jumpToExistingCluster = data.jumpToExistingCluster;
+	for (const key of Object.keys(STRING_FIELDS) as StringField[]) {
+		copyField(
+			normalized,
+			key,
+			data[key],
+			isString
+		);
 	}
 
-	/** Enum fields: accepted when the value is a member of the enum. */
-	if (typeof data.backgroundTheme === 'string' && isEnumValue(
-		BackgroundTheme,
-		data.backgroundTheme
-	)) {
-		normalized.backgroundTheme = data.backgroundTheme;
-	}
-	if (typeof data.timeFormat === 'string' && isEnumValue(
-		TIME_FORMAT,
-		data.timeFormat
-	)) {
-		normalized.timeFormat = data.timeFormat;
-	}
-	if (typeof data.bookmarkSource === 'string' && isEnumValue(
-		BOOKMARK_SOURCE,
-		data.bookmarkSource
-	)) {
-		normalized.bookmarkSource = data.bookmarkSource;
+	/** Enum fields: accepted when the value is a member of the field's enum. */
+	for (const key of Object.keys(ENUM_FIELDS) as EnumField[]) {
+		const members = ENUM_FIELDS[key];
+		copyField(
+			normalized,
+			key,
+			data[key],
+			(value): value is TabCandySettings[typeof key] => typeof value === 'string' && isEnumValue(
+				members,
+				value
+			)
+		);
 	}
 
 	/** Arrays: accepted when every entry is valid, otherwise dropped whole. */

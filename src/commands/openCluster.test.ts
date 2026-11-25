@@ -18,6 +18,7 @@ import {
 	buildCluster,
 	buildStore
 } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 vi.mock(
 	'../obsidian/clusterOpenClose',
@@ -26,11 +27,11 @@ vi.mock(
 
 describe('open-cluster command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStore(),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		expect([
 			command.id,
@@ -42,11 +43,11 @@ describe('open-cluster command', () => {
 	});
 
 	it('is available when a Cluster exists', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStoreWith(buildCluster()),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		const result = isAvailable(command);
 
@@ -54,11 +55,11 @@ describe('open-cluster command', () => {
 	});
 
 	it('is unavailable when there are no Clusters', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStoreWith(),
-			choosingNothing().prompt
-		);
+			{ promptForClusterChoice: choosingNothing().prompt }
+		));
 
 		const result = isAvailable(command);
 
@@ -70,11 +71,11 @@ describe('open-cluster command', () => {
 			prompt,
 			spy
 		} = choosingNothing();
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStoreWith(buildCluster()),
-			prompt
-		);
+			{ promptForClusterChoice: prompt }
+		));
 
 		isAvailable(command);
 
@@ -86,14 +87,10 @@ describe('open-cluster command', () => {
 			prompt,
 			spy
 		} = choosingNothing();
-		const command = buildInvokeCommand(
-			createFakeWorkspaceApp(),
-			buildStoreWith(
-				buildCluster({ id: 'one' }),
-				buildCluster({ id: 'two' })
-			),
-			prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), buildStoreWith(
+			buildCluster({ id: 'one' }),
+			buildCluster({ id: 'two' })
+		), { promptForClusterChoice: prompt }));
 
 		command.checkCallback?.(false);
 
@@ -109,11 +106,11 @@ describe('open-cluster command', () => {
 			buildCluster({ id: 'one' }),
 			buildCluster({ id: 'two' })
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			choosing('two').prompt
-		);
+			{ promptForClusterChoice: choosing('two').prompt }
+		));
 
 		command.checkCallback?.(false);
 

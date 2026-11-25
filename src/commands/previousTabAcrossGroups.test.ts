@@ -12,10 +12,15 @@ import {
 	setMostRecentLeaf
 } from '../test/FakeWorkspace';
 import { createFakeLeaf } from '../test/FakeWorkspaceLeaf';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('previous-tab-across-groups command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createFakeWorkspaceApp());
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -47,7 +52,10 @@ describe('previous-tab-across-groups command', () => {
 			'setActiveLeaf'
 		);
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 
 		expect(setActiveLeaf).toHaveBeenCalledWith(
 			second,

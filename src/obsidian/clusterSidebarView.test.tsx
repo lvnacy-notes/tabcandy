@@ -11,6 +11,7 @@ import {
 	vi
 } from 'vitest';
 import { buildStoreWith } from '../test/clusterHelpers';
+import { buildDependencies } from '../test/dependencyHelpers';
 import { createConfiguredApp } from '../test/fakes';
 
 (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -32,12 +33,10 @@ const { ClusterSidebarView } = await import('./ClusterSidebarView');
 function buildView(app: App) {
 	const leaf: WorkspaceLeaf = app.workspace.getLeaf(true);
 	return new ClusterSidebarView(
-		buildStoreWith(),
-		() => {},
-		() => {},
-		() => {},
-		() => {},
-		() => {},
+		buildDependencies(
+			app,
+			buildStoreWith()
+		),
 		leaf
 	);
 }

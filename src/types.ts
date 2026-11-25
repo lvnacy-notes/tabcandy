@@ -25,9 +25,6 @@ export const CLOSED_TABS_LIMIT = 5;
 /** View type the Cluster sidebar is registered under. */
 export const CLUSTER_SIDEBAR_VIEW_TYPE = 'tabcandy-clusters';
 
-/** View type the Cluster Tray is registered under. */
-export const CLUSTER_TRAY_VIEW_TYPE = 'tabcandy-cluster-tray';
-
 /** Ids of the plugins offered as search providers. */
 export const SEARCH_PROVIDER = [
 	'switcher',
@@ -172,8 +169,6 @@ export interface ClusterMenuActions {
 	onDeleteCluster: () => void;
 	onEditCluster: () => void;
 	onOpenCluster: () => void;
-	/** Left out of the Tray's menu, which is already a Tray. */
-	onOpenTray?: () => void;
 	onPair: () => void;
 	/** Name of the paired Cluster, or null when unpaired. */
 	pairedName: string | null;
@@ -228,6 +223,20 @@ export interface OverlayContrastResult {
 	overlayTextColor: string;
 }
 
+/** The prompts, one per modal. */
+export interface Prompts {
+	/** Collects the details of a new Cluster. */
+	promptForCluster: PromptForCluster;
+	/** Collects the choice of one Cluster. */
+	promptForClusterChoice: PromptForClusterChoice;
+	/** Collects the choice of two Clusters to pair. */
+	promptForClusterPair: PromptForClusterPair;
+	/** Collects the choice of Clusters to remove a file from. */
+	promptForClusterRemoval: PromptForClusterRemoval;
+	/** Collects a confirmation. */
+	promptForConfirmation: PromptForConfirmation;
+}
+
 /** The quote currently chosen for display. */
 export interface Quote {
 	/** Quote text. */
@@ -242,6 +251,20 @@ export interface SearchProvider {
 	command: string;
 	/** Label shown to the user. */
 	display: string;
+}
+
+/** What the sidebar can start. Each takes a Cluster id, except creation. */
+export interface SidebarHandlers {
+	/** Starts unlinking a Cluster, after a confirmation. */
+	onConfirmUnlink: (id: string) => void;
+	/** Starts creating an empty Cluster. */
+	onCreateCluster: () => void;
+	/** Starts deleting a Cluster, after a confirmation. */
+	onDeleteCluster: (id: string) => void;
+	/** Starts editing a Cluster. */
+	onEditCluster: (id: string) => void;
+	/** Starts pairing a Cluster. */
+	onPair: (id: string) => void;
 }
 
 /** A split of plans. */
@@ -263,7 +286,7 @@ export interface TabCandyCluster {
 	flavor?: string;
 	/** Layout captured via `getLayout()` for this Cluster's leaves. Unset until saved. */
 	layoutSnapshot?: Record<string, unknown>;
-	/** Epoch ms. Bumped by creation, adding or removing a member, and opening a Tray. */
+	/** Epoch ms. Bumped by creation, adding or removing a member, and opening the Cluster. */
 	lastTouchedAt: number;
 	/** Id of the paired Cluster, or null. Strictly 1:1 and reciprocal. */
 	pairedWith: string | null;
@@ -338,7 +361,7 @@ export interface TabCandySettings {
 	clusters: TabCandyClusters;
 	/** When true, reorder, open, close and remove on one Cluster mirror onto its paired Cluster. */
 	keepPairedClustersInSync: boolean;
-	/** When true, opening an already-open Tray or Cluster jumps to it instead of opening a duplicate. */
+	/** When true, opening a Cluster leaves members that are already open where they are instead of opening them again. */
 	jumpToExistingCluster: boolean;
 }
 

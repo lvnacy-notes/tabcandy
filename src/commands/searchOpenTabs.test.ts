@@ -9,6 +9,8 @@ import {
 import { buildInvokeCommand } from './searchOpenTabs';
 import { createConfiguredApp } from '../test/fakes';
 import SearchOpenTabsModal from '../ui/SearchOpenTabsModal';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -16,7 +18,10 @@ afterEach(() => {
 
 describe('search-open-tabs command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createConfiguredApp({ files: {} }));
+		const command = buildInvokeCommand(buildDependencies(
+			createConfiguredApp({ files: {} }), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -36,7 +41,10 @@ describe('search-open-tabs command', () => {
 			opened.push(this);
 		});
 
-		buildInvokeCommand(createConfiguredApp({ files: {} })).callback?.();
+		buildInvokeCommand(buildDependencies(
+			createConfiguredApp({ files: {} }), 
+			buildStore()
+		)).callback?.();
 
 		expect(opened).toHaveLength(1);
 		expect(opened[0]).toBeInstanceOf(SearchOpenTabsModal);

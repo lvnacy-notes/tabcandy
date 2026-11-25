@@ -1,14 +1,5 @@
 /** @file Wires the plugin's features together. */
 import type { EventRef } from 'obsidian';
-import { promptAndCreate } from './clusters/clusterCreation';
-import {
-	promptAndDelete,
-	promptAndEdit
-} from './clusters/clusterManagement';
-import {
-	promptAndPair,
-	promptAndUnlink
-} from './clusters/clusterPairing';
 import { buildCommands } from './commands/commandRegistry';
 import {
 	pruneMissingManualBackgroundFiles,
@@ -17,16 +8,13 @@ import {
 } from './newtab/backgrounds';
 import { syncQuotesFile } from './newtab/quotes';
 import { ClusterSidebarView } from './obsidian/ClusterSidebarView';
-import { ClusterTrayView } from './obsidian/ClusterTrayView';
 import ReadingCompanion from './obsidian/ReadingCompanion';
-import { registerClusterMembershipMenu } from './obsidian/clusterMembershipMenu';
-import { registerClusterCreationMenu } from './obsidian/clusterMenu';
 import { registerNewTabHijack } from './obsidian/newTabHijack';
-import { registerReadingCompanionMenu } from './obsidian/readingCompanionMenu';
+import { buildPrompts } from './obsidian/prompts';
 import TabCandySettingTab from './obsidian/SettingsTab';
 import { registerStackedTabPanes } from './obsidian/stackedTabPanes';
+import { registerTabHeaderMenu } from './obsidian/tabHeaderMenu';
 import { TabCandyView } from './obsidian/TabCandyView';
-import TrayReturnTracker from './obsidian/TrayReturnTracker';
 import {
 	registerBackgroundVaultWatchers,
 	registerClusterRenameWatcher,
@@ -34,21 +22,11 @@ import {
 } from './obsidian/vaultWatchers';
 import { checkForPluginUpdates } from './obsidian/versionCheck';
 import { registerTabTracking } from './tabs/tabNavigation';
-import ChooseClusterModal from './ui/ChooseClusterModal';
-import ConfirmModal from './ui/ConfirmModal';
-import CreateClusterModal from './ui/CreateClusterModal';
-import PairClustersModal from './ui/PairClustersModal';
-import RemoveFromClustersModal from './ui/RemoveFromClustersModal';
 import type TabCandyPlugin from '../main';
 import {
 	CLUSTER_SIDEBAR_VIEW_TYPE,
-	CLUSTER_TRAY_VIEW_TYPE,
-	PromptForCluster,
-	PromptForClusterChoice,
-	PromptForClusterPair,
-	PromptForClusterRemoval,
-	PromptForConfirmation,
-	TAB_CANDY_VIEW_TYPE
+	TAB_CANDY_VIEW_TYPE,
+	type CommandDependencies,
 } from './types';
 
 /**
@@ -136,145 +114,6 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		registerEvent
 	);
 
-	const promptForCluster: PromptForCluster = (onSubmit) => {
-		new CreateClusterModal(
-			app,
-			onSubmit
-		).open();
-	};
-
-	const promptForClusterChoice: PromptForClusterChoice = (clusters, onSubmit, labels) => {
-		new ChooseClusterModal(
-			app,
-			clusters,
-			onSubmit,
-			labels
-		).open();
-	};
-
-	const promptForClusterRemoval: PromptForClusterRemoval = (clusters, onSubmit) => {
-		new RemoveFromClustersModal(
-			app,
-			clusters,
-			onSubmit
-		).open();
-	};
-
-	const promptForClusterPair: PromptForClusterPair = (clusters, onSubmit) => {
-		new PairClustersModal(
-			app,
-			clusters,
-			onSubmit
-		).open();
-	};
-
-	const promptForConfirmation: PromptForConfirmation = (title, text, confirmLabel, onConfirm) => {
-		new ConfirmModal(
-			app,
-			onConfirm,
-			title,
-			text,
-			confirmLabel
-		).open();
-	};
-
-	/**
-	 * Starts pairing a Cluster.
-	 *
-	 * @param id - Id of the Cluster.
-	 */
-	const onPair = (id: string): void => {
-		promptAndPair(
-			settingsStore,
-			promptForClusterChoice,
-			promptForConfirmation,
-			id
-		);
-	};
-
-	/**
-	 * Starts unlinking a Cluster, after a confirmation.
-	 *
-	 * @param id - Id of the Cluster.
-	 */
-	const onConfirmUnlink = (id: string): void => {
-		const cluster = settingsStore.get().clusters[id];
-		if (cluster !== undefined) {
-			promptAndUnlink(
-				settingsStore,
-				promptForClusterChoice,
-				promptForConfirmation,
-				[cluster]
-			);
-		}
-	};
-
-	/**
-	 * Starts editing a Cluster.
-	 *
-	 * @param id - Id of the Cluster.
-	 */
-	const onEditCluster = (id: string): void => {
-		promptAndEdit(
-			settingsStore,
-			promptForCluster,
-			id
-		);
-	};
-
-	/**
-	 * Starts deleting a Cluster, after a confirmation.
-	 *
-	 * @param id - Id of the Cluster.
-	 */
-	const onDeleteCluster = (id: string): void => {
-		promptAndDelete(
-			settingsStore,
-			promptForConfirmation,
-			id
-		);
-	};
-
-	plugin.registerView(
-		CLUSTER_SIDEBAR_VIEW_TYPE,
-		(leaf) => new ClusterSidebarView(
-			settingsStore,
-			() => {
-				promptAndCreate(
-					settingsStore,
-					promptForCluster,
-					[]
-				);
-			},
-			onPair,
-			onConfirmUnlink,
-			onEditCluster,
-			onDeleteCluster,
-			leaf
-		)
-	);
-
-	const trayReturn = new TrayReturnTracker(
-		app,
-		settingsStore
-	);
-	registerEvent(app.workspace.on('layout-change', () => {
-		void trayReturn.handleLayoutChange();
-	}));
-
-	plugin.registerView(
-		CLUSTER_TRAY_VIEW_TYPE,
-		(leaf) => new ClusterTrayView(
-			settingsStore,
-			trayReturn,
-			onPair,
-			onConfirmUnlink,
-			onEditCluster,
-			onDeleteCluster,
-			leaf
-		)
-	);
-
 	const readingCompanion = new ReadingCompanion(
 		app,
 		settingsStore
@@ -284,39 +123,28 @@ export async function startRuntime(plugin: TabCandyPlugin): Promise<void> {
 		(cleanup) => plugin.register(cleanup)
 	);
 
-	for (const command of buildCommands({
+	const dependencies: CommandDependencies = {
 		app,
 		settingsStore,
-		promptForCluster,
-		promptForClusterChoice,
-		promptForClusterPair,
-		promptForClusterRemoval,
-		promptForConfirmation,
+		...buildPrompts(app),
 		readingCompanion,
-	})) {
+	};
+
+	plugin.registerView(
+		CLUSTER_SIDEBAR_VIEW_TYPE,
+		(leaf) => new ClusterSidebarView(
+			dependencies,
+			leaf
+		)
+	);
+
+	for (const command of buildCommands(dependencies)) {
 		plugin.addCommand(command);
 	}
 
-	registerClusterCreationMenu(
-		app,
-		settingsStore,
-		registerEvent,
-		promptForCluster
-	);
-
-	registerClusterMembershipMenu(
-		app,
-		settingsStore,
-		registerEvent,
-		promptForClusterChoice,
-		promptForClusterRemoval
-	);
-
-	registerReadingCompanionMenu(
-		app,
-		readingCompanion,
-		registerEvent,
-		promptForClusterChoice
+	registerTabHeaderMenu(
+		dependencies,
+		registerEvent
 	);
 
 	registerTabTracking(

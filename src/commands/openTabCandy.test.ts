@@ -10,6 +10,8 @@ import {
 import { buildInvokeCommand } from './openTabCandy';
 import { createConfiguredApp } from '../test/fakes';
 import { TAB_CANDY_VIEW_TYPE } from '../types';
+import { buildStore } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('open-tab-candy command', () => {
 	beforeEach(() => {
@@ -21,7 +23,10 @@ describe('open-tab-candy command', () => {
 	});
 
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(createConfiguredApp({ files: {} }));
+		const command = buildInvokeCommand(buildDependencies(
+			createConfiguredApp({ files: {} }), 
+			buildStore()
+		));
 
 		expect([
 			command.id,
@@ -35,7 +40,10 @@ describe('open-tab-candy command', () => {
 	it('opens a Tab Candy leaf', async () => {
 		const app = createConfiguredApp({ files: {} });
 
-		buildInvokeCommand(app).callback?.();
+		buildInvokeCommand(buildDependencies(
+			app, 
+			buildStore()
+		)).callback?.();
 		await vi.runAllTimersAsync();
 
 		expect(app.workspace.getLeavesOfType(TAB_CANDY_VIEW_TYPE)).toHaveLength(1);

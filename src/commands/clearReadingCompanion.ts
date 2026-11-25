@@ -1,14 +1,16 @@
 /** @file The clear-reading-companion command. */
-import { Command } from 'obsidian';
-import ReadingCompanion from '../obsidian/ReadingCompanion';
+import type { Command } from 'obsidian';
+import type { CommandDependencies } from '../types';
 
 /**
  * Builds the command that unsets the reading companion. Available while one is set.
  *
- * @param readingCompanion - The reading companion.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `clear-reading-companion` command.
  */
-export function buildInvokeCommand(readingCompanion: ReadingCompanion): Command {
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	const { readingCompanion } = dependencies;
+
 	return {
 		id: 'clear-reading-companion',
 		name: 'Clear reading companion',

@@ -17,6 +17,8 @@ import {
 	isAvailable
 } from '../test/clusterHelpers';
 import { buildCluster } from '../test/fakes';
+import { createFakeWorkspaceApp } from '../test/FakeWorkspace';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('delete-cluster command', () => {
 	beforeEach(() => {
@@ -28,11 +30,14 @@ describe('delete-cluster command', () => {
 	});
 
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(),
-			choosingNothing().prompt,
-			confirmingNothing().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirmingNothing().prompt 
+			}
+		));
 
 		expect([
 			command.id,
@@ -44,11 +49,14 @@ describe('delete-cluster command', () => {
 	});
 
 	it('is available when a Cluster exists', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(buildCluster()),
-			choosingNothing().prompt,
-			confirmingNothing().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirmingNothing().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -56,11 +64,14 @@ describe('delete-cluster command', () => {
 	});
 
 	it('is unavailable when there are no Clusters', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			buildStoreWith(),
-			choosingNothing().prompt,
-			confirmingNothing().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirmingNothing().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -72,20 +83,19 @@ describe('delete-cluster command', () => {
 			prompt,
 			spy
 		} = confirmingNothing();
-		const command = buildInvokeCommand(
-			buildStoreWith(
-				buildCluster({
-					id: 'one',
-					name: 'First'
-				}),
-				buildCluster({
-					id: 'two',
-					name: 'Second'
-				})
-			),
-			choosing('two').prompt,
-			prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(createFakeWorkspaceApp(), buildStoreWith(
+			buildCluster({
+				id: 'one',
+				name: 'First'
+			}),
+			buildCluster({
+				id: 'two',
+				name: 'Second'
+			})
+		), { 
+			promptForClusterChoice: choosing('two').prompt, 
+			promptForConfirmation: prompt 
+		}));
 
 		command.checkCallback?.(false);
 
@@ -97,11 +107,14 @@ describe('delete-cluster command', () => {
 			buildCluster({ id: 'one' }),
 			buildCluster({ id: 'two' })
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
+			createFakeWorkspaceApp(), 
 			store,
-			choosing('two').prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosing('two').prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.checkCallback?.(false);
 		await vi.runAllTimersAsync();

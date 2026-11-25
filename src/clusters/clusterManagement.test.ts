@@ -1,4 +1,4 @@
-/** @file Tests for editing and deleting Clusters. */
+/** @file Tests for creating, editing and deleting Clusters. */
 import {
 	afterEach,
 	beforeEach,
@@ -8,6 +8,8 @@ import {
 	vi
 } from 'vitest';
 import {
+	createClusterFromDraft,
+	describeNewCluster,
 	promptAndDelete,
 	promptAndEdit
 } from './clusterManagement';
@@ -17,10 +19,18 @@ import {
 	confirming,
 	confirmingNothing
 } from '../test/clusterHelpers';
-import { buildCluster } from '../test/fakes';
-import type {
-	ClusterDraft,
-	PromptForCluster
+import {
+	buildCluster,
+	buildClusters,
+	buildSettings,
+	buildStore
+} from '../test/fakes';
+import SettingsStore from '../settings/SettingsStore';
+import {
+
+	UNTITLED_CLUSTER_NAME,
+	type ClusterDraft,
+	type PromptForCluster
 } from '../types';
 
 beforeEach(() => {
@@ -187,4 +197,130 @@ describe('promptAndDelete', () => {
 		expect(store.get().clusters['one']).toBeDefined();
 	});
 
+});
+
+describe('createClusterFromDraft', () => {
+	it('saves a Cluster with the draft\'s name, Flavor and the given members', async () => {
+		const store = buildStore();
+
+		const cluster = await createClusterFromDraft(
+			store,
+			{
+				name: 'Research',
+				flavor: '#ff8800'
+			},
+			[
+				'a.md',
+				'b.md'
+			],
+			500
+		);
+
+		expect(store.get().clusters[cluster.id]).toEqual({
+			id: cluster.id,
+			name: 'Research',
+			flavor: '#ff8800',
+			members: [
+				'a.md',
+				'b.md'
+			],
+			lastTouchedAt: 500,
+			pairedWith: null,
+		});
+	});
+
+	it('leaves the other Clusters untouched', async () => {
+		const existing = buildCluster({ id: 'existing' });
+		const store = new SettingsStore(
+			buildSettings({ clusters: buildClusters(existing) }),
+			async () => {}
+		);
+
+		await createClusterFromDraft(
+			store,
+			{ name: 'New' },
+			[]
+		);
+
+		expect(store.get().clusters.existing).toBe(existing);
+	});
+
+	it('persists the new settings', async () => {
+		const persist = vi.fn(async () => {});
+		const store = new SettingsStore(
+			buildSettings(),
+			persist
+		);
+
+		await createClusterFromDraft(
+			store,
+			{ name: 'New' },
+			[]
+		);
+
+		expect(persist).toHaveBeenCalledTimes(1);
+	});
+
+	it('names a Cluster with a blank name Untitled', async () => {
+		const store = buildStore();
+
+		const cluster = await createClusterFromDraft(
+			store,
+			{ name: '' },
+			[]
+		);
+
+		expect(cluster.name).toBe(UNTITLED_CLUSTER_NAME);
+	});
+
+	it('leaves Flavor unset when the draft has none', async () => {
+		const store = buildStore();
+
+		const cluster = await createClusterFromDraft(
+			store,
+			{ name: 'Plain' },
+			[]
+		);
+
+		expect(cluster).not.toHaveProperty('flavor');
+	});
+});
+
+describe('describeNewCluster', () => {
+	it.each([
+		[
+			'no members',
+			[],
+			'Created empty Cluster "Research".'
+		],
+		[
+			'one member',
+			['a.md'],
+			'Created Cluster "Research" with 1 tab.'
+		],
+		[
+			'several members',
+			[
+				'a.md',
+				'b.md'
+			],
+			'Created Cluster "Research" with 2 tabs.'
+		]
+	])(
+		'describes a Cluster with %s',
+		(
+			_kind,
+			members,
+			expected
+		) => {
+			const cluster = buildCluster({
+				name: 'Research',
+				members
+			});
+
+			const result = describeNewCluster(cluster);
+
+			expect(result).toBe(expected);
+		}
+	);
 });

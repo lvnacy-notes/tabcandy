@@ -26,13 +26,10 @@ import {
 	buildCluster,
 	buildClusters
 } from '../test/fakes';
-import { createFakeLeaf } from '../test/FakeWorkspaceLeaf';
 import {
-	addRootLeaf,
 	createFakeWorkspaceApp,
 	setMostRecentLeaf
 } from '../test/FakeWorkspace';
-import { CLUSTER_TRAY_VIEW_TYPE } from '../types';
 
 describe('describeUnlinks', () => {
 	it('says nothing when neither Cluster is paired', () => {
@@ -132,54 +129,6 @@ describe('getActiveClusters', () => {
 			'one',
 			'two'
 		]);
-	});
-
-	it('returns the Cluster of the active Tray', async () => {
-		const app = createFakeWorkspaceApp();
-		const leaf = createFakeLeaf(app);
-		await leaf.setViewState({
-			type: CLUSTER_TRAY_VIEW_TYPE,
-			state: { clusterId: 'two' },
-		});
-		addRootLeaf(
-			app,
-			leaf
-		);
-		setMostRecentLeaf(
-			app,
-			leaf
-		);
-		const store = buildStoreWith(
-			buildCluster({ id: 'one' }),
-			buildCluster({ id: 'two' })
-		);
-
-		expect(getActiveClusters(
-			app,
-			store
-		).map((cluster) => cluster.id)).toEqual(['two']);
-	});
-
-	it('returns nothing for a Tray whose Cluster is gone', async () => {
-		const app = createFakeWorkspaceApp();
-		const leaf = createFakeLeaf(app);
-		await leaf.setViewState({
-			type: CLUSTER_TRAY_VIEW_TYPE,
-			state: { clusterId: 'gone' },
-		});
-		addRootLeaf(
-			app,
-			leaf
-		);
-		setMostRecentLeaf(
-			app,
-			leaf
-		);
-
-		expect(getActiveClusters(
-			app,
-			buildStoreWith(buildCluster({ id: 'one' }))
-		)).toEqual([]);
 	});
 
 	it('returns nothing when the active tab has no file', async () => {

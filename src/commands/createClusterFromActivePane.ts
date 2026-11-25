@@ -1,49 +1,20 @@
 /** @file The command that creates a Cluster from the active pane's tabs. */
+import type { Command } from 'obsidian';
 import {
-	App,
-	Command
-} from 'obsidian';
-import {
-	getPanePaths,
-	promptAndCreate
-} from '../clusters/clusterCreation';
-import SettingsStore from '../settings/SettingsStore';
-import type { PromptForCluster } from '../types';
+	buildTabActionCommand,
+	CREATE_CLUSTER_FROM_ACTIVE_PANE
+} from '../clusters/tabActions';
+import type { CommandDependencies } from '../types';
 
 /**
- * Builds the command that creates a Cluster from the file-backed tabs of the
- * most recent tab's pane. Available only when the pane has any.
+ * Builds the command that creates a Cluster from the file-backed tabs of the most recent tab's pane.
  *
- * @param app - The Obsidian app.
- * @param settingsStore - Store holding the Clusters.
- * @param prompt - Collects the Cluster details.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `create-cluster-from-active-pane` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	settingsStore: SettingsStore,
-	prompt: PromptForCluster
-): Command {
-	return {
-		id: 'create-cluster-from-active-pane',
-		name: 'Create cluster from active pane',
-		checkCallback: (checking) => {
-			const leaf = app.workspace.getMostRecentLeaf();
-			const paths = leaf === null ? [] : getPanePaths(
-				app,
-				leaf
-			);
-			if (paths.length === 0) {
-				return false;
-			}
-			if (!checking) {
-				promptAndCreate(
-					settingsStore,
-					prompt,
-					paths
-				);
-			}
-			return true;
-		},
-	};
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	return buildTabActionCommand(
+		dependencies,
+		CREATE_CLUSTER_FROM_ACTIVE_PANE
+	);
 }

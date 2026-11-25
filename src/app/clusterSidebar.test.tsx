@@ -30,12 +30,6 @@ import SettingsStore from '../settings/SettingsStore';
 /** Constructor arguments of each resolve modal created. */
 const opened = vi.hoisted((): unknown[][] => []);
 
-/** Arguments of each `openClusterTray` call. */
-const openedTrays = vi.hoisted((): unknown[][] => []);
-
-/** Arguments of each `openClusterTrayAt` call. */
-const openedTraysAt = vi.hoisted((): unknown[][] => []);
-
 /** Arguments of each `openCluster` call. */
 const openedClusters = vi.hoisted((): unknown[][] => []);
 
@@ -68,26 +62,6 @@ vi.mock('../obsidian/clusterOpenClose', () => ({
 	 */
 	openCluster: (...args: unknown[]) => {
 		openedClusters.push(args);
-	},
-}));
-
-/** Replaces opening a Tray with recorders. */
-vi.mock('../obsidian/trayLeaves', () => ({
-	/**
-	 * Records a Tray opened in the active pane.
-	 *
-	 * @param args - The arguments the sidebar passed.
-	 */
-	openClusterTray: (...args: unknown[]) => {
-		openedTrays.push(args);
-	},
-	/**
-	 * Records a Tray opened where a heading was dropped.
-	 *
-	 * @param args - The arguments the sidebar passed.
-	 */
-	openClusterTrayAt: (...args: unknown[]) => {
-		openedTraysAt.push(args);
 	},
 }));
 
@@ -476,65 +450,6 @@ describe('ClusterSidebar', () => {
 		]]);
 	});
 
-	it('opens the Cluster\'s Tray from its context menu', () => {
-		openedTrays.length = 0;
-		const menus = captureMenus();
-		const store = buildStoreWith(buildCluster({ id: 'one' }));
-		const app = createConfiguredApp();
-		renderSidebar(
-			app, 
-			store
-		);
-
-		fireEvent.contextMenu(screen.getByText('Cluster A'));
-		menus[0].menuItems__[0].onClick__?.(new MouseEvent('click'));
-
-		expect(openedTrays).toEqual([[
-			app, 
-			store, 
-			'one'
-		]]);
-	});
-
-	it('opens the Cluster\'s Tray where its heading is dropped', () => {
-		openedTraysAt.length = 0;
-		const target = createDiv();
-		Object.defineProperty(
-			document, 
-			'elementFromPoint', 
-			{ 
-				value: () => target, 
-				configurable: true 
-			}
-		);
-		const store = buildStoreWith(buildCluster({ id: 'one' }));
-		const app = createConfiguredApp();
-		renderSidebar(
-			app, 
-			store
-		);
-
-		fireEvent.dragEnd(screen.getByRole(
-			'button', 
-			{ name: /Cluster A/ }
-		), {
-			clientX: 5,
-			clientY: 6,
-			dataTransfer: buildDataTransfer(),
-		});
-		Reflect.deleteProperty(
-			document, 
-			'elementFromPoint'
-		);
-
-		expect(openedTraysAt).toEqual([[
-			app, 
-			store, 
-			'one', 
-			target
-		]]);
-	});
-
 	it('starts pairing a Cluster from its 🔗 icon', () => {
 		const onPair = vi.fn();
 		renderSidebar(
@@ -625,7 +540,7 @@ describe('ClusterSidebar', () => {
 		);
 
 		fireEvent.contextMenu(screen.getByText('Cluster A'));
-		menus[0].menuItems__[1].onClick__?.(new MouseEvent('click'));
+		menus[0].menuItems__[0].onClick__?.(new MouseEvent('click'));
 
 		expect(openedClusters).toEqual([[
 			app, 
@@ -647,7 +562,7 @@ describe('ClusterSidebar', () => {
 
 		fireEvent.contextMenu(screen.getByText('Cluster A'));
 		const items = menus[0].menuItems__;
-		items[2].onClick__?.(new MouseEvent('click'));
+		items[1].onClick__?.(new MouseEvent('click'));
 		openMembers.size = 0;
 
 		expect([
@@ -655,7 +570,6 @@ describe('ClusterSidebar', () => {
 			closedClusters
 		]).toEqual([
 			[
-				'Open tray', 
 				'Open cluster', 
 				'Close cluster', 
 				'Edit cluster',
@@ -681,7 +595,6 @@ describe('ClusterSidebar', () => {
 		fireEvent.contextMenu(screen.getByText('Cluster A'));
 
 		expect(menus[0].menuItems__.map((item) => item.title__)).toEqual([
-			'Open tray', 
 			'Open cluster', 
 			'Edit cluster',
 			'Delete cluster',

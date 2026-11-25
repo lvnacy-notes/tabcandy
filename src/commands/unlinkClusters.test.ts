@@ -21,15 +21,18 @@ import {
 	buildCluster,
 	buildStore
 } from '../test/fakes';
+import { buildDependencies } from '../test/dependencyHelpers';
 
 describe('unlink-clusters command', () => {
 	it('has its id and name', () => {
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			createFakeWorkspaceApp(),
 			buildStore(),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		expect([
 			command.id,
@@ -50,22 +53,20 @@ describe('unlink-clusters command', () => {
 				{}
 			)
 		);
-		const command = buildInvokeCommand(
-			app,
-			buildStoreWith(
-				buildCluster({
-					id: 'one',
-					members: ['a.md'],
-					pairedWith: 'two'
-				}),
-				buildCluster({
-					id: 'two',
-					pairedWith: 'one'
-				})
-			),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(app, buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md'],
+				pairedWith: 'two'
+			}),
+			buildCluster({
+				id: 'two',
+				pairedWith: 'one'
+			})
+		), {
+			promptForClusterChoice: choosingNothing().prompt, 
+			promptForConfirmation: confirming().prompt 
+		}));
 
 		const result = isAvailable(command);
 
@@ -82,12 +83,14 @@ describe('unlink-clusters command', () => {
 				{}
 			)
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			buildStoreWith(buildCluster({ members: ['a.md'] })),
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		const result = isAvailable(command);
 
@@ -108,22 +111,20 @@ describe('unlink-clusters command', () => {
 			prompt,
 			spy
 		} = confirmingNothing();
-		const command = buildInvokeCommand(
-			app,
-			buildStoreWith(
-				buildCluster({
-					id: 'one',
-					members: ['a.md'],
-					pairedWith: 'two'
-				}),
-				buildCluster({
-					id: 'two',
-					pairedWith: 'one'
-				})
-			),
-			choosingNothing().prompt,
-			prompt
-		);
+		const command = buildInvokeCommand(buildDependencies(app, buildStoreWith(
+			buildCluster({
+				id: 'one',
+				members: ['a.md'],
+				pairedWith: 'two'
+			}),
+			buildCluster({
+				id: 'two',
+				pairedWith: 'one'
+			})
+		), { 
+			promptForClusterChoice: choosingNothing().prompt, 
+			promptForConfirmation: prompt 
+		}));
 
 		isAvailable(command);
 
@@ -151,12 +152,14 @@ describe('unlink-clusters command', () => {
 				pairedWith: 'one'
 			})
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			choosingNothing().prompt,
-			confirming().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirming().prompt 
+			}
+		));
 
 		command.checkCallback?.(false);
 
@@ -190,12 +193,14 @@ describe('unlink-clusters command', () => {
 				pairedWith: 'one'
 			})
 		);
-		const command = buildInvokeCommand(
+		const command = buildInvokeCommand(buildDependencies(
 			app,
 			store,
-			choosingNothing().prompt,
-			confirmingNothing().prompt
-		);
+			{ 
+				promptForClusterChoice: choosingNothing().prompt, 
+				promptForConfirmation: confirmingNothing().prompt 
+			}
+		));
 
 		command.checkCallback?.(false);
 

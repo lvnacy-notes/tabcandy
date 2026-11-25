@@ -1,33 +1,25 @@
 /** @file The pair-cluster-with command. */
-import {
-	App,
-	Command
-} from 'obsidian';
+import type { Command } from 'obsidian';
 import {
 	getActiveClusters,
 	promptAndPair
 } from '../clusters/clusterPairing';
-import SettingsStore from '../settings/SettingsStore';
-import type {
-	PromptForClusterChoice,
-	PromptForConfirmation
-} from '../types';
+import type { CommandDependencies } from '../types';
 
 /**
- * Builds the command that pairs the active Cluster with another. Available only when the active Tray or tab belongs to a Cluster. Asks which first when the active tab's file belongs to several.
+ * Builds the command that pairs the active Cluster with another. Available only when the active tab belongs to a Cluster. Asks which first when the active tab's file belongs to several.
  *
- * @param app - The Obsidian app.
- * @param settingsStore - Store holding the Clusters.
- * @param promptChoice - Collects the choice of Cluster.
- * @param confirm - Collects the confirmation.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `pair-cluster-with` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	settingsStore: SettingsStore,
-	promptChoice: PromptForClusterChoice,
-	confirm: PromptForConfirmation
-): Command {
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	const {
+		app,
+		settingsStore,
+		promptForClusterChoice: promptChoice,
+		promptForConfirmation: confirm
+	} = dependencies;
+
 	return {
 		id: 'pair-cluster-with',
 		name: 'Pair cluster with…',

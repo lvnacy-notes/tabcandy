@@ -4,7 +4,7 @@ import {
 	EventRef,
 	WorkspaceLeaf
 } from 'obsidian';
-import { getTabPath } from '../clusters/clusterCreation';
+import { getTabPath } from '../tabs/tabPaths';
 import { getClustersContainingPath } from '../clusters/clusters';
 import SettingsStore from '../settings/SettingsStore';
 import type { PromptForClusterChoice } from '../types';

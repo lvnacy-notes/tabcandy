@@ -1,46 +1,20 @@
 /** @file The command that creates a Cluster from the active tab. */
+import type { Command } from 'obsidian';
 import {
-	App,
-	Command
-} from 'obsidian';
-import {
-	getTabPath,
-	promptAndCreate
-} from '../clusters/clusterCreation';
-import SettingsStore from '../settings/SettingsStore';
-import type { PromptForCluster } from '../types';
+	buildTabActionCommand,
+	CREATE_CLUSTER_FROM_ACTIVE_TAB
+} from '../clusters/tabActions';
+import type { CommandDependencies } from '../types';
 
 /**
  * Builds the command that creates a Cluster from the most recent tab's file.
- * Available only when that tab is file-backed.
  *
- * @param app - The Obsidian app.
- * @param settingsStore - Store holding the Clusters.
- * @param prompt - Collects the Cluster details.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `create-cluster-from-active-tab` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	settingsStore: SettingsStore,
-	prompt: PromptForCluster
-): Command {
-	return {
-		id: 'create-cluster-from-active-tab',
-		name: 'Create cluster from active tab',
-		checkCallback: (checking) => {
-			const leaf = app.workspace.getMostRecentLeaf();
-			const path = leaf === null ? null : getTabPath(leaf);
-			if (path === null) {
-				return false;
-			}
-			if (!checking) {
-				promptAndCreate(
-					settingsStore,
-					prompt,
-					[path]
-				);
-			}
-			return true;
-		},
-	};
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	return buildTabActionCommand(
+		dependencies,
+		CREATE_CLUSTER_FROM_ACTIVE_TAB
+	);
 }

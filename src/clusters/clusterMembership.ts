@@ -4,7 +4,6 @@ import {
 	Notice,
 	TFile
 } from 'obsidian';
-import { getTabPath } from './clusterCreation';
 import {
 	addMember,
 	getClustersContainingPath,
@@ -94,17 +93,6 @@ export function describeAddition(clusterName: string, added: boolean): string {
  */
 export function describeRemoval(count: number): string {
 	return `Removed from ${ count } ${ count === 1 ? 'cluster' : 'clusters' }.`;
-}
-
-/**
- * Reads the file path of the most recent tab.
- *
- * @param app - The Obsidian app.
- * @returns The path, or null when there is no most recent tab or it has no file.
- */
-export function getActiveTabPath(app: App): string | null {
-	const leaf = app.workspace.getMostRecentLeaf();
-	return leaf === null ? null : getTabPath(leaf);
 }
 
 /**

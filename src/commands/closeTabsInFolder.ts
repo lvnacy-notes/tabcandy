@@ -1,23 +1,21 @@
-import {
-	App,
-	Command
-} from 'obsidian';
+import type { Command } from 'obsidian';
 import { closeTabsInFolder } from '../tabs/tabNavigation';
 import ChooseFolderModal from '../ui/ChooseFolderModal';
-import SettingsStore from '../settings/SettingsStore';
+import type { CommandDependencies } from '../types';
 
 /**
  * Builds the command that asks for a folder, then closes the tabs showing
  * files in it. Subfolders are included when `closeTabsInFolderRecursive` is on.
  *
- * @param app - The Obsidian app.
- * @param settingsStore - Store holding the settings.
+ * @param dependencies - What the command needs from the plugin.
  * @returns The `close-tabs-in-folder` command.
  */
-export function buildInvokeCommand(
-	app: App,
-	settingsStore: SettingsStore
-): Command {
+export function buildInvokeCommand(dependencies: CommandDependencies): Command {
+	const {
+		app,
+		settingsStore
+	} = dependencies;
+
 	return {
 		id: 'close-tabs-in-folder',
 		name: 'Close tabs in folder…',
